@@ -53,7 +53,11 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
       <UNavigationMenu :items="headerItems"/>
 
       <template #right>
-        <UColorModeButton/>
+        <UColorModeButton>
+          <template #fallback>
+            <UButton loading variant="ghost" color="neutral" />
+          </template>
+        </UColorModeButton>
       </template>
     </UHeader>
 

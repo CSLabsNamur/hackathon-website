@@ -12,11 +12,13 @@
   "packageManager": "pnpm@9.15.9",
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
+    "@iconify-json/lucide": "^1.2.68",
     "@nuxt/eslint": "1.9.0",
     "@nuxt/fonts": "0.11.4",
     "@nuxt/image": "1.11.0",
     "@nuxt/scripts": "0.12.1",
     "@nuxt/ui": "4.0.1",
+    "@nuxtjs/mdc": "0.17.4",
     "@unhead/vue": "^2.0.17",
     "eslint": "^9.37.0",
     "nuxt": "^4.1.2",

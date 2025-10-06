@@ -9,11 +9,15 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@nuxt/image",
     "@nuxt/fonts",
+    "@nuxtjs/mdc",
   ],
 
   css: ["~/assets/css/main.css"],
   fonts: {
     provider: "local",
+  },
+  icon: {
+    mode: "css",
   },
 
   routeRules: {

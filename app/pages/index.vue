@@ -14,7 +14,7 @@ const organizers: Partner[] = [
 </script>
 
 <template>
-  <div class="mt-64">
+  <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <PageHero title="Bienvenue au Hackathon" subtitle="Organisé par le CSLabs" content="Notez la date !" :images="organizers"/>
-  </div>
+  </UPageHero>
 </template>
