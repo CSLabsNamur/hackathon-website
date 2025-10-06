@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --color-cslabs-50: #edfcf4;
+  --color-cslabs-100: #d4f7e4;
+  --color-cslabs-200: #aceece;
+  --color-cslabs-300: #76dfb1;
+  --color-cslabs-400: #3ec991;
+  --color-cslabs-500: #1bb17a;
+  --color-cslabs-600: #0e8d62;
+  --color-cslabs-700: #0b7150;
+  --color-cslabs-800: #0c5941;
+  --color-cslabs-900: #0b4937;
+  --color-cslabs-950: #052920;
+}

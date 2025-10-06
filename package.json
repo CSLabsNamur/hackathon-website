@@ -9,9 +9,11 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
+  "packageManager": "pnpm@9.15.9",
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
     "@nuxt/eslint": "1.9.0",
+    "@nuxt/fonts": "0.11.4",
     "@nuxt/image": "1.11.0",
     "@nuxt/scripts": "0.12.1",
     "@nuxt/ui": "4.0.1",
@@ -21,5 +23,8 @@
     "typescript": "^5.9.3",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.2"
   }
 }
