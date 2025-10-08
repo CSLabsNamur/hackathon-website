@@ -13,6 +13,7 @@
                target="_blank"
                variant="outline"
                :reverse="partners.indexOf(partner) % 2 === 1"
+               :ui="{title: 'text-xl'}"
     >
       <div class="flex justify-center">
         <NuxtImg :src="partner.logo" :alt="`Logo de ${partner.name}`" sizes="240px" fit="contain" class="max-h-48"/>
