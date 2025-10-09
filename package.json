@@ -13,6 +13,7 @@
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",
     "@iconify-json/lucide": "^1.2.68",
+    "@nuxt/content": "3.7.1",
     "@nuxt/eslint": "1.9.0",
     "@nuxt/fonts": "0.11.4",
     "@nuxt/image": "1.11.0",
@@ -20,6 +21,7 @@
     "@nuxt/ui": "4.0.1",
     "@nuxtjs/mdc": "0.17.4",
     "@unhead/vue": "^2.0.17",
+    "better-sqlite3": "^12.4.1",
     "eslint": "^9.37.0",
     "nuxt": "^4.1.2",
     "typescript": "^5.9.3",
@@ -27,6 +29,6 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@types/node": "^24.6.2"
+    "@types/node": "^24.7.0"
   }
 }
