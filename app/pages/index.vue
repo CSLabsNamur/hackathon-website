@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
+import { formatDateRange } from "~/utils/datetime";
 
 const organizers: Partner[] = [
   {
@@ -31,12 +32,20 @@ const prix: PageFeatureProps[] = [
     description: "Attribué au projet qui a reçu le plus de votes du public, reflétant l'impact et l'attrait général de l'idée auprès des participants.",
   },
 ];
+
+const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = useRuntimeConfig().public;
 </script>
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <!-- TODO: get attributes from database/env variables -->
-    <PageHero title="Bienvenue au Hackathon" subtitle="Organisé par le CSLabs" content="Notez la date !"
+    <PageHero v-if="teaserEnabled"
+              title="Le Hackathon se prépare !" subtitle="👀"
+              :content="`Notez déjà la date ${formatDateRange(eventDateStart, eventDateEnd, true, false)} dans vos agendas !`"
+              :images="organizers"/>
+    <PageHero v-else
+              :title="eventTitle" :subtitle="eventSlogan"
+              :content="formatDateRange(eventDateStart, eventDateEnd, true, true)"
               :images="organizers"/>
   </UPageHero>
 

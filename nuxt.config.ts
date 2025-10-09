@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxtjs/mdc",
     "@nuxt/content",
+    "dayjs-nuxt",
   ],
 
   css: ["~/assets/css/main.css"],
@@ -21,7 +22,27 @@ export default defineNuxtConfig({
     mode: "css",
   },
 
+  runtimeConfig: {
+    public: {
+      teaserEnabled: false,
+      eventDateStart: "",
+      eventDateEnd: "",
+      registrationsDateOpen: "",
+      registrationsDateClose: "",
+      eventTitle: "Le Hackathon du CSLabs",
+      eventSlogan: "",
+    },
+    apiUrl: "http://127.0.0.1:8000/",
+  },
+
   routeRules: {
-    "/api/**": {proxy: process.env.API_URL},
+    "/api/**": {proxy: process.env.NUXT_API_URL},
+  },
+
+  dayjs: {
+    locales: ["fr"],
+    defaultLocale: "fr",
+    defaultTimezone: "Europe/Brussels",
+    plugins: ["timezone", "utc", "duration"],
   },
 });

@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
-
 const route = useRoute();
+const {teaserEnabled} = useRuntimeConfig().public;
 
-const headerItems = computed<NavigationMenuItem[]>(() => [
+const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
+  {
+    label: "Inscription",
+    to: "/inscription",
+    active: route.path.startsWith("/inscription"),
+    condition: !teaserEnabled,
+  },
   {
     label: "Partenaires",
     to: "/partenaires",
     active: route.path.startsWith("/partenaires"),
+    condition: !teaserEnabled,
   },
   {
     label: "Infos",
     to: "/infos",
     active: route.path.startsWith("/infos"),
+    condition: !teaserEnabled,
   },
   {
     label: "Plus loin",
@@ -50,12 +57,12 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
         <span id="logo">Hackathon</span>
       </template>
 
-      <UNavigationMenu :items="headerItems"/>
+      <ConditionalNavigationMenu :items="headerItems"/>
 
       <template #right>
         <UColorModeButton>
           <template #fallback>
-            <UButton loading variant="ghost" color="neutral" />
+            <UButton loading variant="ghost" color="neutral"/>
           </template>
         </UColorModeButton>
       </template>
