@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     "@nuxtjs/mdc",
     "@nuxt/content",
     "dayjs-nuxt",
+    "@vueuse/nuxt",
   ],
 
   css: ["~/assets/css/main.css"],
@@ -36,7 +37,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/api/**": {proxy: process.env.NUXT_API_URL},
+    "/api/back/**": {proxy: `${process.env.NUXT_API_URL}/**`},
   },
 
   dayjs: {

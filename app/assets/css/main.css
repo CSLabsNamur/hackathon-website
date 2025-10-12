@@ -16,3 +16,7 @@
   --color-cslabs-900: #0b4937;
   --color-cslabs-950: #052920;
 }
+
+html, body, #__nuxt, #__nuxt > div:first-child, #__layout {
+  overflow-x: clip;
+}

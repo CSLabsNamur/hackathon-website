@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { NavigationMenuItem } from "@nuxt/ui";
+import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavigationMenu.vue";
+
 const route = useRoute();
 const {teaserEnabled} = useRuntimeConfig().public;
 
@@ -20,6 +23,11 @@ const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
     to: "/infos",
     active: route.path.startsWith("/infos"),
     condition: !teaserEnabled,
+  },
+  {
+    label: "Historique",
+    to: "/historique",
+    active: route.path.startsWith("/historique"),
   },
   {
     label: "Plus loin",
@@ -52,7 +60,7 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
   <UApp>
     <NuxtRouteAnnouncer/>
 
-    <UHeader>
+    <UHeader mode="modal">
       <template #title>
         <span id="logo">Hackathon</span>
       </template>
@@ -65,6 +73,10 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
             <UButton loading variant="ghost" color="neutral"/>
           </template>
         </UColorModeButton>
+      </template>
+
+      <template #body>
+        <UNavigationMenu :items="headerItems" orientation="vertical" class="-mx-2.5"/>
       </template>
     </UHeader>
 

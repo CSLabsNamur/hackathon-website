@@ -7,10 +7,10 @@
     <PageHero title="Informations" subtitle="Les informations nécessaires !"/>
   </UPageHero>
 
-  <div class="flex flex-col gap-2 *:mx-auto *:w-xl">
+  <div class="flex flex-col gap-2 px-4 *:mx-auto *:w-full md:*:max-w-xl">
     <UPageCard title="Lieu" icon="i-lucide-map-pinned">
       <template #description>
-        <div class="whitespace-nowrap">
+        <div>
           <p>Faculté d'informatique de l'Université de Namur</p>
           <p>Rue Grandgagnage 21, 5000 Namur, Belgique</p>
         </div>
@@ -19,7 +19,7 @@
 
     <UPageCard title="Date" icon="i-lucide-calendar">
       <template #description>
-        <div class="whitespace-nowrap">
+        <div>
           <!-- TODO: get date from database or env variable -->
           <p>Du vendredi 27 mars 2026 à 18h00</p>
           <p>Au dimanche 29 mars 2026 à 18h00</p>
@@ -29,9 +29,9 @@
 
     <UPageCard title="Contacts" icon="i-lucide-mail">
       <template #description>
-        <div class="whitespace-nowrap">
-          <p>N'hésitez pas à nous contacter pour toute question !</p>
-          <div class="mt-2">
+        <div>
+          <p>N'hésite pas à nous contacter pour toute question !</p>
+          <div class="mt-2 break-words">
             <p>Facebook : <a href="https://www.facebook.com/ComputerScienceLabs/">Page Facebook</a></p>
             <p>Mail : <a href="mailto:event@cslabs.be">event@cslabs.be</a></p>
             <p>Serveur Discord : <a href="https://discord.gg/Jf2Dht8">https://discord.gg/Jf2Dht8</a></p>

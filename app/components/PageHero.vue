@@ -16,8 +16,10 @@ const {title, subtitle, content, images} = defineProps<{
       <div class="flex flex-col items-center justify-center h-full text-center px-4">
         <h1 class="text-4xl md:text-5xl font-bold">{{ title }}</h1>
         <div v-if="subtitle" class="text-2xl md:text-3xl">{{ subtitle }}</div>
-        <p class="text-lg md:text-xl">{{ content }}</p>
-        <div class="flex gap-4 mt-8">
+        <p class="text-lg md:text-xl whitespace-pre-line">
+          <slot name="content">{{ content }}</slot>
+        </p>
+        <div class="flex gap-4 mt-8 overflow-x-scroll no-scrollbar">
           <template v-for="image in images" :key="image.name">
             <ImageBubble :image="image.logo" :url="image.url" :name="image.name"/>
           </template>

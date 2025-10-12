@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { NavigationMenuProps } from "@nuxt/ui";
+import type { NavigationMenuProps, NavigationMenuItem } from "@nuxt/ui";
 
-export type ConditionalNavigationMenuItem = NavigationMenuProps["items"] & { condition?: boolean };
+// Fix: Use NavigationMenuItem, not NavigationMenuProps["items"]
+export type ConditionalNavigationMenuItem = NavigationMenuItem & { condition?: boolean };
 export type ConditionalNavigationMenuProps = Partial<Omit<NavigationMenuProps, "items">> & {
   items?: Array<ConditionalNavigationMenuItem>;
 };
 
 const props = defineProps<ConditionalNavigationMenuProps>();
-
 
 const itemsFinal = computed(() => (props.items ?? [])
     // Only show routes whose condition is true (or no condition at all), unless in dev mode
