@@ -15,7 +15,7 @@ const schema = v.pipe(
       githubAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("github.com", "Le lien n'est pas un lien GitHub"))),
       linkedinAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("linkedin.com", "Le lien n'est pas un lien LinkedIn"))),
       school: v.optional(v.picklist(["UNamur", "Henallux", "HEAJ", "UCLouvain", "ULiège", "UMons", "ULB", "Hors Belgique", "Autre"], "Le choix n'est pas valide")),
-      diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Autre"], "Le choix n'est pas valide")),
+      diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Halal", "Kasher", "Autre"], "Le choix n'est pas valide")),
       needs: v.optional(v.string()),
       curriculumVitae: v.optional(v.pipe(v.file(), v.mimeType(["application/pdf"], "Veuillez sélectionner un fichier PDF."), v.maxSize(1024 * 1024 * 5, "Le fichier est trop volumineux (max 5MB)"))),
       caution: v.pipe(v.boolean(), v.value(true, "Vous devez accepter de payer la caution pour vous inscrire")),
@@ -55,7 +55,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       title: "Inscription soumise !",
       description: "Merci pour votre inscription, nous reviendrons vers vous rapidement.",
       color: "success",
-    });
+    })
     await $fetch("/api/back/authentication/register", {
       method: "POST",
       body: event.data,
@@ -158,7 +158,7 @@ async function onError(event: FormErrorEvent) {
         <UFormField label="Régime alimentaire spécifique" name="diet">
           <USelect v-model="state.diet"
                    class="w-full"
-                   :items="['Végétarien', 'Vegan', 'Sans gluten', 'Autre']"
+                   :items="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
                    icon="i-lucide-apple"
                    placeholder="Sélectionnez votre régime alimentaire">
             <template #trailing>
