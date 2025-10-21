@@ -1,5 +1,5 @@
 import { computed, reactive } from "vue";
-const dayjs = useDayjs(); // add dayjs composable
+const dayjs = useDayjs();
 
 export const adminUser = computed(() => ({
   name: "Admin User",
@@ -48,7 +48,7 @@ export const participants: Participant[] = reactive([
     githubAccount: "https://github.com/alineBO",
     linkedinAccount: "https://www.linkedin.com/in/aline-linkedin",
     school: "UNamur",
-    diet: null, // changed from "None" to null
+    diet: null,
     needs: null,
     caution: CautionStatus.NotPaid,
     isAdmin: false,
@@ -68,7 +68,7 @@ export const participants: Participant[] = reactive([
     githubAccount: "https://github.com/bobGH",
     linkedinAccount: null,
     school: "Henallux",
-    diet: "Végétarien", // changed from "Vegetarian"
+    diet: "Végétarien",
     needs: null,
     caution: CautionStatus.NotPaid,
     isAdmin: false,
@@ -88,7 +88,7 @@ export const participants: Participant[] = reactive([
     githubAccount: null,
     linkedinAccount: "https://www.linkedin.com/in/carol-linkedin",
     school: "HEAJ",
-    diet: "Vegan", // unchanged, already valid
+    diet: "Vegan",
     needs: "Wheelchair access",
     caution: CautionStatus.Paid,
     isAdmin: false,
@@ -108,7 +108,7 @@ export const participants: Participant[] = reactive([
     githubAccount: "https://github.com/danGH",
     linkedinAccount: null,
     school: null,
-    diet: "Sans gluten", // changed from "Gluten-free"
+    diet: "Sans gluten",
     needs: null,
     caution: CautionStatus.Refunded,
     isAdmin: false,
@@ -128,7 +128,7 @@ export const participants: Participant[] = reactive([
     githubAccount: null,
     linkedinAccount: "https://www.linkedin.com/in/erin-linkedin",
     school: "UCLouvain",
-    diet: null, // unchanged (was null)
+    diet: null,
     needs: null,
     caution: CautionStatus.Waived,
     isAdmin: false,
@@ -148,7 +148,7 @@ export const participants: Participant[] = reactive([
     githubAccount: "https://github.com/frankGH",
     linkedinAccount: null,
     school: "UMons",
-    diet: "Halal", // unchanged, already valid
+    diet: "Halal",
     needs: null,
     caution: CautionStatus.Paid,
     isAdmin: false,
