@@ -121,9 +121,3 @@ async function onError(event: FormErrorEvent) {
     </template>
   </UDashboardPanel>
 </template>
-
-<style scoped>
-/** {
-  --ui-container: 90rem;
-}*/
-</style>

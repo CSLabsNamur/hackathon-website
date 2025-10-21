@@ -3,7 +3,7 @@ import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 
-const props = defineProps<{ user: User }>();
+const props = defineProps<{ participant: Participant }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -23,14 +23,14 @@ const schema = v.object({
 type Schema = v.InferOutput<typeof schema>
 
 const state: Reactive<Schema> = reactive({
-  firstName: props.user.firstName,
-  lastName: props.user.lastName,
-  email: props.user.email,
-  githubAccount: props.user.githubAccount || undefined,
-  linkedinAccount: props.user.linkedinAccount || undefined,
-  school: props.user.school || undefined,
-  diet: props.user.diet || undefined,
-  needs: props.user.needs || undefined,
+  firstName: props.participant.firstName,
+  lastName: props.participant.lastName,
+  email: props.participant.email,
+  githubAccount: props.participant.githubAccount || undefined,
+  linkedinAccount: props.participant.linkedinAccount || undefined,
+  school: props.participant.school || undefined,
+  diet: props.participant.diet || undefined,
+  needs: props.participant.needs || undefined,
   curriculumVitae: false,
 });
 
@@ -40,21 +40,21 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
     toast.add({
-      title: "Utilisateur modifié",
-      description: "L'utilisateur a été modifié avec succès.",
+      title: "Participant modifié",
+      description: "Le participant a été modifié avec succès.",
       color: "success",
     });
     // Update user in the mock list
-    users.find(u => u.id === props.user.id)!.firstName = event.data.firstName;
-    users.find(u => u.id === props.user.id)!.lastName = event.data.lastName;
-    users.find(u => u.id === props.user.id)!.email = event.data.email;
-    users.find(u => u.id === props.user.id)!.githubAccount = event.data.githubAccount || null;
-    users.find(u => u.id === props.user.id)!.linkedinAccount = event.data.linkedinAccount || null;
-    users.find(u => u.id === props.user.id)!.school = event.data.school || null;
-    users.find(u => u.id === props.user.id)!.diet = event.data.diet || null;
-    users.find(u => u.id === props.user.id)!.needs = event.data.needs || null;
+    participants.find(u => u.id === props.participant.id)!.firstName = event.data.firstName;
+    participants.find(u => u.id === props.participant.id)!.lastName = event.data.lastName;
+    participants.find(u => u.id === props.participant.id)!.email = event.data.email;
+    participants.find(u => u.id === props.participant.id)!.githubAccount = event.data.githubAccount || null;
+    participants.find(u => u.id === props.participant.id)!.linkedinAccount = event.data.linkedinAccount || null;
+    participants.find(u => u.id === props.participant.id)!.school = event.data.school || null;
+    participants.find(u => u.id === props.participant.id)!.diet = event.data.diet || null;
+    participants.find(u => u.id === props.participant.id)!.needs = event.data.needs || null;
     if (event.data.curriculumVitae) {
-      users.find(u => u.id === props.user.id)!.curriculumVitae = null;
+      participants.find(u => u.id === props.participant.id)!.curriculumVitae = null;
     }
     console.log(event.data);
     emit("close", true);
@@ -74,7 +74,7 @@ async function onError(event: FormErrorEvent) {
 
 <template>
   <UModal :close="{onClick: () => emit('close', false)}" title="Modifier l'utilisateur"
-          :description="`Modifier les informations de ${user.firstName} ${user.lastName}`"
+          :description="`Modifier les informations de ${participant.firstName} ${participant.lastName}`"
           :ui="{content: 'max-w-2xl'}">
     <template #body>
       <UForm :schema :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"

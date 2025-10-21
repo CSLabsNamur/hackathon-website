@@ -1,4 +1,5 @@
 import { computed, reactive } from "vue";
+const dayjs = useDayjs(); // add dayjs composable
 
 export const adminUser = computed(() => ({
   name: "Admin User",
@@ -10,7 +11,7 @@ export const adminUser = computed(() => ({
   },
 }));
 
-export type User = {
+export type Participant = {
   id: string;
   email: string;
   firstName: string;
@@ -38,7 +39,7 @@ export enum CautionStatus {
   Waived = "Exonéré",
 }
 
-export const users: User[] = reactive([
+export const participants: Participant[] = reactive([
   {
     id: "u1-0a1b",
     email: "aline@example.com",
@@ -57,7 +58,7 @@ export const users: User[] = reactive([
     team: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Team Alpha
     imageAgreement: true,
     newsletter: false,
-    createdAt: 1699980000000,
+    createdAt: dayjs("2025-09-14T09:00:00Z").valueOf(), // 2025-09-14 09:00 UTC
   },
   {
     id: "u2-0a2b",
@@ -77,7 +78,7 @@ export const users: User[] = reactive([
     team: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Team Alpha
     imageAgreement: true,
     newsletter: false,
-    createdAt: 1699970000000,
+    createdAt: dayjs("2025-11-01T11:15:00Z").valueOf(), // 2025-10-01 11:15 UTC
   },
   {
     id: "u3-0a3b",
@@ -97,7 +98,7 @@ export const users: User[] = reactive([
     team: "a3c9f1d2-6b7e-4f2a-9c8d-1234567890ab", // Team Beta
     imageAgreement: true,
     newsletter: true,
-    createdAt: 1699000000000,
+    createdAt: dayjs("2025-11-20T16:45:00Z").valueOf(), // 2025-11-20 16:45 UTC
   },
   {
     id: "u4-0a4b",
@@ -114,10 +115,10 @@ export const users: User[] = reactive([
     curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: false,
-    team: "9b8a7c6d-5555-6666-7777-0123456789ab", // Team Delta
+    team: null,
     imageAgreement: true,
     newsletter: false,
-    createdAt: 1677000000000,
+    createdAt: dayjs("2026-01-05T10:15:00Z").valueOf(), // 2026-01-05 10:15 UTC
   },
   {
     id: "u5-0a5b",
@@ -137,7 +138,7 @@ export const users: User[] = reactive([
     team: "9b8a7c6d-5555-6666-7777-0123456789ab", // Team Delta
     imageAgreement: true,
     newsletter: false,
-    createdAt: 1677001000000,
+    createdAt: dayjs("2026-02-14T08:00:00Z").valueOf(), // 2026-02-14 08:00 UTC
   },
   {
     id: "u6-0a6b",
@@ -157,18 +158,27 @@ export const users: User[] = reactive([
     team: "9b8a7c6d-5555-6666-7777-0123456789ab", // Team Delta
     imageAgreement: true,
     newsletter: true,
-    createdAt: 1677002000000,
+    createdAt: dayjs("2026-03-26T18:30:00Z").valueOf(), // 2026-03-26 18:30 UTC
   },
 ]);
 
-export const teams = [
+export type Team = {
+  id: string;
+  name: string;
+  description: string;
+  idea: string;
+  token: string;
+  members: string[];
+  createdAt: number;
+}
+
+export const teams: Team[] = [
   {
     id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     name: "Team Alpha",
     description: "Platform integration squad focused on auth and SSO.",
     idea: "Build a unified login experience across products.",
     token: "alpha-9f3b2c",
-    valid: true,
     members: ["u1-0a1b", "u2-0a2b"],
     createdAt: 1699992000000,
   },
@@ -178,7 +188,6 @@ export const teams = [
     description: "Experimentation and prototyping team.",
     idea: "Rapidly validate new product ideas with lightweight prototypes.",
     token: "beta-4e7d1a",
-    valid: false,
     members: ["u3-0a3b"],
     createdAt: 1699000000000,
   },
@@ -188,7 +197,6 @@ export const teams = [
     description: "Performance and observability team.",
     idea: "Improve metrics and monitoring pipelines.",
     token: "gamma-0b8c7d",
-    valid: true,
     members: [],
     createdAt: 1688000000000,
   },
@@ -198,7 +206,6 @@ export const teams = [
     description: "Customer success integrations.",
     idea: "Automate onboarding and support workflows.",
     token: "delta-2c3f9e",
-    valid: true,
     members: ["u4-0a4b", "u5-0a5b", "u6-0a6b"],
     createdAt: 1677000000000,
   },

@@ -5,6 +5,10 @@ const route = useRoute();
 const toast = useToast();
 const {eventTitle} = useRuntimeConfig().public;
 
+const colorMode = useColorMode();
+const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
+provide(THEME_KEY, theme);
+
 const open = ref(false);
 
 const links: NavigationMenuItem[][] = [[{
@@ -15,16 +19,16 @@ const links: NavigationMenuItem[][] = [[{
     open.value = false;
   },
 }, {
-  label: "Équipes",
-  icon: "i-lucide-users",
-  to: "/admin/teams",
+  label: "Participants",
+  icon: "i-lucide-user-check",
+  to: "/admin/participants",
   onSelect: () => {
     open.value = false;
   },
 }, {
-  label: "Utilisateurs",
-  icon: "i-lucide-user-check",
-  to: "/admin/users",
+  label: "Équipes",
+  icon: "i-lucide-users",
+  to: "/admin/teams",
   onSelect: () => {
     open.value = false;
   },
@@ -62,7 +66,11 @@ const groups = [{
   <UDashboardGroup unit="rem">
     <UDashboardSidebar collapsible resizable class="bg-elevated/25" :ui="{footer: 'lg:border-t lg:border-default'}">
       <template #header="{collapsed}">
-        <span v-if="!collapsed" class="text-muted">{{ eventTitle }}</span>
+        <div class="mx-auto">
+          <NuxtLink to="/admin">
+            <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
+          </NuxtLink>
+        </div>
       </template>
 
       <template #default="{collapsed}">
@@ -82,3 +90,9 @@ const groups = [{
     <slot/>
   </UDashboardGroup>
 </template>
+
+<style scoped>
+* {
+  --ui-container: 90rem;
+}
+</style>

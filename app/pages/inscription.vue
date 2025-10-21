@@ -55,7 +55,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       title: "Inscription soumise !",
       description: "Merci pour votre inscription, nous reviendrons vers vous rapidement.",
       color: "success",
-    })
+    });
     await $fetch("/api/back/authentication/register", {
       method: "POST",
       body: event.data,

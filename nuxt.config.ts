@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     "@nuxt/content",
     "dayjs-nuxt",
     "@vueuse/nuxt",
+    "nuxt-echarts",
   ],
 
   css: ["~/assets/css/main.css"],
@@ -45,5 +46,12 @@ export default defineNuxtConfig({
     defaultLocale: "fr",
     defaultTimezone: "Europe/Brussels",
     plugins: ["timezone", "utc", "duration"],
+  },
+
+  echarts: {
+    renderer: ["svg", "canvas"],
+    charts: ["LineChart", "PieChart"],
+    components: ["AriaComponent", "DatasetComponent", "TooltipComponent", "GridComponent", "TitleComponent"],
+    features: ["LabelLayout", "UniversalTransition"],
   },
 });

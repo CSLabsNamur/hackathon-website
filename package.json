@@ -25,11 +25,14 @@
     "@vueuse/nuxt": "13.9.0",
     "better-sqlite3": "^12.4.1",
     "dayjs-nuxt": "2.1.11",
+    "echarts": "^6.0.0",
     "eslint": "^9.37.0",
     "nuxt": "^4.1.2",
+    "nuxt-echarts": "1.0.1",
     "typescript": "^5.9.3",
     "valibot": "^1.1.0",
     "vue": "^3.5.22",
+    "vue-echarts": "^8.0.0",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {

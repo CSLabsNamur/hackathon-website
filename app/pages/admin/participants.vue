@@ -3,7 +3,7 @@ import type { TableColumn } from "#ui/components/Table.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { AdminUserCautionModal, AdminUserEditModal } from "#components";
+import { AdminParticipantCautionModal, AdminParticipantEditModal } from "#components";
 
 definePageMeta({
   layout: "dashboard",
@@ -17,14 +17,14 @@ const UDropdownMenu = resolveComponent("UDropdownMenu");
 const dayjs = useDayjs();
 const overlay = useOverlay();
 
-const cautionModal = overlay.create(AdminUserCautionModal);
-const editModal = overlay.create(AdminUserEditModal);
+const cautionModal = overlay.create(AdminParticipantCautionModal);
+const editModal = overlay.create(AdminParticipantEditModal);
 
-const columns: TableColumn<User>[] = [
+const columns: TableColumn<Participant>[] = [
   {
     id: "name",
     header: "Nom",
-    accessorFn: (row: User) => `${row.firstName} ${row.lastName}`,
+    accessorFn: (row: Participant) => `${row.firstName} ${row.lastName}`,
   },
   {
     header: "Email",
@@ -49,7 +49,7 @@ const columns: TableColumn<User>[] = [
   },
   {
     header: "Équipe",
-    accessorFn: (row: User) => {
+    accessorFn: (row: Participant) => {
       return row.team ? teams.find(t => t.id === row.team)?.name : "Aucune";
     },
   },
@@ -154,7 +154,7 @@ const columns: TableColumn<User>[] = [
   //}
 ];
 
-function getRowItems(row: Row<User>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
   return [
     {
       type: "label",
@@ -181,14 +181,14 @@ function getRowItems(row: Row<User>): Array<DropdownMenuItem> {
       label: "Éditer l'utilisateur",
       icon: "i-lucide-edit-2",
       onSelect: () => {
-        editModal.open({user: row.original});
+        editModal.open({participant: row.original});
       },
     },
     {
       label: "Gérer la caution",
       icon: "i-lucide-wallet",
       onSelect: () => {
-        cautionModal.open({user: row.original});
+        cautionModal.open({participant: row.original});
       },
     },
     {
@@ -211,16 +211,10 @@ function getRowItems(row: Row<User>): Array<DropdownMenuItem> {
     <template #body>
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
-          <AdminUserStats/>
-          <UTable :columns="columns" :data="users" sticky/>
+          <AdminParticipantStats/>
+          <UTable :columns="columns" :data="participants" sticky/>
         </div>
       </UContainer>
     </template>
   </UDashboardPanel>
 </template>
-
-<style scoped>
-* {
-  --ui-container: 90rem;
-}
-</style>
