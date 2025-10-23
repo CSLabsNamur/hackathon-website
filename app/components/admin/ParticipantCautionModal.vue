@@ -22,8 +22,8 @@ const save = () => {
     </template>
     <template #footer>
       <div class="flex justify-end space-x-2">
-        <UButton color="neutral" @click="emit('close', false)">Annuler</UButton>
         <UButton @click="save">Enregistrer</UButton>
+        <UButton color="neutral" @click="emit('close', false)">Annuler</UButton>
       </div>
     </template>
   </UModal>

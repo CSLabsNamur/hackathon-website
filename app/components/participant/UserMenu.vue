@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import type { AvatarProps } from "#ui/components/Avatar.vue";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 
 defineProps<{
-  user: {
-    name: string,
-    description?: string,
-    avatar: Omit<AvatarProps, "size"> & { [key: string]: any; }
-  },
+  participant: Participant;
   collapsed?: boolean
 }>();
 
 const items: DropdownMenuItem[][] = [[{
   label: "Profil",
   icon: "i-lucide-user-circle",
-  to: "/profile",
+  to: "/participant/profile",
 }, {
   label: "Paramètres",
   icon: "i-lucide-settings",
@@ -28,7 +23,9 @@ const items: DropdownMenuItem[][] = [[{
 
 <template>
   <UDropdownMenu :content="{align: 'center'}" :items>
-    <UUser v-if="!collapsed" :name="user.name" :description="user.description" :avatar="user.avatar"/>
-    <UUser v-else :avatar="user.avatar"/>
+    <UUser v-if="!collapsed" :name="`${participant.firstName} ${participant.lastName}`"
+           :description="participant.email"
+           :avatar="{src: `https://github.com/${participant.githubAccount}.png`}"/>
+    <UUser v-else :avatar="{src: `https://github.com/${participant.githubAccount}.png`}"/>
   </UDropdownMenu>
 </template>

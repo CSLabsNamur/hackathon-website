@@ -3,7 +3,7 @@ import type { TableColumn } from "#ui/components/Table.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { AdminParticipantCautionModal, AdminParticipantEditModal } from "#components";
+import { AdminParticipantCautionModal, ParticipantEditModal } from "#components";
 
 definePageMeta({
   layout: "dashboard",
@@ -18,7 +18,7 @@ const dayjs = useDayjs();
 const overlay = useOverlay();
 
 const cautionModal = overlay.create(AdminParticipantCautionModal);
-const editModal = overlay.create(AdminParticipantEditModal);
+const editModal = overlay.create(ParticipantEditModal);
 
 const columns: TableColumn<Participant>[] = [
   {

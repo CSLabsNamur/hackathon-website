@@ -1,7 +1,15 @@
 import { computed, reactive } from "vue";
+import type { AvatarProps } from "#ui/components/Avatar.vue";
+
 const dayjs = useDayjs();
 
-export const adminUser = computed(() => ({
+export type User = {
+  name: string;
+  email: string;
+  avatar: AvatarProps;
+}
+
+export const adminUser = computed<User>(() => ({
   name: "Admin User",
   email: "it@cslabs.be",
   avatar: {
@@ -52,10 +60,12 @@ export const participants: Participant[] = reactive([
     needs: null,
     caution: CautionStatus.NotPaid,
     isAdmin: false,
-    curriculumVitae: null,
+    curriculumVitae: "/cvs/aline.pdf",
+    //curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: true, // owner of Team Alpha
     team: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Team Alpha
+    //team: null,
     imageAgreement: true,
     newsletter: false,
     createdAt: dayjs("2025-09-14T09:00:00Z").valueOf(), // 2025-09-14 09:00 UTC
@@ -162,11 +172,19 @@ export const participants: Participant[] = reactive([
   },
 ]);
 
+export const currentParticipant = participants[0]!;
+export const currentTeam = computed<Team | null>(() => {
+  if (!currentParticipant.team) {
+    return null;
+  }
+  return teams.find(team => team.id === currentParticipant.team) || null;
+});
+
 export type Team = {
   id: string;
   name: string;
-  description: string;
-  idea: string;
+  description?: string;
+  idea?: string;
   token: string;
   members: string[];
   createdAt: number;

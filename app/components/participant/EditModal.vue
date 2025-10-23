@@ -78,7 +78,7 @@ async function onError(event: FormErrorEvent) {
           :ui="{content: 'max-w-2xl'}">
     <template #body>
       <UForm :schema :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
-             id="registration-form">
+             id="participant-edit-form">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
           <UInput v-model="state.firstName" icon="i-lucide-user" class="w-full"/>
@@ -152,9 +152,9 @@ async function onError(event: FormErrorEvent) {
       </UForm>
     </template>
     <template #footer>
-      <div class="flex justify-end space-x-2">
+      <div class="flex justify-end gap-3">
+        <UButton type="submit" form="participant-edit-form" :loading="isSubmitting">Enregistrer</UButton>
         <UButton color="neutral" @click="emit('close', false)">Annuler</UButton>
-        <UButton type="submit" form="registration-form" :loading="isSubmitting">Enregistrer</UButton>
       </div>
     </template>
   </UModal>

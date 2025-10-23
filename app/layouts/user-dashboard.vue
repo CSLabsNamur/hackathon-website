@@ -5,37 +5,43 @@ const route = useRoute();
 const toast = useToast();
 const {eventTitle} = useRuntimeConfig().public;
 
-const colorMode = useColorMode();
-const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
-provide(THEME_KEY, theme);
-
 const open = ref(false);
 
 const links: NavigationMenuItem[][] = [[{
   label: "Accueil",
   icon: "i-lucide-house",
-  to: "/admin",
+  to: "/participant",
   onSelect: () => {
     open.value = false;
   },
 }, {
-  label: "Participants",
+  label: "Mon équipe",
   icon: "i-lucide-user-check",
-  to: "/admin/participants",
+  to: "/participant/team",
+  onSelect: () => {
+    open.value = false;
+  },
+  children: [
+    {
+      label: "Autres équipes",
+      icon: "i-lucide-users",
+      to: "/participant/teams",
+      onSelect: () => {
+        open.value = false;
+      },
+    },
+  ],
+}, {
+  label: "Mon profil",
+  icon: "i-lucide-user-circle",
+  to: "/participant/profile",
   onSelect: () => {
     open.value = false;
   },
 }, {
-  label: "Équipes",
-  icon: "i-lucide-users",
-  to: "/admin/teams",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Diffusions",
+  label: "Dépôt",
   icon: "i-lucide-send",
-  to: "/admin/broadcast",
+  to: "/participant/submit",
   onSelect: () => {
     open.value = false;
   },
@@ -49,7 +55,7 @@ const links: NavigationMenuItem[][] = [[{
 }, {
   label: "Aide & Support",
   icon: "i-lucide-life-buoy",
-  to: "/admin/support",
+  to: "/participant/support",
   onSelect: () => {
     open.value = false;
   },
@@ -67,7 +73,7 @@ const groups = [{
     <UDashboardSidebar collapsible resizable class="bg-elevated/25" :ui="{footer: 'lg:border-t lg:border-default'}">
       <template #header="{collapsed}">
         <div class="mx-auto">
-          <NuxtLink to="/admin">
+          <NuxtLink to="/participant">
             <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
           </NuxtLink>
         </div>
@@ -81,7 +87,7 @@ const groups = [{
       </template>
 
       <template #footer="{collapsed}">
-        <AdminUserMenu :user="adminUser" :collapsed/>
+        <ParticipantUserMenu :participant="currentParticipant" :collapsed/>
       </template>
     </UDashboardSidebar>
 

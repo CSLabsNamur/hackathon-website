@@ -175,7 +175,7 @@ async function onError(event: FormErrorEvent) {
 
         <UFormField label="Besoins spécifiques" name="needs"
                     hint="(Accessibilité, etc.)">
-          <UTextarea class="w-full" v-model="state.needs" :rows="1" :maxrows="3"/>
+          <UTextarea class="w-full" icon="i-lucide-heart" v-model="state.needs" :rows="1" :maxrows="3"/>
         </UFormField>
 
         <!-- CV Upload -->
