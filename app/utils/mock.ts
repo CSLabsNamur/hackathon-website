@@ -37,6 +37,7 @@ export type Participant = {
   team: string | null;
   imageAgreement: boolean;
   newsletter: boolean;
+  submissions: Submission[];
   createdAt: number;
 }
 
@@ -68,6 +69,7 @@ export const participants: Participant[] = reactive([
     //team: null,
     imageAgreement: true,
     newsletter: false,
+    submissions: [],
     createdAt: dayjs("2025-09-14T09:00:00Z").valueOf(), // 2025-09-14 09:00 UTC
   },
   {
@@ -88,6 +90,7 @@ export const participants: Participant[] = reactive([
     team: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Team Alpha
     imageAgreement: true,
     newsletter: false,
+    submissions: [],
     createdAt: dayjs("2025-11-01T11:15:00Z").valueOf(), // 2025-10-01 11:15 UTC
   },
   {
@@ -108,6 +111,7 @@ export const participants: Participant[] = reactive([
     team: "a3c9f1d2-6b7e-4f2a-9c8d-1234567890ab", // Team Beta
     imageAgreement: true,
     newsletter: true,
+    submissions: [],
     createdAt: dayjs("2025-11-20T16:45:00Z").valueOf(), // 2025-11-20 16:45 UTC
   },
   {
@@ -128,6 +132,7 @@ export const participants: Participant[] = reactive([
     team: null,
     imageAgreement: true,
     newsletter: false,
+    submissions: [],
     createdAt: dayjs("2026-01-05T10:15:00Z").valueOf(), // 2026-01-05 10:15 UTC
   },
   {
@@ -148,6 +153,7 @@ export const participants: Participant[] = reactive([
     team: "9b8a7c6d-5555-6666-7777-0123456789ab", // Team Delta
     imageAgreement: true,
     newsletter: false,
+    submissions: [],
     createdAt: dayjs("2026-02-14T08:00:00Z").valueOf(), // 2026-02-14 08:00 UTC
   },
   {
@@ -168,6 +174,7 @@ export const participants: Participant[] = reactive([
     team: "9b8a7c6d-5555-6666-7777-0123456789ab", // Team Delta
     imageAgreement: true,
     newsletter: true,
+    submissions: [],
     createdAt: dayjs("2026-03-26T18:30:00Z").valueOf(), // 2026-03-26 18:30 UTC
   },
 ]);
@@ -228,3 +235,50 @@ export const teams: Team[] = [
     createdAt: 1677000000000,
   },
 ];
+
+// ==== Document Submission ====
+interface SubmissionBase {
+  id: string;
+  title: string;
+  description?: string;
+  deadline: number;
+  required?: boolean;
+  createdAt: number;
+}
+
+export type SubmissionRequest =
+  (SubmissionBase & { type: "text" }) |
+  (SubmissionBase & { type: "file"; acceptedFormats?: string[]; multiple?: boolean });
+
+export type Submission = {
+  requestId: string;
+  content: string | File | File[];
+  submittedAt: number;
+  skipped: false;
+} | {
+  requestId: string;
+  submittedAt: number;
+  skipped: true;
+};
+
+export const submissionRequests = ref<SubmissionRequest[] >([
+  {
+    id: "sub-001",
+    type: "file",
+    title: "CV",
+    description: "Envoyez votre curriculum vitae au format PDF.",
+    deadline: dayjs("2025-12-31T23:59:59Z").valueOf(),
+    acceptedFormats: [".pdf"],
+    multiple: false,
+    createdAt: dayjs("2025-10-01T00:00:00Z").valueOf(),
+  },
+  {
+    id: "sub-002",
+    type: "text",
+    title: "Objectifs et motivation",
+    description: "Décrivez vos objectifs personnels pour l'événement et ce qui vous motive à y participer.",
+    deadline: dayjs("2026-01-15T23:59:59Z").valueOf(),
+    required: true,
+    createdAt: dayjs("2025-11-01T00:00:00Z").valueOf(),
+  },
+]);

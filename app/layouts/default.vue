@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavigationMenu.vue";
+import type { ButtonProps } from "#ui/components/Button.vue";
 
 const route = useRoute();
 const {teaserEnabled} = useRuntimeConfig().public;
@@ -54,6 +55,27 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
     active: route.path.startsWith("/cookie-policy"),
   },
 ]);
+
+type FooterLogos = ButtonProps & { ariaLabel: string };
+
+// TODO: Add ability to update links globally (settings page?)
+const footerLogos: FooterLogos[] = [{
+  icon: "i-simple-icons-discord",
+  to: "https://discord.gg/Jf2Dht8",
+  ariaLabel: "Discord",
+}, {
+  icon: "i-simple-icons-github",
+  to: "https://github.com/CSLabsNamur",
+  ariaLabel: "GitHub",
+}, {
+  icon: "i-simple-icons-linkedin",
+  to: "https://www.linkedin.com/company/cslabs-namur",
+  ariaLabel: "LinkedIn",
+}, {
+  icon: "i-simple-icons-instagram",
+  to: "https://www.instagram.com/cslabs_namur/",
+  ariaLabel: "Instagram",
+}];
 </script>
 
 <template>
@@ -82,7 +104,19 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
   </UMain>
 
   <UFooter>
+    <template #left>
+      <span class="text-muted text-sm">Publié sous
+        <a href="https://opensource.org/license/bsd-3-clause" target="_blank"
+           class="text-highlighted">Licence BSD-3</a>
+      </span>
+    </template>
+
     <UNavigationMenu :items="footerItems"/>
+
+    <template #right>
+      <UButton v-for="logo in footerLogos" :key="logo.ariaLabel" :icon="logo.icon" :to="logo.to" :target="logo.target"
+               variant="ghost" color="neutral" :aria-label="logo.ariaLabel"/>
+    </template>
   </UFooter>
 </template>
 

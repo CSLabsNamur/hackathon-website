@@ -39,6 +39,13 @@ const links: NavigationMenuItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
+}, {
+  label: "Soumissions",
+  icon: "i-lucide-file-text",
+  to: "/admin/submissions",
+  onSelect: () => {
+    open.value = false;
+  },
 }], [{
   label: "Retour au site",
   icon: "i-lucide-arrow-left-circle",

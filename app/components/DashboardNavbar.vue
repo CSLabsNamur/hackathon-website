@@ -8,9 +8,9 @@ defineProps<{ title: string; }>();
       <UDashboardSidebarCollapse/>
     </template>
     <template #right>
-      <UColorModeButton/>
-      <USeparator v-if="$slots.right" orientation="vertical" class="h-(--ui-header-height) py-5"/>
       <slot name="right"/>
+      <USeparator v-if="$slots.right" orientation="vertical" class="h-(--ui-header-height) py-5"/>
+      <UColorModeButton/>
     </template>
   </UDashboardNavbar>
 </template>

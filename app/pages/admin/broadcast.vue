@@ -70,11 +70,7 @@ async function onError(event: FormErrorEvent) {
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Annonce">
-        <template #leading>
-          <UDashboardSidebarCollapse/>
-        </template>
-      </UDashboardNavbar>
+      <DashboardNavbar title="Annonce"/>
     </template>
     <template #body>
       <UContainer class="pb-6 md:pb-8">
@@ -84,7 +80,7 @@ async function onError(event: FormErrorEvent) {
                  id="broadcast-form">
             <UFormField label="Destinataires" name="recipients" required>
               <URadioGroup v-model="state.recipients" :items="recipientsItems"
-                           orientation="horizontal" variant="table">
+                           :orientation="isLargeScreen ? 'horizontal' : 'vertical'" variant="table">
                 <template #label="{item}">
                   <div class="flex justify-center items-center gap-2">
                     {{ item.label }}

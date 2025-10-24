@@ -33,11 +33,7 @@ const columns: TableColumn<Team>[] = [
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Autres Équipes">
-        <template #leading>
-          <UDashboardSidebarCollapse/>
-        </template>
-      </UDashboardNavbar>
+      <DashboardNavbar title="Autres Équipes"/>
     </template>
     <template #body>
       <UContainer>
