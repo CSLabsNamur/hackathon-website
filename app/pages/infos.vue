@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TimelineItem } from "@nuxt/ui";
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
 
 const {copy} = useClipboard();
@@ -42,70 +41,112 @@ const amenities: PageFeatureProps[] = [
   </UPageHero>
 
   <UContainer class="pb-8">
-    <UPageGrid class="gap-4 md:gap-6">
-      <UPageCard title="Lieu" icon="i-lucide-map-pinned">
-        <div class="rounded-lg overflow-hidden border border-gray-200/50 dark:border-gray-800/50">
-          <iframe
-              src="https://www.openstreetmap.org/export/embed.html?bbox=4.855873882770539%2C50.46505796929186%2C4.859414398670197%2C50.46686773266524&amp;layer=mapnik&amp;marker=50.46596285963623%2C4.857644140720367"
-              class="w-full aspect-video" loading="lazy" referrerpolicy="no-referrer-when-downgrade"/>
-        </div>
-
+    <UPageGrid class="gap-6 md:gap-8">
+      <!-- Emplacement -->
+      <UPageCard title="Lieu de l'événement" icon="i-lucide-map-pinned" :ui="{description: 'mt-5'}">
         <template #description>
-          <div class="space-y-1">
-            <p>{{ fullAddress[0] }}</p>
-            <p>{{ fullAddress[1] }}</p>
-          </div>
-        </template>
+          <div class="grid gap-4">
+            <div class="flex gap-2.5">
+              <UIcon name="i-lucide-university" class="size-4 text-primary mt-0.5 shrink-0"/>
+              <div class="text-sm leading-relaxed">
+                <p class="font-medium text-highlighted">{{ fullAddress[0] }}</p>
+                <p class="text-muted">{{ fullAddress[1] }}</p>
+              </div>
+            </div>
 
-        <template #footer>
-          <div class="flex flex-wrap gap-2">
-            <UButton target="_blank" icon="i-lucide-navigation" color="primary">
-              Itinéraire
-            </UButton>
-            <UButton variant="soft" color="neutral" icon="i-lucide-copy" @click="copyAddress">
-              Copier l'adresse
-            </UButton>
+            <div class="rounded-xl overflow-hidden border border-default shadow-sm">
+              <iframe
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=4.855873882770539%2C50.46505796929186%2C4.859414398670197%2C50.46686773266524&amp;layer=mapnik&amp;marker=50.46596285963623%2C4.857644140720367"
+                  class="w-full aspect-video"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <UButton class="justify-center" color="primary" icon="i-lucide-navigation" variant="solid">
+                Itinéraire
+              </UButton>
+              <UButton variant="soft" color="neutral" icon="i-lucide-copy" @click="copyAddress"
+                       class="justify-center">
+                Copier l'adresse
+              </UButton>
+            </div>
           </div>
         </template>
       </UPageCard>
 
-      <UPageCard title="Date" icon="i-lucide-calendar-days"
-                 description="Les horaires détaillés seront communiqués sur place.">
-        <div class="grid grid-rows-2 gap-2">
-          <UCard :ui="{ body: 'p-3' }" class="bg-primary-50/60 dark:bg-primary-900/20">
-            <template #header>
-              <UIcon name="i-lucide-clock-8" class="mt-0.5 text-primary-600"/>
-              Début
-            </template>
-            <p class="font-medium">{{ $dayjs(eventDateStart).format("DD MMMM YYYY") }}</p>
-          </UCard>
+      <!-- Date -->
+      <UPageCard title="Dates de l'événement" icon="i-lucide-calendar-days" :ui="{description: 'mt-5.5'}">
+        <template #description>
+          <div class="grid gap-4">
+            <div class="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+              <div class="flex items-center justify-center size-12 rounded-lg bg-primary/10 shrink-0">
+                <UIcon name="i-lucide-calendar-check" class="size-6 text-primary"/>
+              </div>
+              <div class="flex-1">
+                <p class="text-xs font-medium text-muted uppercase tracking-wide">Début</p>
+                <p class="text-lg font-semibold text-highlighted">{{
+                    $dayjs(eventDateStart).format("DD MMMM YYYY")
+                  }}</p>
+              </div>
+            </div>
 
-          <UCard :ui="{ body: 'p-3' }" class="bg-primary-50/60 dark:bg-primary-900/20">
-            <template #header>
-              <UIcon name="i-lucide-clock-8" class="mt-0.5 text-primary-600"/>
-              Fin
-            </template>
-            <p class="font-medium">{{ $dayjs(eventDateEnd).format("DD MMMM YYYY") }}</p>
-          </UCard>
-        </div>
+            <div class="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+              <div class="flex items-center justify-center size-12 rounded-lg bg-primary/10 shrink-0">
+                <UIcon name="i-lucide-calendar-x" class="size-6 text-primary"/>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-muted uppercase tracking-wide">Fin</p>
+                <p class="text-lg font-semibold text-highlighted">{{ $dayjs(eventDateEnd).format("DD MMMM YYYY") }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2 p-3 rounded-lg bg-elevated">
+              <UIcon name="i-lucide-info" class="size-4 text-primary mt-0.5 shrink-0"/>
+              <p class="text-xs text-muted leading-relaxed">
+                Les horaires détaillés seront communiqués sur place le jour de l'événement.
+              </p>
+            </div>
+          </div>
+        </template>
       </UPageCard>
 
-      <UPageCard title="Contacts" icon="i-lucide-mail">
+      <!-- Contacts -->
+      <UPageCard title="Besoin d'aide ?" icon="i-lucide-message-circle" :ui="{description: 'mt-5'}">
         <template #description>
-          <div class="space-y-3">
-            <p>N'hésite pas à nous contacter pour toute question !</p>
-            <div class="grid grid-cols-1 lg:grid-cols-3 place-items-start lg:place-items-center max-lg:gap-2">
-              <UButton to="https://www.facebook.com/ComputerScienceLabs/" target="_blank"
-                       icon="i-simple-icons-facebook" size="lg">
-                Facebook
-              </UButton>
-              <UButton to="mailto:event@cslabs.be" icon="i-lucide-at-sign" color="neutral" variant="soft" size="lg">
-                Mail
-              </UButton>
-              <UButton to="https://discord.gg/Jf2Dht8" target="_blank" icon="i-simple-icons-discord" color="secondary"
-                       size="lg">
-                Discord
-              </UButton>
+          <div class="grid gap-4">
+            <p class="text-sm text-muted">
+              Notre équipe est là pour répondre à toutes vos questions avant et pendant l'événement.
+            </p>
+
+            <div class="grid gap-5">
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-elevated">
+                <div class="flex items-center justify-center size-10 rounded-lg bg-neutral/10 shrink-0">
+                  <UIcon name="i-lucide-at-sign" class="size-5 text-neutral"/>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-muted">Email</p>
+                  <a href="mailto:event@cslabs.be"
+                     class="text-sm font-medium text-highlighted hover:text-primary transition-colors">
+                    event@cslabs.be
+                  </a>
+                </div>
+              </div>
+
+              <div class="grid gap-2">
+                <p class="text-xs font-medium text-muted uppercase tracking-wide">Réseaux sociaux</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <UButton to="https://www.facebook.com/ComputerScienceLabs/" target="_blank"
+                           icon="i-simple-icons-facebook" variant="soft" class="flex-1 justify-center" :ui="{base: 'p-2.5'}">
+                    Facebook
+                  </UButton>
+                  <UButton to="https://discord.gg/Jf2Dht8" target="_blank" icon="i-simple-icons-discord"
+                           color="secondary" variant="soft" class="flex-1 justify-center" :ui="{base: 'p-2.5'}">
+                    Discord
+                  </UButton>
+                </div>
+              </div>
             </div>
           </div>
         </template>
