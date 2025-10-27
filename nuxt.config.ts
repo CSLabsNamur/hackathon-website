@@ -45,7 +45,7 @@ export default defineNuxtConfig({
     locales: ["fr"],
     defaultLocale: "fr",
     defaultTimezone: "Europe/Brussels",
-    plugins: ["timezone", "utc", "duration", "isBetween"],
+    plugins: ["timezone", "utc", "duration", "isBetween", "relativeTime"],
   },
 
   echarts: {

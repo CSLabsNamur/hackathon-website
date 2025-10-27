@@ -33,57 +33,6 @@ const amenities: PageFeatureProps[] = [
     description: "Accès aux installations de l'Université",
   },
 ];
-
-const timeline: TimelineItem[] = [
-  {
-    title: "Accueil & installation",
-    description: "Récupération du badge et installation du matériel.",
-    icon: "i-lucide-sparkles",
-    date: "Vendredi 17h30",
-  },
-  {
-    title: "Cérémonie d'ouverture",
-    description: "Présentation du thème et formation des équipes.",
-    icon: "i-lucide-rocket",
-    date: "Vendredi 18h",
-  },
-  {
-    title: "Activation des neurones",
-    description: "Conception, code, tests… la nuit aussi pour les plus motivés.",
-    icon: "i-lucide-moon-star",
-    date: "Vendredi 19h30 - Dimanche matin",
-  },
-  {
-    title: "Présentations intermédiaires aux coachs",
-    description: "Feedbacks des coachs pour orienter le développement.",
-    icon: "i-lucide-clipboard-list",
-    date: "Samedi fin d'après‑midi",
-  },
-  {
-    title: "Démonstration de la partie technique des projets",
-    description: "Préparation du pitch et démonstrations.",
-    icon: "i-lucide-presentation",
-    date: "Dimanche 12h",
-  },
-  {
-    title: "Pitch final devant le jury",
-    description: "Présentation des projets aux membres du jury.",
-    icon: "i-lucide-microscope",
-    date: "Dimanche 14h",
-  },
-  {
-    title: "Cérémonie de clôture & remise des prix",
-    description: "Annonce des lauréats et remise des prix.",
-    icon: "i-lucide-award",
-    date: "Dimanche 17h",
-  },
-  {
-    title: "Cocktail de fin",
-    description: "Un dernier moment convivial pour clôturer l'événement.",
-    icon: "i-lucide-martini",
-    date: "Dimanche 18h",
-  },
-];
 </script>
 
 <template>
@@ -175,7 +124,9 @@ const timeline: TimelineItem[] = [
 
     <UPageSection title="Programme" icon="i-lucide-calendar-check" description="Aperçu du week‑end (indicatif)"
                   :ui="{container: '!py-4 sm:!py-6 lg:!py-8'}">
-      <UTimeline :items="timeline"/>
+      <div class="grid justify-center">
+        <UTimeline :items="timeline"/>
+      </div>
     </UPageSection>
 
     <UPageSection :ui="{container: 'px-0 !py-4 sm:!py-6 lg:!py-8'}">

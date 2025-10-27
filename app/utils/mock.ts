@@ -1,5 +1,6 @@
 import { computed, reactive } from "vue";
 import type { AvatarProps } from "#ui/components/Avatar.vue";
+import type { TimelineItem } from "@nuxt/ui";
 
 const dayjs = useDayjs();
 
@@ -236,6 +237,18 @@ export const teams: Team[] = [
   },
 ];
 
+export const isTeamValid = computed(() => (teamId: string) => {
+  const team = teams.find(t => t.id === teamId);
+  if (!team) {
+    throw new Error("Team not found");
+  }
+  return team.members.every(member => {
+    const participant = participants.find(u => u.id === member);
+    const caution = participant?.caution;
+    return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
+  });
+});
+
 // ==== Document Submission ====
 interface SubmissionBase {
   id: string;
@@ -261,7 +274,7 @@ export type Submission = {
   skipped: true;
 };
 
-export const submissionRequests = ref<SubmissionRequest[] >([
+export const submissionRequests = ref<SubmissionRequest[]>([
   {
     id: "sub-001",
     type: "file",
@@ -282,3 +295,84 @@ export const submissionRequests = ref<SubmissionRequest[] >([
     createdAt: dayjs("2025-11-01T00:00:00Z").valueOf(),
   },
 ]);
+
+// ==== Program Schedule ====
+type ScheduleItem = TimelineItem & ({
+  exactDateTime?: [number, number];
+  special?: false;
+} | {
+  exactDateTime: [number, number];
+  special: true
+});
+type ScheduleSpecialItem = ScheduleItem & { special: true };
+
+// TODO: Add a check to ensure no overlapping exactDateTime ranges when the event is noted as special.
+export const timeline: ScheduleItem[] = [
+  {
+    title: "Accueil & installation",
+    description: "Récupération du badge et installation du matériel.",
+    icon: "i-lucide-sparkles",
+    date: "Vendredi 17h30",
+    exactDateTime: [dayjs("2026-03-27T17:30:00Z").valueOf(), dayjs("2026-03-27T18:00:00Z").valueOf()],
+  },
+  {
+    title: "Cérémonie d'ouverture",
+    description: "Présentation du thème et formation des équipes.",
+    icon: "i-lucide-rocket",
+    date: "Vendredi 18h",
+    exactDateTime: [dayjs("2026-03-27T18:00:00Z").valueOf(), dayjs("2026-03-27T19:30:00Z").valueOf()],
+    special: true,
+  },
+  {
+    title: "Activation des neurones",
+    description: "Conception, code, tests… la nuit aussi pour les plus motivés.",
+    icon: "i-lucide-moon-star",
+    date: "Vendredi 19h30 - Dimanche matin",
+    exactDateTime: [dayjs("2026-03-27T19:30:00Z").valueOf(), dayjs("2026-03-29T12:00:00Z").valueOf()],
+  },
+  {
+    title: "Présentations intermédiaires aux coachs",
+    description: "Feedbacks des coachs pour orienter le développement.",
+    icon: "i-lucide-clipboard-list",
+    date: "Samedi fin d'après‑midi",
+    exactDateTime: [dayjs("2026-03-28T16:00:00Z").valueOf(), dayjs("2026-03-28T18:00:00Z").valueOf()],
+  },
+  {
+    title: "Démonstration de la partie technique des projets",
+    description: "Préparation du pitch et démonstrations.",
+    icon: "i-lucide-presentation",
+    date: "Dimanche 12h",
+    exactDateTime: [dayjs("2026-03-29T12:00:00Z").valueOf(), dayjs("2026-03-29T14:00:00Z").valueOf()],
+    special: true,
+  },
+  {
+    title: "Pitch final devant le jury",
+    description: "Présentation des projets aux membres du jury.",
+    icon: "i-lucide-microscope",
+    date: "Dimanche 14h",
+    exactDateTime: [dayjs("2026-03-29T14:00:00Z").valueOf(), dayjs("2026-03-29T16:00:00Z").valueOf()],
+    special: true,
+  },
+  {
+    title: "Cérémonie de clôture & remise des prix",
+    description: "Annonce des lauréats et remise des prix.",
+    icon: "i-lucide-award",
+    date: "Dimanche 17h",
+    exactDateTime: [dayjs("2026-03-29T16:00:00Z").valueOf(), dayjs("2026-03-29T17:00:00Z").valueOf()],
+    special: true,
+  },
+  {
+    title: "Cocktail de fin",
+    description: "Un dernier moment convivial pour clôturer l'événement.",
+    icon: "i-lucide-martini",
+    date: "Dimanche 18h",
+    exactDateTime: [dayjs("2026-03-29T18:00:00Z").valueOf(), dayjs("2026-03-29T19:00:00Z").valueOf()],
+    special: true,
+  },
+];
+
+export const mockCurrentDateTime = dayjs("2026-03-29T16:31:00Z");
+
+export const nextSpecialEvent = computed<ScheduleSpecialItem | null>(() => {
+  return timeline.find(item => item.special && item.exactDateTime && !dayjs(item.exactDateTime[0]).isBefore(mockCurrentDateTime) && mockCurrentDateTime.isAfter(dayjs(item.exactDateTime[0]).subtract(2, "hour"))) as ScheduleSpecialItem || null;
+});
