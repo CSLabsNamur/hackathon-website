@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
 import type { ButtonProps } from "#ui/components/Button.vue";
+import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import type { Row } from "@tanstack/vue-table";
+import { RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
   layout: "user-dashboard",
 });
 
 const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
 
-//const dayjs = useDayjs();
-//const overlay = useOverlay();
+const overlay = useOverlay();
+const toast = useToast();
 const {copy} = useClipboard();
 
-//const editModal = overlay.create(ParticipantEditModal);
+const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
 const columns: TableColumn<Participant>[] = [
   {
@@ -61,6 +65,7 @@ const columns: TableColumn<Participant>[] = [
     header: "Régime alimentaire",
     accessorKey: "diet",
   },
+  //TODO: Profile button?
   {
     header: "Profil",
     cell: ({row}) => {
@@ -72,51 +77,46 @@ const columns: TableColumn<Participant>[] = [
       });
     },
   },
-  //{
-  //  id: "actions",
-  //  cell: ({row}) => {
-  //    return h(
-  //        "div",
-  //        {class: "text-right"},
-  //        h(
-  //            UDropdownMenu,
-  //            {
-  //              content: {align: "end"},
-  //              items: getRowItems(row),
-  //              "aria-label": `Actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
-  //            },
-  //            () => h(UButton, {
-  //              icon: "i-lucide-ellipsis-vertical",
-  //              color: "neutral",
-  //              variant: "ghost",
-  //              class: "ml-auto",
-  //              "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
-  //            }),
-  //        ),
-  //    );
-  //  },
-  //},
+  {
+    id: "actions",
+    cell: ({row}) => {
+      return h(
+          "div",
+          {class: "text-right"},
+          h(
+              UDropdownMenu,
+              {
+                content: {align: "end"},
+                items: getRowItems(row),
+                "aria-label": `Actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+              },
+              () => h(UButton, {
+                icon: "i-lucide-ellipsis-vertical",
+                color: "neutral",
+                variant: "ghost",
+                class: "ml-auto",
+                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+              }),
+          ),
+      );
+    },
+  },
 ];
 
 // TODO: Do we allow participants to remove others from their team?
-//function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
-//  return [
-//    {
-//      type: "label",
-//      label: "Actions",
-//    },
-//    {
-//      label: "Voir le profil",
-//      icon: "i-lucide-user",
-//    },
-//    {
-//      type: "label",
-//      label: "Administration",
-//    },
-//  ];
-//}
+function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+  return [
+    {
+      label: "Retirer de l'équipe",
+      icon: "i-lucide-user-minus",
+      onClick: () => {
+        removeMemberModal.open({participant: row.original});
+      },
+    },
+  ];
+}
 
-const teamMembers = useArrayFilter(participants, (p) => currentTeam.value?.members.includes(p.id) && p.id !== currentParticipant.id);
+const teamMembers = useArrayFilter(toRef(participants), (p) => currentTeam.value?.members.includes(p.id) && p.id !== currentParticipant.id);
 
 const noMembersLinks: ButtonProps[] = [
   {
@@ -125,6 +125,15 @@ const noMembersLinks: ButtonProps[] = [
     //onClick: () => {}
   },
 ];
+
+const copyToken = () => {
+  copy(currentTeam.value!.token);
+  toast.add({
+    title: "Code d'invitation copié",
+    description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers.",
+    color: "success",
+  });
+};
 </script>
 
 <template>
@@ -151,7 +160,7 @@ const noMembersLinks: ButtonProps[] = [
                   <div class="flex items-center gap-2">
                     <p class="font-mono text-lg">{{ currentTeam.token }}</p>
                     <UButton variant="soft" color="neutral" icon="i-lucide-copy" size="sm"
-                             @click="copy(currentTeam.token)">
+                             @click="copyToken">
                       Copier
                     </UButton>
                   </div>

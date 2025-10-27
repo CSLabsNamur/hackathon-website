@@ -9,27 +9,27 @@ const {eventDateEnd} = useRuntimeConfig().public;
 
 const stats = computedWithControl(() => participants, () => [{
   title: "Nombre d'équipes",
-  value: teams.length,
+  value: teams.value.length,
   icon: "i-lucide-users",
 }, {
   title: "Dernière équipe créée",
-  value: teams.length > 0 ? teams.toSorted((a, b) => b.createdAt - a.createdAt)[0]!.name : "Aucune équipe",
+  value: teams.value.length > 0 ? teams.value.toSorted((a, b) => b.createdAt - a.createdAt)[0]!.name : "Aucune équipe",
   icon: "i-lucide-clock",
 }, {
   title: "Teams valides",
-  value: `${teams.filter(team => team.members.every(member => {
-    const participant = participants.find(u => u.id === member);
+  value: `${teams.value.filter(team => team.members.every(member => {
+    const participant = participants.value.find(u => u.id === member);
     const caution = participant?.caution;
     return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
-  })).length} / ${teams.length}`,
+  })).length} / ${teams.value.length}`,
   icon: "i-lucide-wallet",
   condition: dayjs().isBefore(dayjs(eventDateEnd)),
 }, {
   title: "Teams remboursées",
-  value: `${teams.filter(team => team.members.every(member => {
-    const caution = participants.find(participant => participant.id === member)?.caution;
+  value: `${teams.value.filter(team => team.members.every(member => {
+    const caution = participants.value.find(participant => participant.id === member)?.caution;
     return caution === CautionStatus.Refunded || caution === CautionStatus.Waived;
-  })).length} / ${teams.length}`,
+  })).length} / ${teams.value.length}`,
   icon: "i-lucide-currency-euro",
   condition: dayjs().isAfter(dayjs(eventDateEnd)),
 }], {deep: true});

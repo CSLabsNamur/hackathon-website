@@ -31,7 +31,7 @@ const teamIssues = computed<TeamIssue[]>(() => {
   }
   // Check if all members have submitted every required submission
   if (!currentTeam.value!.members.every((member) => {
-    const participant = participants.find(p => p.id === member)!;
+    const participant = participants.value.find(p => p.id === member)!;
     return submissionRequests.value.every((request) => !request.required || participant.submissions.some((submission) => submission.requestId === request.id));
   })) {
     issues.push({
@@ -64,20 +64,20 @@ const colorsSeverityMap = (severity: TeamIssueSeverity) => {
   <UCard>
     <div class="grid gap-3 place-items-center justify-items-center">
       <UIcon :name="iconsSeverityMap[highestSeverity]" class="text-6xl" :class="colorsSeverityMap(highestSeverity)"/>
-      <p class="text-center">
+      <div class="text-center">
         <template v-if="teamIssues.length === 0">
-          <span class="text-muted">Votre équipe est en bonne santé ! 🎉</span>
+          <p class="text-muted">Votre équipe est en bonne santé ! 🎉</p>
         </template>
         <template v-else>
           <div class="flex flex-col gap-0.5">
             <template v-for="(issue, index) in teamIssues" :key="`issue-${index}`">
-            <span :class="colorsSeverityMap(issue.severity)">
+            <p :class="colorsSeverityMap(issue.severity)">
               {{ issue.message }}
-            </span>
+            </p>
             </template>
           </div>
         </template>
-      </p>
+      </div>
     </div>
   </UCard>
 </template>

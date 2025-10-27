@@ -50,7 +50,7 @@ const columns: TableColumn<Participant>[] = [
   {
     header: "Équipe",
     accessorFn: (row: Participant) => {
-      return row.team ? teams.find(t => t.id === row.team)?.name : "Aucune";
+      return row.team ? teams.value.find(t => t.id === row.team)?.name : "Aucune";
     },
   },
   {

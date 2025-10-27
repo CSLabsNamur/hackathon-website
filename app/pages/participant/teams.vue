@@ -24,7 +24,7 @@ const columns: TableColumn<Team>[] = [
   {
     header: "Membres",
     accessorFn: (row: Team) => {
-      return participants.filter((u) => u.team === row.id).length;
+      return participants.value.filter((u) => u.team === row.id).length;
     },
   },
 ];
@@ -33,7 +33,7 @@ const columns: TableColumn<Team>[] = [
 <template>
   <UDashboardPanel>
     <template #header>
-      <DashboardNavbar title="Autres Équipes"/>
+      <DashboardNavbar title="Autres équipes"/>
     </template>
     <template #body>
       <UContainer>

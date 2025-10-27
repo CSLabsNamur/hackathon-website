@@ -37,7 +37,7 @@ const columns: TableColumn<Team>[] = [
     cell: ({row}) => {
       const members = row.original.members;
       const valid = members.every(member => {
-        const participant = participants.find(u => u.id === member);
+        const participant = participants.value.find(u => u.id === member);
         const caution = participant?.caution;
         return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
       });
@@ -51,7 +51,7 @@ const columns: TableColumn<Team>[] = [
   {
     header: "Membres",
     accessorFn: (row: Team) => {
-      return participants.filter((u) => u.team === row.id).length;
+      return participants.value.filter((u) => u.team === row.id).length;
     },
   },
   {

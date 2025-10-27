@@ -9,7 +9,7 @@ type RegistrationTimelineData = {
 const participantChartData = computed<RegistrationTimelineData[]>(() => {
   const monthMap = new Map<string, number>();
 
-  participants.forEach(participant => {
+  participants.value.forEach(participant => {
     const month = dayjs(participant.createdAt).format("YYYY-MM");
     monthMap.set(month, (monthMap.get(month) || 0) + 1);
   });

@@ -43,7 +43,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       token: Math.random().toString(36).substring(2, 15),
       createdAt: dayjs().valueOf(),
     };
-    teams.push(newTeam);
+    teams.value.push(newTeam);
     currentParticipant.team = newTeam.id;
 
     console.log(event.data);

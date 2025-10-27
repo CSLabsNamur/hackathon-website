@@ -5,11 +5,11 @@ type TeamFormationData = {
   value: number;
 }
 
-const participantWithTeamCount = participants.filter(participant => participant.team).length;
+const participantWithTeamCount = participants.value.filter(participant => participant.team).length;
 
 const teamFormationData: TeamFormationData[] = [
   {name: "En équipe", color: "#0e8d62", value: participantWithTeamCount},
-  {name: "Solo", color: "#ea6f1c", value: participants.length - participantWithTeamCount},
+  {name: "Solo", color: "#ea6f1c", value: participants.value.length - participantWithTeamCount},
 ];
 
 const options: ECOption = {

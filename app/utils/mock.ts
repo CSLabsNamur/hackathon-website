@@ -4,6 +4,7 @@ import type { TimelineItem } from "@nuxt/ui";
 
 const dayjs = useDayjs();
 
+//region ==== Users & Teams ====
 export type User = {
   name: string;
   email: string;
@@ -49,7 +50,7 @@ export enum CautionStatus {
   Waived = "Exonéré",
 }
 
-export const participants: Participant[] = reactive([
+export const participants = ref<Participant[]>([
   {
     id: "u1-0a1b",
     email: "aline@example.com",
@@ -180,12 +181,12 @@ export const participants: Participant[] = reactive([
   },
 ]);
 
-export const currentParticipant = participants[0]!;
+export const currentParticipant = participants.value[0]!;
 export const currentTeam = computed<Team | null>(() => {
   if (!currentParticipant.team) {
     return null;
   }
-  return teams.find(team => team.id === currentParticipant.team) || null;
+  return teams.value.find(team => team.id === currentParticipant.team) || null;
 });
 
 export type Team = {
@@ -198,7 +199,7 @@ export type Team = {
   createdAt: number;
 }
 
-export const teams: Team[] = [
+export const teams = ref<Team[]>([
   {
     id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     name: "Team Alpha",
@@ -235,21 +236,22 @@ export const teams: Team[] = [
     members: ["u4-0a4b", "u5-0a5b", "u6-0a6b"],
     createdAt: 1677000000000,
   },
-];
+]);
 
 export const isTeamValid = computed(() => (teamId: string) => {
-  const team = teams.find(t => t.id === teamId);
+  const team = teams.value.find(t => t.id === teamId);
   if (!team) {
     throw new Error("Team not found");
   }
   return team.members.every(member => {
-    const participant = participants.find(u => u.id === member);
+    const participant = participants.value.find(u => u.id === member);
     const caution = participant?.caution;
     return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
   });
 });
+//endregion
 
-// ==== Document Submission ====
+//region ==== Document Submission ====
 interface SubmissionBase {
   id: string;
   title: string;
@@ -295,8 +297,9 @@ export const submissionRequests = ref<SubmissionRequest[]>([
     createdAt: dayjs("2025-11-01T00:00:00Z").valueOf(),
   },
 ]);
+//endregion
 
-// ==== Program Schedule ====
+//region ==== Program Schedule ====
 type ScheduleItem = TimelineItem & ({
   exactDateTime?: [number, number];
   special?: false;
@@ -376,3 +379,4 @@ export const mockCurrentDateTime = dayjs("2026-03-29T16:31:00Z");
 export const nextSpecialEvent = computed<ScheduleSpecialItem | null>(() => {
   return timeline.find(item => item.special && item.exactDateTime && !dayjs(item.exactDateTime[0]).isBefore(mockCurrentDateTime) && mockCurrentDateTime.isAfter(dayjs(item.exactDateTime[0]).subtract(2, "hour"))) as ScheduleSpecialItem || null;
 });
+//endregion

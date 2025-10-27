@@ -22,7 +22,7 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
-    const team = teams.find(t => t.token === event.data.token);
+    const team = teams.value.find(t => t.token === event.data.token);
     if (team) {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
