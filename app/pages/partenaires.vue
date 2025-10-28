@@ -4,7 +4,7 @@
   </UPageHero>
 
   <div class="gap-2 lg:columns-2 px-8">
-    <UPageCard v-for="partner in partners" :key="partner.name"
+    <UPageCard v-for="(partner, index) in partners" :key="`partner-${index}`"
                class="break-inside-avoid mb-2 inline-block w-full p-2"
                :title="partner.name"
                draggable="false"
@@ -20,7 +20,7 @@
       </div>
 
       <template #description v-if="partner.description">
-        <MDC :value="partner.description"/>
+        <MDC :value="partner.description" />
       </template>
     </UPageCard>
   </div>

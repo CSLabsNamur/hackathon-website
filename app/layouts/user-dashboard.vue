@@ -71,7 +71,7 @@ const groups = [{
 <template>
   <UDashboardGroup unit="rem">
     <UDashboardSidebar collapsible resizable class="bg-elevated/25" :ui="{footer: 'lg:border-t lg:border-default'}">
-      <template #header="{collapsed}">
+      <template #header>
         <div class="mx-auto">
           <NuxtLink to="/participant">
             <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>

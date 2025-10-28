@@ -25,7 +25,6 @@ const links: ButtonProps[] = [
     label: "On en discute ?",
     to: "https://www.trakk.be/services/linkube/",
     icon: "i-lucide-external-link",
-    color: "neutral",
     external: true,
     target: "_blank",
     trailing: true

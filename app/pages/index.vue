@@ -40,7 +40,7 @@ const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = u
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <!-- TODO: get attributes from database/env variables -->
     <PageHero v-if="teaserEnabled"
-              title="Le Hackathon se prépare !" subtitle="👀"
+              title="Le Hackathon se prépare !"
               :content="`Notez déjà la date ${formatDateRange(eventDateStart, eventDateEnd, true, false)} dans vos agendas !`"
               :images="organizers"/>
     <PageHero v-else
