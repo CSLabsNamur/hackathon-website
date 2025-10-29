@@ -80,7 +80,7 @@ async function onError(event: FormErrorEvent) {
                  id="broadcast-form">
             <UFormField label="Destinataires" name="recipients" required>
               <URadioGroup v-model="state.recipients" :items="recipientsItems"
-                           :orientation="isLargeScreen ? 'horizontal' : 'vertical'" variant="table">
+                           :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
                 <template #label="{item}">
                   <div class="flex justify-center items-center gap-2">
                     {{ item.label }}

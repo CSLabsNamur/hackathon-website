@@ -17,6 +17,18 @@
   --color-cslabs-950: #052920;
 }
 
+@theme {
+  --animate-wiggle: wiggle .3s ease-in-out infinite;
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(-.55deg);
+    }
+    50% {
+      transform: rotate(.55deg);
+    }
+  }
+}
+
 html, body, #__nuxt, #__nuxt > div:first-child, #__layout {
   overflow-x: clip;
 }

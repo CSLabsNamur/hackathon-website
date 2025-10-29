@@ -1,4 +1,4 @@
-import { computed, reactive } from "vue";
+import { computed } from "vue";
 import type { AvatarProps } from "#ui/components/Avatar.vue";
 import type { TimelineItem } from "@nuxt/ui";
 
@@ -379,4 +379,108 @@ export const mockCurrentDateTime = dayjs("2026-03-29T16:31:00Z");
 export const nextSpecialEvent = computed<ScheduleSpecialItem | null>(() => {
   return timeline.find(item => item.special && item.exactDateTime && !dayjs(item.exactDateTime[0]).isBefore(mockCurrentDateTime) && mockCurrentDateTime.isAfter(dayjs(item.exactDateTime[0]).subtract(2, "hour"))) as ScheduleSpecialItem || null;
 });
+//endregion
+
+//region ==== Room Assignments ====
+export type Room = {
+  id: string;
+  name: string;
+  teams: string[];
+}
+
+export const rooms = ref<Room[]>([
+  {
+    id: "info-i30",
+    name: "Salle I30",
+    teams: [],
+  },
+  {
+    id: "info-i31",
+    name: "Salle I31",
+    teams: ["f47ac10b-58cc-4372-a567-0e02b2c3d479", "a3c9f1d2-6b7e-4f2a-9c8d-1234567890ab"],
+  },
+  {
+    id: "info-i32",
+    name: "Salle I32",
+    teams: ["d2e4b7c8-1111-2222-3333-abcdefabcdef"],
+  },
+  {
+    id: "info-i33",
+    name: "Salle I33",
+    teams: ["9b8a7c6d-5555-6666-7777-0123456789ab"],
+  },
+  {
+    id: "info-open-space-3",
+    name: "Salle Open Space",
+    teams: [],
+  },
+]);
+//endregion
+
+//region ==== Assets & Resources ====
+//export type Asset = {
+//  id: string;
+//  name: string;
+//  owner: string;
+//  totalQuantity: number;
+//  locations: AssetRoom[];
+//}
+//
+//export type AssetRoom = {
+//  id: string;
+//  asset: string;
+//  room: string;
+//  quantity: number;
+//}
+//
+//export const assets = ref<Asset[]>([
+//  {
+//    id: "asset-001",
+//    name: "Multiprise 6 prises",
+//    owner: "CSLabs",
+//    totalQuantity: 2,
+//    locations: [],
+//  },
+//  {
+//    id: "asset-002",
+//    name: "Câble HDMI",
+//    owner: "CSLabs",
+//    totalQuantity: 3,
+//    locations: [],
+//  },
+//  {
+//    id: "asset-003",
+//    name: "Bobines de rallonges électriques 10m",
+//    owner: "Secrétariat",
+//    totalQuantity: 4,
+//    locations: [],
+//  },
+//]);
+//
+//export const assetRooms = ref<AssetRoom[]>([
+//  {
+//    id: "assetroom-001",
+//    asset: "asset-001",
+//    room: "info-i31",
+//    quantity: 1,
+//  },
+//  {
+//    id: "assetroom-002",
+//    asset: "asset-002",
+//    room: "info-i32",
+//    quantity: 2,
+//  },
+//  {
+//    id: "assetroom-003",
+//    asset: "asset-003",
+//    room: "info-open-space-3",
+//    quantity: 1,
+//  },
+//  {
+//    id: "assetroom-004",
+//    asset: "asset-001",
+//    room: "info-i33",
+//    quantity: 1,
+//  },
+//]);
 //endregion

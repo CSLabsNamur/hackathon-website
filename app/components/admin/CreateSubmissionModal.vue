@@ -103,7 +103,7 @@ async function onError(event: FormErrorEvent) {
              id="create-submission-form">
         <UFormField label="Type de demande" name="type" required>
           <URadioGroup v-model="state.type" :items="typeItems"
-                       :orientation="isLargeScreen ? 'horizontal' : 'vertical'" variant="table">
+                       :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
             <template #label="{item}">
               <div class="flex items-center gap-2">
                 {{ item.label }}

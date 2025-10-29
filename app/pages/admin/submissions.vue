@@ -49,8 +49,8 @@ const columns = computed<TableColumn<SubmissionRequest>[]>(() => [
   {
     header: "Taux de soumission",
     accessorFn: (row: SubmissionRequest) => {
-      const totalParticipants = participants.length;
-      const submissionsCount = participants.flatMap(p => p.submissions).filter((s) => s.requestId === row.id).length;
+      const totalParticipants = participants.value.length;
+      const submissionsCount = participants.value.flatMap(p => p.submissions).filter((s) => s.requestId === row.id).length;
       const rate = totalParticipants === 0 ? 0 : (submissionsCount / totalParticipants) * 100;
       return `${rate.toFixed(2)} %`;
     },
@@ -64,8 +64,8 @@ const columns = computed<TableColumn<SubmissionRequest>[]>(() => [
       <DashboardNavbar title="Demandes de soumissions">
         <template #right>
           <UButton variant="ghost" icon="i-lucide-plus" @click="modal.open()"
-                   :ui="{base: !isLargeScreen ? '!px-1.5' : undefined}">
-            <template v-if="isLargeScreen">Nouvelle demande</template>
+                   :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}">
+            <template v-if="$device.isDesktopOrTablet">Nouvelle demande</template>
           </UButton>
         </template>
       </DashboardNavbar>

@@ -46,6 +46,13 @@ const links: NavigationMenuItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
+}, {
+  label: "Salles",
+  icon: "i-lucide-door-open",
+  to: "/admin/rooms",
+  onSelect: () => {
+    open.value = false;
+  },
 }], [{
   label: "Retour au site",
   icon: "i-lucide-arrow-left-circle",
@@ -53,14 +60,16 @@ const links: NavigationMenuItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
-}, {
-  label: "Aide & Support",
-  icon: "i-lucide-life-buoy",
-  to: "/admin/support",
-  onSelect: () => {
-    open.value = false;
-  },
-}]];
+},
+//{
+//  label: "Aide & Support",
+//  icon: "i-lucide-life-buoy",
+//  to: "/admin/support",
+//  onSelect: () => {
+//    open.value = false;
+//  },
+//}
+]];
 
 const groups = [{
   id: "links",
@@ -72,7 +81,7 @@ const groups = [{
 <template>
   <UDashboardGroup unit="rem">
     <UDashboardSidebar collapsible resizable class="bg-elevated/25" :ui="{footer: 'lg:border-t lg:border-default'}">
-      <template #header="{collapsed}">
+      <template #header>
         <div class="mx-auto">
           <NuxtLink to="/admin">
             <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>

@@ -14,7 +14,14 @@ export default defineNuxtConfig({
     "dayjs-nuxt",
     "@vueuse/nuxt",
     "nuxt-echarts",
+    "@nuxtjs/device",
   ],
+
+  postcss: {
+    plugins: {
+      "postcss-nesting": {}
+    }
+  },
 
   css: ["~/assets/css/main.css"],
   fonts: {
@@ -22,6 +29,11 @@ export default defineNuxtConfig({
   },
   icon: {
     mode: "css",
+  },
+  ui: {
+    experimental: {
+      componentDetection: true,
+    },
   },
 
   runtimeConfig: {
