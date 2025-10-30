@@ -3,6 +3,12 @@
     <PageHero title="Nos partenaires" subtitle="Sans eux, rien ne serait possible !" :images="partners"/>
   </UPageHero>
 
+  <div class="flex justify-center px-8 pb-8">
+    <UButton to="/devenir-partenaire" size="xl" trailing-icon="i-lucide-handshake">
+        Envie de devenir partenaire ?
+    </UButton>
+  </div>
+
   <div class="gap-2 lg:columns-2 px-8">
     <UPageCard v-for="(partner, index) in partners" :key="`partner-${index}`"
                class="break-inside-avoid mb-2 inline-block w-full p-2"

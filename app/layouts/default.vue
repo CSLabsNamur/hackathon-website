@@ -35,6 +35,21 @@ const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
     to: "/plus-loin",
     active: route.path.startsWith("/plus-loin"),
   },
+  {
+    label: "Panels",
+    condition: import.meta.dev,
+    children: [{
+      label: "Admin Panel",
+      to: "/admin",
+      icon: "i-lucide-shield-check",
+      active: route.path.startsWith("/admin"),
+    }, {
+      label: "Participant Panel",
+      to: "/participant",
+      icon: "i-lucide-user-2",
+      active: route.path.startsWith("/participant"),
+    }],
+  },
 ]);
 
 const footerItems = computed<NavigationMenuItem[]>(() => [
@@ -103,7 +118,7 @@ const footerLogos: FooterLogos[] = [{
     <slot/>
   </UMain>
 
-  <UFooter>
+  <UFooter class="mt-4">
     <template #left>
       <span class="text-muted text-sm">Publié sous
         <a href="https://opensource.org/license/bsd-3-clause" target="_blank"

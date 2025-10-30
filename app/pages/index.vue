@@ -118,6 +118,8 @@ const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = u
       </div>
     </UPageSection>
 
-    <RegisterCTA/>
+    <UPageSection :ui="{container: 'px-0 !py-4 sm:!py-6 lg:!py-8'}">
+      <RegisterCTA/>
+    </UPageSection>
   </UContainer>
 </template>

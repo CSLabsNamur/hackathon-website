@@ -40,7 +40,7 @@ const amenities: PageFeatureProps[] = [
               content="Tout ce qu'il faut savoir pour profiter au mieux de l'événement."/>
   </UPageHero>
 
-  <UContainer class="pb-8">
+  <UContainer>
     <UPageGrid class="gap-6 md:gap-8">
       <!-- Emplacement -->
       <UPageCard title="Lieu de l'événement" icon="i-lucide-map-pinned" :ui="{description: 'mt-5'}">
