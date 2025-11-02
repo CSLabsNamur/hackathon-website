@@ -27,12 +27,11 @@ export type Participant = {
   firstName: string;
   lastName: string;
   githubAccount: string | null;
-  linkedinAccount: string | null;
+  linkedInAccount: string | null;
   school: "UNamur" | "Henallux" | "HEAJ" | "UCLouvain" | "ULiège" | "UMons" | "ULB" | "Hors Belgique" | "Autre" | null;
   diet: "Végétarien" | "Vegan" | "Sans gluten" | "Halal" | "Kasher" | "Autre" | null;
   needs: string | null;
   caution: CautionStatus;
-  isAdmin: boolean;
   curriculumVitae: string | null;
   password: string;
   isTeamOwner: boolean;
@@ -56,13 +55,12 @@ export const participants = ref<Participant[]>([
     email: "aline@example.com",
     firstName: "Aline",
     lastName: "Boulanger",
-    githubAccount: "https://github.com/alineBO",
-    linkedinAccount: "https://www.linkedin.com/in/aline-linkedin",
+    githubAccount: "alineBO",
+    linkedInAccount: "aline-linkedin",
     school: "UNamur",
     diet: null,
     needs: null,
     caution: CautionStatus.NotPaid,
-    isAdmin: false,
     curriculumVitae: "/cvs/aline.pdf",
     //curriculumVitae: null,
     password: "password-placeholder",
@@ -79,13 +77,12 @@ export const participants = ref<Participant[]>([
     email: "bob@example.com",
     firstName: "Bob",
     lastName: "Baker",
-    githubAccount: "https://github.com/bobGH",
-    linkedinAccount: null,
+    githubAccount: "bobGH",
+    linkedInAccount: null,
     school: "Henallux",
     diet: "Végétarien",
     needs: null,
     caution: CautionStatus.NotPaid,
-    isAdmin: false,
     curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: false,
@@ -101,12 +98,11 @@ export const participants = ref<Participant[]>([
     firstName: "Carol",
     lastName: "Clark",
     githubAccount: null,
-    linkedinAccount: "https://www.linkedin.com/in/carol-linkedin",
+    linkedInAccount: "carol-linkedin",
     school: "HEAJ",
     diet: "Vegan",
     needs: "Wheelchair access",
     caution: CautionStatus.Paid,
-    isAdmin: false,
     curriculumVitae: "/cvs/carol.pdf",
     password: "password-placeholder",
     isTeamOwner: true, // owner of Team Beta
@@ -121,13 +117,12 @@ export const participants = ref<Participant[]>([
     email: "dan@example.com",
     firstName: "Dan",
     lastName: "Dawson",
-    githubAccount: "https://github.com/danGH",
-    linkedinAccount: null,
+    githubAccount: "danGH",
+    linkedInAccount: null,
     school: null,
     diet: "Sans gluten",
     needs: null,
     caution: CautionStatus.Refunded,
-    isAdmin: false,
     curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: false,
@@ -143,12 +138,11 @@ export const participants = ref<Participant[]>([
     firstName: "Erin",
     lastName: "Edwards",
     githubAccount: null,
-    linkedinAccount: "https://www.linkedin.com/in/erin-linkedin",
+    linkedInAccount: "erin-linkedin",
     school: "UCLouvain",
     diet: null,
     needs: null,
     caution: CautionStatus.Waived,
-    isAdmin: false,
     curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: false,
@@ -163,13 +157,12 @@ export const participants = ref<Participant[]>([
     email: "frank@example.com",
     firstName: "Frank",
     lastName: "Foster",
-    githubAccount: "https://github.com/frankGH",
-    linkedinAccount: null,
+    githubAccount: "frankGH",
+    linkedInAccount: null,
     school: "UMons",
     diet: "Halal",
     needs: null,
     caution: CautionStatus.Paid,
-    isAdmin: false,
     curriculumVitae: null,
     password: "password-placeholder",
     isTeamOwner: false,
@@ -192,7 +185,7 @@ export const currentTeam = computed<Team | null>(() => {
 export type Team = {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   idea?: string;
   token: string;
   members: string[];

@@ -34,7 +34,7 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Compte LinkedIn" icon="i-simple-icons-linkedin">
-                  {{ currentParticipant.linkedinAccount || "Non renseigné" }}
+                  {{ currentParticipant.linkedInAccount || "Non renseigné" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="École / Université" icon="i-lucide-graduation-cap">

@@ -41,7 +41,7 @@ const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = u
     <!-- TODO: get attributes from database/env variables -->
     <PageHero v-if="teaserEnabled"
               title="Le Hackathon se prépare !"
-              :content="`Notez déjà la date ${formatDateRange(eventDateStart, eventDateEnd, true, false)} dans vos agendas !`"
+              :subtitle="`Notez déjà la date ${formatDateRange(eventDateStart, eventDateEnd, true, false)} dans vos agendas !`"
               :images="organizers"/>
     <PageHero v-else
               :title="eventTitle" :subtitle="eventSlogan"

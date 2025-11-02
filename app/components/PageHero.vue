@@ -14,12 +14,12 @@ const {title, subtitle, content, images} = defineProps<{
                     origin-center transition-transform duration-1000 active:[transform:rotateY(180deg)]"/>
     <div class="bg-cslabs-500 h-96" id="hero-background">
       <div class="flex flex-col items-center justify-center h-full text-center px-4">
-        <h1 class="text-4xl md:text-5xl font-bold">{{ title }}</h1>
-        <div v-if="subtitle" class="text-2xl md:text-3xl">{{ subtitle }}</div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-2">{{ title }}</h1>
+        <p v-if="subtitle" class="text-xl md:text-2xl mb-1.5 whitespace-pre-line">{{ subtitle }}</p>
         <p class="text-lg md:text-xl whitespace-pre-line">
           <slot name="content">{{ content }}</slot>
         </p>
-        <div class="flex gap-4 mt-8 overflow-x-scroll no-scrollbar">
+        <div v-if="images" class="flex gap-4 mt-8 overflow-x-scroll">
           <template v-for="image in images" :key="image.name">
             <ImageBubble :image="image.logo" :url="image.url" :name="image.name"/>
           </template>

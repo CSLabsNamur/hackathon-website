@@ -12,8 +12,8 @@ const schema = v.object({
   firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
   lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-  githubAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("github.com", "Le lien n'est pas un lien GitHub"))),
-  linkedinAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("linkedin.com", "Le lien n'est pas un lien LinkedIn"))),
+  githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
+  linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
   school: v.optional(v.picklist(["UNamur", "Henallux", "HEAJ", "UCLouvain", "ULiège", "UMons", "ULB", "Hors Belgique", "Autre"], "Le choix n'est pas valide")),
   diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Halal", "Kasher", "Autre"], "Le choix n'est pas valide")),
   needs: v.optional(v.string()),
@@ -27,7 +27,7 @@ const state: Reactive<Schema> = reactive({
   lastName: props.participant.lastName,
   email: props.participant.email,
   githubAccount: props.participant.githubAccount || undefined,
-  linkedinAccount: props.participant.linkedinAccount || undefined,
+  linkedInAccount: props.participant.linkedInAccount || undefined,
   school: props.participant.school || undefined,
   diet: props.participant.diet || undefined,
   needs: props.participant.needs || undefined,
@@ -49,7 +49,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     participants.find(u => u.id === props.participant.id)!.lastName = event.data.lastName;
     participants.find(u => u.id === props.participant.id)!.email = event.data.email;
     participants.find(u => u.id === props.participant.id)!.githubAccount = event.data.githubAccount || null;
-    participants.find(u => u.id === props.participant.id)!.linkedinAccount = event.data.linkedinAccount || null;
+    participants.find(u => u.id === props.participant.id)!.linkedInAccount = event.data.linkedInAccount || null;
     participants.find(u => u.id === props.participant.id)!.school = event.data.school || null;
     participants.find(u => u.id === props.participant.id)!.diet = event.data.diet || null;
     participants.find(u => u.id === props.participant.id)!.needs = event.data.needs || null;
@@ -95,13 +95,11 @@ async function onError(event: FormErrorEvent) {
 
         <!-- Socials -->
         <UFormField label="Compte GitHub" name="githubAccount">
-          <UInput v-model="state.githubAccount" placeholder="https://github.com/votre-compte"
-                  icon="i-simple-icons-github" class="w-full"/>
+          <UInput v-model="state.githubAccount" icon="i-simple-icons-github" class="w-full"/>
         </UFormField>
 
-        <UFormField label="Compte LinkedIn" name="linkedinAccount">
-          <UInput v-model="state.linkedinAccount" placeholder="https://linkedin.com/in/votre-compte"
-                  icon="i-simple-icons-linkedin" class="w-full"/>
+        <UFormField label="Compte LinkedIn" name="linkedInAccount">
+          <UInput v-model="state.linkedInAccount" icon="i-simple-icons-linkedin" class="w-full"/>
         </UFormField>
 
         <!-- School, Diet & Needs -->
@@ -109,8 +107,7 @@ async function onError(event: FormErrorEvent) {
           <USelect v-model="state.school"
                    class="w-full"
                    :items="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Hors Belgique', 'Autre']"
-                   icon="i-lucide-graduation-cap"
-                   placeholder="Sélectionnez votre école">
+                   icon="i-lucide-graduation-cap">
             <template #trailing>
               <UButton v-if="state.school" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
@@ -127,8 +124,7 @@ async function onError(event: FormErrorEvent) {
           <USelect v-model="state.diet"
                    class="w-full"
                    :items="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
-                   icon="i-lucide-apple"
-                   placeholder="Sélectionnez votre régime alimentaire">
+                   icon="i-lucide-apple">
             <template #trailing>
               <UButton v-if="state.diet" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"

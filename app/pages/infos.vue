@@ -36,8 +36,7 @@ const amenities: PageFeatureProps[] = [
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Informations" subtitle="Les informations nécessaires !"
-              content="Tout ce qu'il faut savoir pour profiter au mieux de l'événement."/>
+    <PageHero title="Informations" subtitle="Tout ce qu'il faut savoir pour profiter au mieux de l'événement."/>
   </UPageHero>
 
   <UContainer>
@@ -138,7 +137,8 @@ const amenities: PageFeatureProps[] = [
                 <p class="text-xs font-medium text-muted uppercase tracking-wide">Réseaux sociaux</p>
                 <div class="grid grid-cols-2 gap-2">
                   <UButton to="https://www.facebook.com/ComputerScienceLabs/" target="_blank"
-                           icon="i-simple-icons-facebook" variant="soft" class="flex-1 justify-center" :ui="{base: 'p-2.5'}">
+                           icon="i-simple-icons-facebook" variant="soft" class="flex-1 justify-center"
+                           :ui="{base: 'p-2.5'}">
                     Facebook
                   </UButton>
                   <UButton to="https://discord.gg/Jf2Dht8" target="_blank" icon="i-simple-icons-discord"

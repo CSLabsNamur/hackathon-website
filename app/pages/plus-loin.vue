@@ -34,8 +34,8 @@ const links: ButtonProps[] = [
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Aller plus loin" subtitle="Un avenir pour ton projet"
-              content="Ton projet peut changer les choses.
+    <PageHero title="Aller plus loin"
+              subtitle="Ton projet peut changer les choses.
                        N'hésite pas à aller consulter nos sponsors pour lui construire un avenir !">
     </PageHero>
   </UPageHero>

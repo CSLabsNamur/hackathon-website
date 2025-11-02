@@ -31,15 +31,17 @@ const columns: TableColumn<Participant>[] = [
         variant: "link",
         size: "sm",
         icon: "i-simple-icons-github",
-        to: row.original.githubAccount,
+        external: true,
+        to: `https://github.com/${row.original.githubAccount}`,
       }) : null;
-      const linkedin = row.original.linkedinAccount ? h(UButton, {
+      const linkedIn = row.original.linkedInAccount ? h(UButton, {
         variant: "link",
         size: "sm",
         icon: "i-simple-icons-linkedin",
-        to: row.original.linkedinAccount,
+        external: true,
+        to: `https://github.com/${row.original.linkedInAccount}`,
       }) : null;
-      return h("div", {class: "flex space-x-2"}, [github, linkedin]);
+      return h("div", {class: "flex space-x-2"}, [github, linkedIn]);
     },
   },
   {

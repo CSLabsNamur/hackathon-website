@@ -12,8 +12,8 @@ const schema = v.pipe(
       password: v.pipe(v.string(), v.minLength(8, "Le mot de passe doit contenir au moins 8 caractères"), v.regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/, "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial")),
       passwordConfirm: v.string(),
       email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-      githubAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("github.com", "Le lien n'est pas un lien GitHub"))),
-      linkedinAccount: v.optional(v.pipe(v.string(), v.url("Le lien n'est pas valide"), v.includes("linkedin.com", "Le lien n'est pas un lien LinkedIn"))),
+      githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
+      linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
       school: v.optional(v.picklist(["UNamur", "Henallux", "HEAJ", "UCLouvain", "ULiège", "UMons", "ULB", "Hors Belgique", "Autre"], "Le choix n'est pas valide")),
       diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Halal", "Kasher", "Autre"], "Le choix n'est pas valide")),
       needs: v.optional(v.string()),
@@ -85,8 +85,8 @@ async function onError(event: FormErrorEvent) {
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Formulaire d'inscription" subtitle="Très bonne idée !"
-              content="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement. Nous reviendrons vers vous rapidement.">
+    <PageHero title="Formulaire d'inscription"
+              subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement. Nous reviendrons vers vous rapidement.">
     </PageHero>
   </UPageHero>
 
@@ -127,13 +127,11 @@ async function onError(event: FormErrorEvent) {
 
         <!-- Socials -->
         <UFormField label="Compte GitHub" name="githubAccount">
-          <UInput v-model="state.githubAccount" placeholder="https://github.com/votre-compte"
-                  icon="i-simple-icons-github" class="w-full"/>
+          <UInput v-model="state.githubAccount" icon="i-simple-icons-github" class="w-full"/>
         </UFormField>
 
-        <UFormField label="Compte LinkedIn" name="linkedinAccount">
-          <UInput v-model="state.linkedinAccount" placeholder="https://linkedin.com/in/votre-compte"
-                  icon="i-simple-icons-linkedin" class="w-full"/>
+        <UFormField label="Compte LinkedIn" name="linkedInAccount">
+          <UInput v-model="state.linkedInAccount" icon="i-simple-icons-linkedin" class="w-full"/>
         </UFormField>
 
         <!-- School, Diet & Needs -->
@@ -141,8 +139,7 @@ async function onError(event: FormErrorEvent) {
           <USelect v-model="state.school"
                    class="w-full"
                    :items="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Hors Belgique', 'Autre']"
-                   icon="i-lucide-graduation-cap"
-                   placeholder="Sélectionnez votre école">
+                   icon="i-lucide-graduation-cap">
             <template #trailing>
               <UButton v-if="state.school" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
@@ -159,8 +156,7 @@ async function onError(event: FormErrorEvent) {
           <USelect v-model="state.diet"
                    class="w-full"
                    :items="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
-                   icon="i-lucide-apple"
-                   placeholder="Sélectionnez votre régime alimentaire">
+                   icon="i-lucide-apple">
             <template #trailing>
               <UButton v-if="state.diet" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
