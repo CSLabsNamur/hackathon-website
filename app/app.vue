@@ -4,6 +4,7 @@ import { fr } from "@nuxt/ui/locale";
 
 <template>
   <UApp :locale="fr">
+    <NuxtLoadingIndicator/>
     <NuxtRouteAnnouncer/>
 
     <NuxtLayout>

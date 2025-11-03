@@ -5,7 +5,7 @@
 
   <div class="flex justify-center px-8 pb-8">
     <UButton to="/devenir-partenaire" size="xl" trailing-icon="i-lucide-handshake">
-        Envie de devenir partenaire ?
+      Envie de devenir partenaire ?
     </UButton>
   </div>
 
@@ -22,11 +22,14 @@
                :ui="{title: 'text-xl'}"
     >
       <div class="flex justify-center">
-        <NuxtImg :src="partner.logo" :alt="`Logo de ${partner.name}`" sizes="240px" fit="contain" class="max-h-48"/>
+        <Suspense>
+          <NuxtImg :src="partner.logo" :alt="`Logo de ${partner.name}`" sizes="240px" fit="contain" :placeholder="30"
+                   quality="80" class="max-h-48"/>
+        </Suspense>
       </div>
 
       <template #description v-if="partner.description">
-        <MDC :value="partner.description" />
+        <MDC :value="partner.description"/>
       </template>
     </UPageCard>
   </div>
