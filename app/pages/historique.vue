@@ -6,38 +6,43 @@ const timeline: TimelineItem[] = [
     date: "26-28 Octobre 2018",
     title: "1ère édition – Smart Rurality",
     icon: "i-lucide-ev-charger",
-    description: "Lancement du tout premier Hackathon ! Le thème est la 'Smart Rurality' : imaginer et créer des services innovants pour le citoyen des zones rurales. 60 participants.",
+    description: "Lancement du tout premier Hackathon ! Le thème est la 'Smart Rurality' : imaginer et créer des services innovants pour le citoyen des zones rurales." +
+        "L'objectif est de provoquer une réflexion sur l'intégration des TIC dans les zones moins urbanisées.",
   },
   {
     date: "18-20 Octobre 2019",
     title: "2e édition – Hope for Climate",
     icon: "i-lucide-sun-snow",
-    description: "Deuxième édition du Hackathon, avec pour thème 'Hope for Climate' : développer des solutions technologiques pour lutter contre le changement climatique.",
+    description: "Pour la seconde édition, le Climat est mis à l'honneur. Comment inciter au recyclage, développer le transport en commun, ou encore réduire la consommation énergétique ?",
   },
   {
     date: "18-20 Février 2022",
     title: "3e édition – Le Bien Vieillir",
     icon: "i-lucide-heart-pulse",
     //icon: "i-lucide-rocking-chair",
-    description: "Après 3 reports dus à la pandémie, le Hackathon revient avec le thème 'Le Bien Vieillir' : concevoir des innovations pour améliorer la qualité de vie des personnes âgées. 60 participants.",
+    description: "Après 3 reports dus à la pandémie, le Hackathon 'Le Bien Vieillir' s'organise, dans le cadre du 50e anniversaire de la Faculté d'Informatique de l'Université de Namur." +
+        "L'idée : 'Repenser la technologie pour tous', en imaginant des solutions pour aider les personnes âgées à mieux appréhender les technologies modernes.",
   },
   {
     date: "17-19 Février 2023",
     title: "4e édition – Le Handicap",
     icon: "i-lucide-accessibility",
-    description: "Le Hackathon continue avec le thème 'Le Handicap' : imaginer des solutions pour faciliter la vie quotidienne des personnes en situation de handicap.",
+    description: "Le Hackathon continue autour de la thématique du Handicap ! Le monde actuel n'est pas toujours adapté à tout le monde." +
+        "L'objectif est de trouver des moyens pour faire face à des problèmes réels que rencontrent les personnes en situation de handicap au quotidien.",
   },
   {
     date: "16-18 Février 2024",
     title: "5e édition – L'Enseignement",
     icon: "i-lucide-school",
-    description: "Le Hackathon continue avec le thème 'L'Enseignement' : imaginer des solutions pour transformer et améliorer les méthodes d'enseignement.",
+    description: "En 2024, c'est au tour de l'Enseignement d'être mis en avant. Mot clef : Modernité." +
+        "Le but est de créer des outils et méthodes pour rendre l'enseignement plus interactif et adapté aux besoins des enfants d'aujourd'hui.",
   },
   {
     date: "28 Février - 2 Mars 2025",
     title: "6e édition – La Culture",
     icon: "i-lucide-book-open",
-    description: "Le thème de cette édition est 'La Culture' : développer des projets qui favorisent l'accès, la diffusion et la préservation de la culture sous toutes ses formes.",
+    description: "Namur finaliste pour devenir capitale européenne de la culture... Alors évidemment, on en a profité !" +
+        "Les participants développeront leurs idées autour de cette grande question : comment l'informatique peut-elle contribuer à la promotion et la préservation du patrimoine culturel ?",
   },
   {
     date: "27-29 Mars 2026",
@@ -58,7 +63,7 @@ const pictures = [
   "/images/history/P1038103.jpg",
   "/images/history/P1038328.jpg",
   "/images/history/P1038360.jpg",
-]
+];
 </script>
 
 <template>

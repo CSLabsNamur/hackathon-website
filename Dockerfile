@@ -1,12 +1,12 @@
-FROM node:22-alpine AS build
+FROM node:22-alpine AS base
 WORKDIR /app
-
-RUN corepack enable
 
 COPY package.json pnpm-lock.yaml .npmrc ./
 
-# Install dependencies
-RUN pnpm i
+RUN corepack enable && pnpm install --prod --frozen-lockfile && pnpm add @nuxt/cli
+
+FROM base AS build
+WORKDIR /app
 
 # Copy the entire project
 COPY . ./
@@ -14,7 +14,7 @@ COPY . ./
 # Build the project
 RUN pnpm run build
 
-FROM node:22-alpine
+FROM base as runtime
 WORKDIR /app
 
 # Only `.output` folder is needed from the build stage
