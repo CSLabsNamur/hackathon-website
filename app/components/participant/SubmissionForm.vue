@@ -2,8 +2,10 @@
 import * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
+import schema from "#shared/schemas/submissions/create";
 
 const props = defineProps<{
+  participant: ParticipantWithSubmissions;
   submission: SubmissionRequest;
 }>();
 const emit = defineEmits<{ submit: [boolean] }>();
@@ -11,18 +13,14 @@ const emit = defineEmits<{ submit: [boolean] }>();
 const dayjs = useDayjs();
 const toast = useToast();
 
-const participantSubmission = currentParticipant.submissions.find(s => s.requestId === props.submission.id);
-
-const schema = v.object({
-  answer: props.submission.type === "text" ? v.string() : props.submission.multiple ? v.optional(v.array(v.file())) : v.optional(v.file()),
-});
+const participantSubmission = props.participant.submissions.find(s => s.requestId === props.submission.id);
 
 type Schema = v.InferOutput<typeof schema>
 
 const state: Reactive<Schema> = reactive(participantSubmission && !participantSubmission.skipped ? {
-  answer: participantSubmission.content,
+  content: participantSubmission.content,
 } : {
-  answer: props.submission.type === "text" ? "" : undefined,
+  content: props.submission.type === SubmissionType.TEXT ? "" : undefined,
 });
 
 const isSubmitting = ref(false);
@@ -32,14 +30,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     isSubmitting.value = true;
 
     // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    currentParticipant.submissions.push({
-      requestId: props.submission.id,
-      submittedAt: dayjs().valueOf(),
-      content: event.data.answer!,
-      skipped: false,
-    });
+    //await new Promise((resolve) => setTimeout(resolve, 1000));
+    //
+    //currentParticipant.submissions.push({
+    //  requestId: props.submission.id,
+    //  submittedAt: dayjs().valueOf(),
+    //  content: event.data.answer!,
+    //  skipped: false,
+    //});
 
     toast.add({
       title: `Formulaire ${props.submission.id} soumis`,
@@ -55,11 +53,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 }
 
 function onSkip() {
-  currentParticipant.submissions.push({
-    requestId: props.submission.id,
-    submittedAt: dayjs().valueOf(),
-    skipped: true,
-  });
+  //currentParticipant.submissions.push({
+  //  requestId: props.submission.id,
+  //  submittedAt: dayjs().valueOf(),
+  //  skipped: true,
+  //});
   emit("submit", true);
 }
 
@@ -74,16 +72,16 @@ async function onError(event: FormErrorEvent) {
 
 <template>
   <UForm :schema :state @submit="onSubmit" @error="onError" class="grid gap-6">
-    <UFormField :label="submission.title" :description="submission.description" name="answer"
+    <UFormField :label="submission.title" :description="submission.description || undefined" name="answer"
                 :required="submission.required">
-      <template v-if="submission.type === 'text'">
-        <UTextarea v-model="state.answer as string" :disabled="isSubmitting" placeholder="Votre réponse..." :rows="6"
+      <template v-if="submission.type === SubmissionType.TEXT">
+        <UTextarea v-model="state.content as string" :disabled="isSubmitting" placeholder="Votre réponse..." :rows="6"
                    class="w-full" :required="submission.required"/>
       </template>
       <template v-else>
-        <UFileUpload v-model="state.answer as File" :disabled="isSubmitting" description="Choisir un fichier..."
-                     :accept="submission.acceptedFormats?.join(',') ?? '.pdf,.doc,.docx,.png,.jpg,.jpeg'"
-                     :required="submission.required" class="w-full" :multiple="submission.multiple"/>
+        <UFileUpload v-model="state.content as File" :disabled="isSubmitting" description="Choisir un fichier..."
+                     :accept="submission.acceptedFormats ?? '.pdf,.doc,.docx,.png,.jpg,.jpeg'"
+                     :required="submission.required" class="w-full" :multiple="submission.multiple || undefined"/>
       </template>
     </UFormField>
 

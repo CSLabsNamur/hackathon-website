@@ -1,6 +1,7 @@
 <script setup lang="ts">
-// TODO: obviously move there functions elsewhere
+const props = defineProps<{ participant: Participant }>();
 
+// TODO: obviously move there functions elsewhere
 enum TeamIssueSeverity {
   INFO = 0,
   WARNING = 1,
@@ -13,33 +14,42 @@ type TeamIssue = {
   description?: string;
 };
 
+const isTeamValid = computed(() => (teamId: string) => {
+  if (!props.participant.team || props.participant.team.id !== teamId) {
+    return false;
+  }
+  return props.participant.team.members.every(member => {
+    const caution = member.caution;
+    return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
+  });
+});
+
 const teamIssues = computed<TeamIssue[]>(() => {
   const issues: TeamIssue[] = [];
-  if (!isTeamValid.value(currentTeam.value!.id)) {
+  if (!isTeamValid.value(props.participant.team!.id)) {
     issues.push({
       severity: TeamIssueSeverity.ERROR,
       message: "Personne n'a encore payé sa caution.",
       description: "Votre équipe ne sera pas validée tant qu'au moins un membre n'aura pas payé sa caution.",
     });
   }
-  if (currentTeam.value!.members.length < 3) {
+  if (props.participant.team!.members.length < 3) {
     issues.push({
       severity: TeamIssueSeverity.WARNING,
       message: "Votre équipe est incomplète.",
-      description: `Il manque ${3 - currentTeam.value!.members.length} membre(s) pour atteindre le nombre minimum de 3 membres.`,
+      description: `Il manque ${3 - props.participant.team!.members.length} membre(s) pour atteindre le nombre minimum de 3 membres.`,
     });
   }
   // Check if all members have submitted every required submission
-  if (!currentTeam.value!.members.every((member) => {
-    const participant = participants.value.find(p => p.id === member)!;
-    return submissionRequests.value.every((request) => !request.required || participant.submissions.some((submission) => submission.requestId === request.id));
-  })) {
-    issues.push({
-      severity: TeamIssueSeverity.WARNING,
-      message: "Certains membres n'ont pas encore soumis tous les livrables requis demandés.",
-      description: "Assurez-vous que tous les membres de votre équipe ont soumis les livrables requis.",
-    });
-  }
+  //if (!props.participant.team.members.every((member) => {
+  //  return submissionRequests.value.every((request) => !request.required || member.submissions.some((submission) => submission.requestId === request.id));
+  //})) {
+  //  issues.push({
+  //    severity: TeamIssueSeverity.WARNING,
+  //    message: "Certains membres n'ont pas encore soumis tous les livrables requis demandés.",
+  //    description: "Assurez-vous que tous les membres de votre équipe ont soumis les livrables requis.",
+  //  });
+  //}
 
   return issues;
 });
@@ -81,7 +91,3 @@ const colorsSeverityMap = (severity: TeamIssueSeverity) => {
     </div>
   </UCard>
 </template>
-
-<style scoped>
-
-</style>

@@ -3,6 +3,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: {enabled: true},
 
+  // TODO: Remove when Nuxt fix 4.2.0 (https://github.com/nuxt/nuxt/issues/33582)
+  //hooks: {
+  //  "vite:extendConfig": extendViteConfig,
+  //},
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui",
@@ -15,12 +20,14 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "nuxt-echarts",
     "@nuxtjs/device",
+    "@nuxtjs/supabase",
+    "@pinia/nuxt",
   ],
 
   postcss: {
     plugins: {
-      "postcss-nesting": {}
-    }
+      "postcss-nesting": {},
+    },
   },
 
   css: ["~/assets/css/main.css"],
@@ -46,11 +53,11 @@ export default defineNuxtConfig({
       eventTitle: "Le Hackathon du CSLabs",
       eventSlogan: "",
     },
-    apiUrl: "http://127.0.0.1:8000/",
   },
 
-  routeRules: {
-    "/api/back/**": {proxy: `${process.env.NUXT_API_URL}/**`},
+  supabase: {
+    types: false,
+    redirect: false,
   },
 
   dayjs: {
@@ -67,3 +74,13 @@ export default defineNuxtConfig({
     features: ["LabelLayout", "UniversalTransition"],
   },
 });
+
+// TODO: Remove when Nuxt fix 4.2.0 (https://github.com/nuxt/nuxt/issues/33582)
+//function extendViteConfig(config: import("vite").UserConfig) {
+//  const plugin = config.plugins?.find(plugin => isPlugin(plugin, "nuxt:environments"));
+//  if (plugin) plugin.enforce = "pre";
+//}
+//
+//function isPlugin(plugin: unknown, name: string): plugin is import("vite").Plugin {
+//  return !!(plugin && typeof plugin === "object" && "name" in plugin && plugin.name === name);
+//}

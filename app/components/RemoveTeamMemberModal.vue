@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{participant: Participant}>();
+const props = defineProps<{participant: Participant | ParticipantWithoutRelations}>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -12,13 +12,13 @@ async function onSubmit() {
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Remove member from team
-    const team = teams.value.find(t => t.id === props.participant.team);
-    if (team) {
-      team.members = team.members.filter(m => m !== props.participant.id);
-    }
-    props.participant.team = null;
+    //
+    //// Remove member from team
+    //const team = teams.value.find(t => t.id === props.participant.team);
+    //if (team) {
+    //  team.members = team.members.filter(m => m !== props.participant.id);
+    //}
+    //props.participant.team = null;
 
     toast.add({
       title: "Membre retiré",

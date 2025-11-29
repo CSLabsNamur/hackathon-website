@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider            = "prisma-client"
+  output              = "./generated/prisma"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==== Users and Teams ====
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CautionStatus {
+  PAID
+  NOT_PAID
+  REFUNDED
+  WAIVED
+}
+
+model Participant {
+  id              String        @id @default(cuid())
+  email           String        @unique
+  firstName       String
+  lastName        String
+  githubAccount   String?       @unique
+  linkedInAccount String?       @unique
+  school          String?
+  diet            String?
+  needs           String?
+  caution         CautionStatus @default(NOT_PAID)
+  curriculumVitae String?
+  team            Team?         @relation(fields: [teamId], references: [id])
+  teamId          String?
+  imageAgreement  Boolean       @default(false)
+  newsletter      Boolean       @default(false)
+  submissions     Submission[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Team {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String
+  idea        String?
+  token       String        @unique @default(cuid())
+  members     Participant[]
+  room        Room?         @relation(fields: [roomId], references: [id])
+  roomId      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+// ==== Submissions ====
+enum SubmissionType {
+  TEXT
+  FILE
+}
+
+model SubmissionRequest {
+  id              String         @id @default(cuid())
+  title           String
+  description     String?
+  type            SubmissionType
+  deadline        DateTime
+  // File-related fields for FILE type submissions
+  acceptedFormats String?        @default("*.pdf,*.docx,*.txt,*.jpg,*.png,*.zip")
+  multiple        Boolean?
+  required        Boolean        @default(false)
+  submissions     Submission[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Submission {
+  id            String            @id @default(cuid())
+  request       SubmissionRequest @relation(fields: [requestId], references: [id])
+  requestId     String
+  participant   Participant       @relation(fields: [participantId], references: [id])
+  participantId String
+  content       String? // Could be text content or a file URL
+  skipped       Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+// ==== Program Schedule ====
+// TODO: Add a check to ensure no overlapping exactDateTime ranges when the event is noted as special.
+model ScheduleItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String?
+  dateString  String
+  startTime   DateTime
+  endTime     DateTime
+  special     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==== Room Assignments ====
+model Room {
+  id        String   @id @default(cuid())
+  name      String
+  sequence  Int      @db.SmallInt
+  teams     Team[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

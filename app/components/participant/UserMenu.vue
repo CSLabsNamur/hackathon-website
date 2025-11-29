@@ -3,7 +3,7 @@ import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 
 defineProps<{
   participant: Participant;
-  collapsed?: boolean
+  collapsed?: boolean;
 }>();
 
 const items: DropdownMenuItem[][] = [[{

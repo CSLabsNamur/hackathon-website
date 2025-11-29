@@ -14,8 +14,8 @@ const schema = v.object({
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
   githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
   linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-  school: v.optional(v.picklist(["UNamur", "Henallux", "HEAJ", "UCLouvain", "ULiège", "UMons", "ULB", "Hors Belgique", "Autre"], "Le choix n'est pas valide")),
-  diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Halal", "Kasher", "Autre"], "Le choix n'est pas valide")),
+  school: v.optional(v.string()),
+  diet: v.optional(v.string()),
   needs: v.optional(v.string()),
   curriculumVitae: v.boolean(),
 });
@@ -45,17 +45,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: "success",
     });
     // Update user in the mock list
-    participants.find(u => u.id === props.participant.id)!.firstName = event.data.firstName;
-    participants.find(u => u.id === props.participant.id)!.lastName = event.data.lastName;
-    participants.find(u => u.id === props.participant.id)!.email = event.data.email;
-    participants.find(u => u.id === props.participant.id)!.githubAccount = event.data.githubAccount || null;
-    participants.find(u => u.id === props.participant.id)!.linkedInAccount = event.data.linkedInAccount || null;
-    participants.find(u => u.id === props.participant.id)!.school = event.data.school || null;
-    participants.find(u => u.id === props.participant.id)!.diet = event.data.diet || null;
-    participants.find(u => u.id === props.participant.id)!.needs = event.data.needs || null;
-    if (event.data.curriculumVitae) {
-      participants.find(u => u.id === props.participant.id)!.curriculumVitae = null;
-    }
+    //participants.find(u => u.id === props.participant.id)!.firstName = event.data.firstName;
+    //participants.find(u => u.id === props.participant.id)!.lastName = event.data.lastName;
+    //participants.find(u => u.id === props.participant.id)!.email = event.data.email;
+    //participants.find(u => u.id === props.participant.id)!.githubAccount = event.data.githubAccount || null;
+    //participants.find(u => u.id === props.participant.id)!.linkedInAccount = event.data.linkedInAccount || null;
+    //participants.find(u => u.id === props.participant.id)!.school = event.data.school || null;
+    //participants.find(u => u.id === props.participant.id)!.diet = event.data.diet || null;
+    //participants.find(u => u.id === props.participant.id)!.needs = event.data.needs || null;
+    //if (event.data.curriculumVitae) {
+    //  participants.find(u => u.id === props.participant.id)!.curriculumVitae = null;
+    //}
     console.log(event.data);
     emit("close", true);
   } finally {

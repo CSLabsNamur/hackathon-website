@@ -5,6 +5,8 @@ definePageMeta({
   layout: "user-dashboard",
 });
 
+const {data: currentParticipant} = await useCurrentParticipant();
+
 const overlay = useOverlay();
 const editModal = overlay.create(ParticipantEditModal);
 const passwordModal = overlay.create(ParticipantPasswordEditModal);
@@ -22,36 +24,36 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
             <div class="grid gap-2">
               <div class="grid grid-cols-2 gap-6 *:w-full">
                 <ParticipantProfileLabel label="Nom complet" icon="i-lucide-user">
-                  {{ currentParticipant.firstName }} {{ currentParticipant.lastName }}
+                  {{ currentParticipant!.firstName }} {{ currentParticipant!.lastName }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Adresse e-mail" icon="i-lucide-at-sign">
-                  {{ currentParticipant.email }}
+                  {{ currentParticipant!.email }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Compte GitHub" icon="i-simple-icons-github">
-                  {{ currentParticipant.githubAccount || "Non renseigné" }}
+                  {{ currentParticipant!.githubAccount || "Non renseigné" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Compte LinkedIn" icon="i-simple-icons-linkedin">
-                  {{ currentParticipant.linkedInAccount || "Non renseigné" }}
+                  {{ currentParticipant!.linkedInAccount || "Non renseigné" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="École / Université" icon="i-lucide-graduation-cap">
-                  {{ currentParticipant.school || "Non renseigné" }}
+                  {{ currentParticipant!.school || "Non renseigné" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Régime alimentaire spécifique" icon="i-lucide-apple">
-                  {{ currentParticipant.diet || "Aucun" }}
+                  {{ currentParticipant!.diet || "Aucun" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Besoins spécifiques" icon="i-lucide-heart">
-                  {{ currentParticipant.needs || "Aucun" }}
+                  {{ currentParticipant!.needs || "Aucun" }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="CV" icon="i-lucide-file-user">
-                  <div v-if="currentParticipant.curriculumVitae">
-                    <UButton size="xs" variant="ghost" :to="currentParticipant.curriculumVitae"
+                  <div v-if="currentParticipant!.curriculumVitae">
+                    <UButton size="xs" variant="ghost" :to="currentParticipant!.curriculumVitae"
                              icon="i-lucide-download">
                       Télécharger
                     </UButton>
@@ -64,10 +66,10 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
 
               <div class="grid gap-2">
                 <UCheckbox label="Recevoir la newsletter par e-mail"
-                           :model-value="currentParticipant.newsletter"
+                           :model-value="currentParticipant!.newsletter"
                            disabled/>
                 <UCheckbox label="Accepter que mon image soit utilisée dans le cadre de la promotion de l'évènement"
-                           :model-value="currentParticipant.imageAgreement"
+                           :model-value="currentParticipant!.imageAgreement"
                            disabled/>
               </div>
             </div>
@@ -75,7 +77,7 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
 
           <template #footer>
             <div class="flex gap-1.5">
-              <UButton @click="editModal.open({participant: currentParticipant})">
+              <UButton @click="editModal.open({participant: currentParticipant!})">
                 Modifier mon profil
               </UButton>
               <UButton color="warning" @click="passwordModal.open()">

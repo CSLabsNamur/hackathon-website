@@ -1,38 +1,47 @@
 <script setup lang="ts">
-import { CautionStatus } from "~/utils/mock";
+withDefaults(defineProps<{
+  rounded?: boolean;
+}>(), {rounded: true});
 
-withDefaults(defineProps<{ rounded?: boolean; }>(), {rounded: true});
+const {status: participantsStatus, data: participants} = await useParticipants({lazy: true});
+const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
 
 const dayjs = useDayjs();
 
 const {eventDateEnd} = useRuntimeConfig().public;
 
-const stats = computedWithControl(() => participants, () => [{
-  title: "Nombre d'équipes",
-  value: teams.value.length,
-  icon: "i-lucide-users",
-}, {
-  title: "Dernière équipe créée",
-  value: teams.value.length > 0 ? teams.value.toSorted((a, b) => b.createdAt - a.createdAt)[0]!.name : "Aucune équipe",
-  icon: "i-lucide-clock",
-}, {
-  title: "Teams valides",
-  value: `${teams.value.filter(team => team.members.every(member => {
-    const participant = participants.value.find(u => u.id === member);
-    const caution = participant?.caution;
-    return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
-  })).length} / ${teams.value.length}`,
-  icon: "i-lucide-wallet",
-  condition: dayjs().isBefore(dayjs(eventDateEnd)),
-}, {
-  title: "Teams remboursées",
-  value: `${teams.value.filter(team => team.members.every(member => {
-    const caution = participants.value.find(participant => participant.id === member)?.caution;
-    return caution === CautionStatus.Refunded || caution === CautionStatus.Waived;
-  })).length} / ${teams.value.length}`,
-  icon: "i-lucide-currency-euro",
-  condition: dayjs().isAfter(dayjs(eventDateEnd)),
-}], {deep: true});
+const stats = computedWithControl(() => participants.value, () => {
+  if (!participants.value || !teams.value) {
+    return [];
+  }
+
+  return [{
+    title: "Nombre d'équipes",
+    value: teams.value.length,
+    icon: "i-lucide-users",
+  }, {
+    title: "Dernière équipe créée",
+    value: teams.value.length > 0 ? teams.value.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]!.name : "Aucune équipe",
+    icon: "i-lucide-clock",
+  }, {
+    title: "Teams valides",
+    value: `${teams.value.filter(team => team.members.every(member => {
+      const participant = participants.value!.find(u => u.id === member.id);
+      const caution = participant?.caution;
+      return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
+    })).length} / ${teams.value.length}`,
+    icon: "i-lucide-wallet",
+    condition: dayjs().isBefore(dayjs(eventDateEnd)),
+  }, {
+    title: "Teams remboursées",
+    value: `${teams.value.filter(team => team.members.every(member => {
+      const caution = participants.value!.find(participant => participant.id === member.id)?.caution;
+      return caution === CautionStatus.REFUNDED || caution === CautionStatus.WAIVED;
+    })).length} / ${teams.value.length}`,
+    icon: "i-lucide-currency-euro",
+    condition: dayjs().isAfter(dayjs(eventDateEnd)),
+  }];
+}, {deep: true});
 </script>
 
 <template>

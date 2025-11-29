@@ -8,6 +8,8 @@ definePageMeta({
   layout: "dashboard",
 });
 
+const {status, data: teams} = await useTeams({lazy: true});
+
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
 const UCheckbox = resolveComponent("UCheckbox");
@@ -37,9 +39,8 @@ const columns: TableColumn<Team>[] = [
     cell: ({row}) => {
       const members = row.original.members;
       const valid = members.every(member => {
-        const participant = participants.value.find(u => u.id === member);
-        const caution = participant?.caution;
-        return caution === CautionStatus.Paid || caution === CautionStatus.Waived;
+        const caution = member.caution;
+        return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
       });
       let color: BadgeProps["color"] = valid ? "success" : "error";
 
@@ -51,7 +52,7 @@ const columns: TableColumn<Team>[] = [
   {
     header: "Membres",
     accessorFn: (row: Team) => {
-      return participants.value.filter((u) => u.team === row.id).length;
+      return row.members.length;
     },
   },
   {
@@ -148,7 +149,11 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
           <AdminTeamStats/>
-          <UTable :columns="columns" :data="teams" sticky/>
+          <UTable :columns="columns" :data="teams ?? []" sticky>
+            <UEmpty>
+              LOADING MAYBE IDK
+            </UEmpty>
+          </UTable>
         </div>
       </UContainer>
     </template>

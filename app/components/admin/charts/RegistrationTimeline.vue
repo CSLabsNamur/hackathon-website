@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const {status, data: participants} = await useParticipants({lazy: true});
+
 const dayjs = useDayjs();
 
 type RegistrationTimelineData = {
@@ -7,6 +9,10 @@ type RegistrationTimelineData = {
 }
 
 const participantChartData = computed<RegistrationTimelineData[]>(() => {
+  if (!participants.value) {
+    return [];
+  }
+
   const monthMap = new Map<string, number>();
 
   participants.value.forEach(participant => {
@@ -61,9 +67,7 @@ const options: Ref<ECOption> = ref({
         color: "#22c55e",
       },
       animationDuration: 750,
-      label: {
-
-      },
+      label: {},
     },
   ],
 });

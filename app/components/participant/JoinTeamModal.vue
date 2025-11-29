@@ -22,28 +22,28 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
-    const team = teams.value.find(t => t.token === event.data.token);
-    if (team) {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      currentParticipant.team = team.id;
-      team.members.push(currentParticipant.id);
-
-      toast.add({
-        title: "Équipe rejointe !",
-        description: "Vous avez rejoint l'équipe avec succès. Vous pouvez maintenant collaborer avec vos coéquipiers.",
-        color: "success",
-      });
-
-      emit("close", true);
-    } else {
-      toast.add({
-        title: "Erreur",
-        description: "Le token fourni est invalide. Veuillez vérifier et réessayer.",
-        color: "error",
-      });
-    }
+    //const team = teams.value.find(t => t.token === event.data.token);
+    //if (team) {
+    //  // Simulate API call
+    //  await new Promise(resolve => setTimeout(resolve, 1000));
+    //
+    //  currentParticipant.team = team.id;
+    //  team.members.push(currentParticipant.id);
+    //
+    //  toast.add({
+    //    title: "Équipe rejointe !",
+    //    description: "Vous avez rejoint l'équipe avec succès. Vous pouvez maintenant collaborer avec vos coéquipiers.",
+    //    color: "success",
+    //  });
+    //
+    //  emit("close", true);
+    //} else {
+    //  toast.add({
+    //    title: "Erreur",
+    //    description: "Le token fourni est invalide. Veuillez vérifier et réessayer.",
+    //    color: "error",
+    //  });
+    //}
 
     console.log(event.data);
   } finally {

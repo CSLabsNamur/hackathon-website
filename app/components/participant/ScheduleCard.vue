@@ -1,5 +1,11 @@
 <script setup lang="ts">
+const props = defineProps<{schedule: ScheduleItem[]}>();
 
+const dayjs = useDayjs();
+
+const nextSpecialEvent = computed<ScheduleSpecialItem | null>(() => {
+  return props.schedule.find(item => item.special && item.exactDateTime && !dayjs(item.exactDateTime[0]).isBefore(mockCurrentDateTime) && mockCurrentDateTime.isAfter(dayjs(item.exactDateTime[0]).subtract(2, "hour"))) as ScheduleSpecialItem || null;
+});
 </script>
 
 <template>

@@ -2,6 +2,7 @@
 import * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
+import { createSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
 
 const emit = defineEmits<{ close: [boolean] }>();
 
@@ -9,21 +10,11 @@ const dayjs = useDayjs();
 const toast = useToast();
 const {eventDateStart, eventDateEnd} = useRuntimeConfig().public;
 
+// Create the schema with composables (safe here in setup)
+const schema = createSubmissionRequestSchema(dayjs, eventDateStart, eventDateEnd);
+
 const eventDateStartParsed = dayjs(eventDateStart);
 const eventDateEndParsed = dayjs(eventDateEnd);
-
-// TODO: Check deadline hardcoded hours
-const schema = v.object({
-  type: v.picklist(["text", "file", "files"]),
-  title: v.pipe(v.string(), v.nonEmpty("Le titre ne peut pas être vide"), v.minWords("fr", 1, "Le titre doit contenir au moins 1 mot"), v.maxLength(50, "Le titre est trop long (max 50 caractères)")),
-  description: v.optional(v.pipe(v.string(), v.minWords("fr", 3, "La description, si elle existe, doit au moins contenir 3 mots."), v.maxLength(150, "La description est trop longue (max 150 caractères)"))),
-  deadline: v.pipe(v.string(), v.isoDateTime(), v.check((input) => {
-    const date = dayjs(input);
-    return date.isBetween(eventDateStartParsed, eventDateEndParsed);
-  }, "La date doit être entre le début et la fin de l'événement.")),
-  acceptedFormats: v.optional(v.string()),
-  required: v.optional(v.boolean()),
-});
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -65,11 +56,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       required: event.data.required ?? false,
     };
 
-    submissionRequests.value.push({
-      id: `sr_${Math.random().toString(36).substring(2, 9)}`,
-      ...payload,
-      createdAt: dayjs().valueOf(),
-    } as SubmissionRequest)
+    //submissionRequests.value.push({
+    //  id: `sr_${Math.random().toString(36).substring(2, 9)}`,
+    //  ...payload,
+    //  createdAt: dayjs().valueOf(),
+    //} as SubmissionRequest)
 
     toast.add({
       title: "Demande de soumission créée",

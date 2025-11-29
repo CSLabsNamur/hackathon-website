@@ -2,46 +2,17 @@
 import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
+import schema from "#shared/schemas/participants/create";
 
 const toast = useToast();
-
-const schema = v.pipe(
-    v.object({
-      firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
-      lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
-      password: v.pipe(v.string(), v.minLength(8, "Le mot de passe doit contenir au moins 8 caractères"), v.regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/, "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial")),
-      passwordConfirm: v.string(),
-      email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-      githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-      linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-      school: v.optional(v.picklist(["UNamur", "Henallux", "HEAJ", "UCLouvain", "ULiège", "UMons", "ULB", "Hors Belgique", "Autre"], "Le choix n'est pas valide")),
-      diet: v.optional(v.picklist(["Végétarien", "Vegan", "Sans gluten", "Halal", "Kasher", "Autre"], "Le choix n'est pas valide")),
-      needs: v.optional(v.string()),
-      curriculumVitae: v.optional(v.pipe(v.file(), v.mimeType(["application/pdf"], "Veuillez sélectionner un fichier PDF."), v.maxSize(1024 * 1024 * 5, "Le fichier est trop volumineux (max 5MB)"))),
-      caution: v.pipe(v.boolean(), v.value(true, "Vous devez accepter de payer la caution pour vous inscrire")),
-      codeOfConduct: v.pipe(v.boolean(), v.value(true, "Vous devez accepter le code de conduite pour vous inscrire")),
-      imageAgreement: v.optional(v.boolean(), false),
-      newsletter: v.optional(v.boolean()),
-    }),
-    v.forward(
-        v.partialCheck(
-            [["password"], ["passwordConfirm"]],
-            (input) => input.password === input.passwordConfirm,
-            "Les mots de passe ne correspondent pas",
-        ),
-        ["passwordConfirm"],
-    ),
-);
 
 type Schema = v.InferOutput<typeof schema>
 
 const state: Reactive<Schema> = reactive({
   firstName: "",
   lastName: "",
-  password: "",
-  passwordConfirm: "",
   email: "",
-  caution: false,
+  cautionAgreement: false,
   codeOfConduct: false,
   imageAgreement: false,
 });
@@ -111,15 +82,6 @@ async function onError(event: FormErrorEvent) {
           <UInput v-model="state.lastName" icon="i-lucide-user" class="w-full"/>
         </UFormField>
 
-        <!-- Password & Confirm Password -->
-        <UFormField label="Mot de passe" name="password" required>
-          <UInput v-model="state.password" icon="i-lucide-lock" type="password" class="w-full"/>
-        </UFormField>
-
-        <UFormField label="Confirmer le mot de passe" name="passwordConfirm" required>
-          <UInput v-model="state.passwordConfirm" icon="i-lucide-lock" type="password" class="w-full"/>
-        </UFormField>
-
         <!-- Email -->
         <UFormField label="Email" name="email" type="email" required>
           <UInput v-model="state.email" icon="i-lucide-at-sign" class="w-full"/>
@@ -184,7 +146,7 @@ async function onError(event: FormErrorEvent) {
 
         <!-- Agreements -->
         <UFormField name="caution">
-          <UCheckbox v-model="state.caution" name="caution" required
+          <UCheckbox v-model="state.cautionAgreement" name="caution" required
                      label="J'accepte de payer une caution de 20€ qui me sera remboursée si je participe à l'événement."/>
         </UFormField>
 

@@ -5,7 +5,44 @@ definePageMeta({
   layout: "dashboard",
 });
 
-const isModifying = ref(false);
+const toast = useToast();
+
+const {data: roomsOriginal, refresh} = await useRooms();
+const {reorderRooms} = useRoomsActions();
+const {status: teamsStatus, data: teams} = await useTeams();
+
+const {cloned: rooms, isModified} = useCloned(roomsOriginal);
+
+const [isModifying, modify] = useToggle(false);
+
+async function confirm() {
+  try {
+    if (!isModified.value) {
+      isModifying.value = false;
+      return;
+    }
+
+    await reorderRooms(rooms.value!.map((room) => ({
+      id: room.id,
+      teams: room.teams.map((team) => team.id),
+    })));
+
+    toast.add({
+      title: "Salles mises à jour",
+      description: "L'ordre des salles et l'emplacement des équipes a été mis à jour avec succès.",
+      color: "success",
+    });
+
+    isModifying.value = false;
+    await refresh();
+  } catch (e) {
+    toast.add({
+      title: "Erreur lors de la mise à jour",
+      description: "Une erreur est survenue lors de la mise à jour des salles. Veuillez réessayer ou contacter le gérant du site de cette année.",
+      color: "error",
+    });
+  }
+}
 </script>
 
 <template>
@@ -13,9 +50,9 @@ const isModifying = ref(false);
     <template #header>
       <DashboardNavbar title="Salles">
         <template #right>
-          <UButton variant="ghost" @click="isModifying = !isModifying"
-                   :icon="isModifying ? 'i-lucide-check' : 'i-lucide-edit-2'">
-            {{ isModifying ? "Terminer" : "Modifier" }}
+          <UButton variant="ghost" @click="isModifying ? confirm() : modify()"
+                   :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'">
+            {{ isModifying ? "Confirmer" : "Modifier" }}
           </UButton>
         </template>
       </DashboardNavbar>
@@ -34,13 +71,13 @@ const isModifying = ref(false);
                 </div>
               </div>
             </template>
-            <template #body>
+            <template #body v-if="teams">
               <div v-draggable="[room.teams, {group: 'teams', animation: 150,
                                 ghostClass: 'ghost', disabled: !isModifying}]"
                    :key="`teams-${isModifying}`"
                    class="grid grid-cols-2 h-full place-items-center justify-center group"
                    :class="{'animate-wiggle': isModifying}">
-                <div v-for="team in room.teams.map(t => teams.find(ts => ts.id === t)!)" :key="team.id"
+                <div v-for="team in room.teams.map(t => teams!.find(ts => ts.id === t.id)!)" :key="team.id"
                      :class="{ 'col-span-2 group-[&:has(.ghost)]:col-span-1': room.teams.length === 1 }">
                   <div class="grid gap-1.5 place-items-center" :title="team.name">
                     <UIcon name="i-lucide-users" class="size-8"/>

@@ -5,6 +5,8 @@ const route = useRoute();
 const toast = useToast();
 const {eventTitle} = useRuntimeConfig().public;
 
+const {data: currentParticipant, status} = useCurrentParticipant();
+
 const open = ref(false);
 
 const links: NavigationMenuItem[][] = [[{
@@ -87,7 +89,11 @@ const groups = [{
       </template>
 
       <template #footer="{collapsed}">
-        <ParticipantUserMenu :participant="currentParticipant" :collapsed/>
+        <div v-if="!currentParticipant" class="py-2 text-center">
+          <!-- TODO: error handling -->
+          Error
+        </div>
+        <ParticipantUserMenu v-else :participant="currentParticipant" :loading="status !== 'success'" :collapsed/>
       </template>
     </UDashboardSidebar>
 

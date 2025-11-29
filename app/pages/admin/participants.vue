@@ -9,6 +9,9 @@ definePageMeta({
   layout: "dashboard",
 });
 
+const {status: participantsStatus, data: participants} = await useParticipants({lazy: true});
+const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
+
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
 const UCheckbox = resolveComponent("UCheckbox");
@@ -20,11 +23,12 @@ const overlay = useOverlay();
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 
-const columns: TableColumn<Participant>[] = [
+
+const columns: TableColumn<ParticipantWithTeam>[] = [
   {
     id: "name",
     header: "Nom",
-    accessorFn: (row: Participant) => `${row.firstName} ${row.lastName}`,
+    accessorFn: (row: ParticipantWithTeam) => `${row.firstName} ${row.lastName}`,
   },
   {
     header: "Email",
@@ -37,10 +41,10 @@ const columns: TableColumn<Participant>[] = [
       const val = row.getValue("caution") as string;
       let color: BadgeProps["color"] = "neutral";
 
-      if (val === CautionStatus.Paid) color = "success";
-      else if (val === CautionStatus.NotPaid) color = "error";
-      else if (val === CautionStatus.Refunded) color = "neutral";
-      else if (val === CautionStatus.Waived) color = "warning";
+      if (val === CautionStatus.PAID) color = "success";
+      else if (val === CautionStatus.NOT_PAID) color = "error";
+      else if (val === CautionStatus.REFUNDED) color = "neutral";
+      else if (val === CautionStatus.WAIVED) color = "warning";
 
       return h(UBadge, {class: "capitalize", variant: "subtle", color}, () =>
           val,
@@ -49,8 +53,8 @@ const columns: TableColumn<Participant>[] = [
   },
   {
     header: "Équipe",
-    accessorFn: (row: Participant) => {
-      return row.team ? teams.value.find(t => t.id === row.team)?.name : "Aucune";
+    accessorFn: (row: ParticipantWithTeam) => {
+      return row.team ? teams.value?.find(t => t.id === row.team?.id)?.name : "Aucune";
     },
   },
   {
@@ -156,7 +160,7 @@ const columns: TableColumn<Participant>[] = [
   //}
 ];
 
-function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<ParticipantWithTeam>): Array<DropdownMenuItem> {
   return [
     {
       type: "label",
@@ -214,7 +218,7 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
           <AdminParticipantStats/>
-          <UTable :columns="columns" :data="participants" sticky/>
+          <UTable :columns="columns" :data="participants!" sticky/>
         </div>
       </UContainer>
     </template>

@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
+import schema from "#shared/schemas/teams/create";
 
 const emit = defineEmits<{ close: [boolean] }>();
 
 const dayjs = useDayjs();
 const toast = useToast();
 
-const schema = v.object({
-  name: v.pipe(v.string(), v.nonEmpty("Le nom de l'équipe est requis"), v.minLength(3, "Le nom de l'équipe doit contenir au moins 3 caractères"), v.maxLength(30, "Le nom de l'équipe ne peut pas dépasser 30 caractères")),
-  description: v.optional(v.pipe(v.string(), v.maxLength(250, "La description de l'équipe ne peut pas dépasser 250 caractères"))),
-  idea: v.optional(v.pipe(v.string(), v.maxLength(100, "L'idée de l'équipe ne peut pas dépasser 100 caractères"))),
-});
-
 type Schema = v.InferOutput<typeof schema>
 
 const state = reactive<Schema>({
   name: "",
+  description: "",
 });
 
 const isSubmitting = ref(false);
@@ -34,17 +30,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       color: "success",
     });
 
-    const newTeam = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: event.data.name,
-      description: event.data.description,
-      idea: event.data.idea,
-      members: [currentParticipant.id],
-      token: Math.random().toString(36).substring(2, 15),
-      createdAt: dayjs().valueOf(),
-    };
-    teams.value.push(newTeam);
-    currentParticipant.team = newTeam.id;
+    //const newTeam = {
+    //  id: Math.random().toString(36).substring(2, 9),
+    //  name: event.data.name,
+    //  description: event.data.description,
+    //  idea: event.data.idea,
+    //  members: [currentParticipant.id],
+    //  token: Math.random().toString(36).substring(2, 15),
+    //  createdAt: dayjs().valueOf(),
+    //};
+    //teams.value.push(newTeam);
+    //currentParticipant.team = newTeam.id;
 
     console.log(event.data);
     emit("close", true);
@@ -79,7 +75,7 @@ async function onError(event: FormErrorEvent) {
             <UInput v-model="state.idea" icon="i-lucide-lightbulb" class="w-full"/>
           </UFormField>
 
-          <UFormField label="Description de l'équipe" name="description" class="col-span-2">
+          <UFormField label="Description de l'équipe" name="description" required class="col-span-2">
             <UTextarea v-model="state.description" icon="i-lucide-info" :rows="3" class="w-full"/>
           </UFormField>
         </UForm>

@@ -9,6 +9,8 @@ definePageMeta({
   layout: "user-dashboard",
 });
 
+const {data: currentParticipant, team: currentTeam} = await useCurrentParticipant();
+
 const UButton = resolveComponent("UButton");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 
@@ -18,11 +20,11 @@ const {copy} = useClipboard();
 
 const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
-const columns: TableColumn<Participant>[] = [
+const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
     id: "name",
     header: "Nom",
-    accessorFn: (row: Participant) => `${row.firstName} ${row.lastName}`,
+    accessorFn: (row) => `${row.firstName} ${row.lastName}`,
   },
   {
     header: "Réseaux",
@@ -106,7 +108,7 @@ const columns: TableColumn<Participant>[] = [
 ];
 
 // TODO: Do we allow participants to remove others from their team?
-function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<ParticipantWithoutRelations>): Array<DropdownMenuItem> {
   return [
     {
       label: "Retirer de l'équipe",
@@ -118,8 +120,6 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
   ];
 }
 
-const teamMembers = useArrayFilter(toRef(participants), (p) => currentTeam.value?.members.includes(p.id) && p.id !== currentParticipant.id);
-
 const noMembersLinks: ButtonProps[] = [
   {
     label: "Inviter des membres",
@@ -129,7 +129,9 @@ const noMembersLinks: ButtonProps[] = [
 ];
 
 const copyToken = () => {
-  copy(currentTeam.value!.token);
+  if (!currentTeam) return;
+
+  copy(currentTeam.token);
   toast.add({
     title: "Code d'invitation copié",
     description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers.",
@@ -171,10 +173,10 @@ const copyToken = () => {
             </div>
           </UCard>
           <div class="grid gap-2 row-span-2">
-            <ParticipantTeamStatusCard/>
-            <ParticipantScheduleCard/>
+            <ParticipantTeamStatusCard :participant="currentParticipant"/>
+            <!--            <ParticipantScheduleCard/>-->
           </div>
-          <UTable :columns :data="teamMembers" class="col-span-full">
+          <UTable :columns :data="currentTeam!.members" class="col-span-full">
             <template #empty>
               <div class="max-w-1/2 mx-auto">
                 <UEmpty title="Aucun membre dans l'équipe"

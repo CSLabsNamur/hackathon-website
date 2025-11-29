@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
-import type { BadgeProps } from "#ui/components/Badge.vue";
-import type { Row } from "@tanstack/vue-table";
-import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import type { SerializeObject } from "nitropack";
 
 definePageMeta({
   layout: "user-dashboard",
 });
+
+const {data: participants} = await useParticipants();
+const {data: teams} = await useTeams();
 
 const columns: TableColumn<Team>[] = [
   {
@@ -23,8 +24,8 @@ const columns: TableColumn<Team>[] = [
   },
   {
     header: "Membres",
-    accessorFn: (row: Team) => {
-      return participants.value.filter((u) => u.team === row.id).length;
+    accessorFn: (row) => {
+      return participants.value?.filter((u) => u.teamId === row.id).length;
     },
   },
 ];

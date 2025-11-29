@@ -1,31 +1,39 @@
 <script setup lang="ts">
-import { CautionStatus } from "~/utils/mock";
+withDefaults(defineProps<{
+  rounded?: boolean;
+}>(), {rounded: true});
 
-withDefaults(defineProps<{ rounded?: boolean; }>(), {rounded: true});
+const {status, data: participants} = await useParticipants({lazy: true})
 
 const dayjs = useDayjs();
 
 const {eventDateEnd} = useRuntimeConfig().public;
 
-const stats = computedWithControl(() => participants, () => [{
-  title: "Utilisateurs inscrits",
-  value: participants.value.length,
-  icon: "i-lucide-user-check",
-}, {
-  title: "Nouvelles inscriptions (7j)",
-  value: participants.value.filter(participant => dayjs().diff(dayjs(participant.createdAt), "day") < 7).length,
-  icon: "i-lucide-user-plus",
-}, {
-  title: "Cautions payées",
-  value: `${participants.value.filter(participant => participant.caution === CautionStatus.Paid).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.Refunded && participant.caution !== CautionStatus.Waived).length}`,
-  icon: "i-lucide-wallet",
-  condition: dayjs().isBefore(dayjs(eventDateEnd)),
-}, {
-  title: "Cautions remboursées",
-  value: `${participants.value.filter(participant => participant.caution === CautionStatus.Refunded).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.Waived).length}`,
-  icon: "i-lucide-currency-euro",
-  condition: dayjs().isAfter(dayjs(eventDateEnd)),
-}], {deep: true});
+const stats = computedWithControl(() => participants.value, () => {
+  if (!participants.value) {
+    return [];
+  }
+
+  return [{
+    title: "Utilisateurs inscrits",
+    value: participants.value.length,
+    icon: "i-lucide-user-check",
+  }, {
+    title: "Nouvelles inscriptions (7j)",
+    value: participants.value.filter(participant => dayjs().diff(dayjs(participant.createdAt), "day") < 7).length,
+    icon: "i-lucide-user-plus",
+  }, {
+    title: "Cautions payées",
+    value: `${participants.value.filter(participant => participant.caution === CautionStatus.PAID).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.REFUNDED && participant.caution !== CautionStatus.WAIVED).length}`,
+    icon: "i-lucide-wallet",
+    condition: dayjs().isBefore(dayjs(eventDateEnd)),
+  }, {
+    title: "Cautions remboursées",
+    value: `${participants.value.filter(participant => participant.caution === CautionStatus.REFUNDED).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.WAIVED).length}`,
+    icon: "i-lucide-currency-euro",
+    condition: dayjs().isAfter(dayjs(eventDateEnd)),
+  }];
+}, {deep: true});
 </script>
 
 <template>

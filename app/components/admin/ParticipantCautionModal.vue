@@ -2,12 +2,16 @@
 const props = defineProps<{ participant: Participant }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
-const oldCaution = ref(props.participant.caution);
+const {updateCaution} = useParticipantsActions();
 
-const cautionStatus = [CautionStatus.Paid, CautionStatus.NotPaid, CautionStatus.Refunded, CautionStatus.Waived];
+const {cloned: newCaution, isModified} = useCloned(props.participant.caution);
 
-const save = () => {
-  props.participant.caution = oldCaution.value;
+const cautionStatus = [CautionStatus.PAID, CautionStatus.NOT_PAID, CautionStatus.REFUNDED, CautionStatus.WAIVED];
+
+const save = async () => {
+  if (isModified) {
+    await updateCaution(props.participant.id, newCaution.value);
+  }
   emit("close", true);
 };
 </script>
@@ -17,7 +21,7 @@ const save = () => {
           :description="`Mettre à jour le statut de la caution de ${participant.firstName} ${participant.lastName}`">
     <template #body>
       <div class="space-y-4">
-        <URadioGroup v-model="oldCaution" label="Statut de la caution" :items="cautionStatus" variant="table"/>
+        <URadioGroup v-model="newCaution" label="Statut de la caution" :items="cautionStatus" variant="table"/>
       </div>
     </template>
     <template #footer>

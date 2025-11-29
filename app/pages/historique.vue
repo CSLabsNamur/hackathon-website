@@ -71,7 +71,7 @@ const pictures = [
     <div class="flex flex-col md:flex-row items-center justify-between">
       <UTimeline :items="timeline" orientation="vertical" :default-value="5" class="md:w-2xl">
         <template #description="{item}">
-          <MDC :value="item.description" unwrap class="whitespace-pre-line"/>
+          <MDC v-if="item.description" :value="item.description" unwrap class="whitespace-pre-line"/>
         </template>
       </UTimeline>
       <UCarousel v-slot="{ item }" :items="pictures" loop autoplay class="md:w-2xl">
