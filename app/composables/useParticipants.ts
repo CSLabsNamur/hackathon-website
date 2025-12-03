@@ -1,4 +1,4 @@
-import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
+import type { ParticipantCreateWithoutUserInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import type { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 
 interface UseParticipantsParams {
@@ -13,13 +13,22 @@ export const useParticipants = async (params?: UseParticipantsParams) => {
 };
 
 export const useParticipantsActions = () => {
-  const createParticipant = async (data: ParticipantCreateInput) => {
-    return $fetch("/api/participants", {
+  const createParticipant = async (data: Omit<ParticipantCreateWithoutUserInput, "curriculumVitae">, cv?: File) => {
+    await $fetch("/api/participants", {
       method: "POST",
       body: data,
     });
-  };
 
+    // TODO: Re-enable CV upload when backend supports it
+    //if (cv) {
+    //  const formData = new FormData();
+    //  formData.append("file", cv);
+    //  await $fetch("/api/participants/curriculum-vitae", {
+    //    method: "POST",
+    //    body: formData,
+    //  });
+    //}
+  };
   const updateCaution = async (id: string, caution: CautionStatus) => {
     return $fetch(`/api/participants/${id}/caution`, {
       method: "PATCH",

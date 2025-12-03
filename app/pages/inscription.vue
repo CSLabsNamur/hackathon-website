@@ -5,6 +5,7 @@ import type { Reactive } from "vue";
 import schema from "#shared/schemas/participants/create";
 
 const toast = useToast();
+const actions = useParticipantsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -22,23 +23,15 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
+
+    const {curriculumVitae, ...data} = event.data;
+    await actions.createParticipant(data, curriculumVitae);
+
     toast.add({
       title: "Inscription soumise !",
       description: "Merci pour votre inscription, nous reviendrons vers vous rapidement.",
       color: "success",
     });
-    await $fetch("/api/back/authentication/register", {
-      method: "POST",
-      body: event.data,
-    });
-    if (event.data.curriculumVitae) {
-      const formData = new FormData();
-      formData.append("file", event.data.curriculumVitae);
-      await $fetch("/api/back/users/me/curriculum-vitae", {
-        method: "POST",
-        body: formData,
-      });
-    }
     console.log(event.data);
   } finally {
     isSubmitting.value = false;

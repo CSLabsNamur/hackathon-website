@@ -1,22 +1,4 @@
-import type { AvatarProps } from "#ui/components/Avatar.vue";
-
 const dayjs = useDayjs();
-
-export type User = {
-  name: string;
-  email: string;
-  avatar: AvatarProps;
-}
-
-export const adminUser = computed<User>(() => ({
-  name: "Admin User",
-  email: "it@cslabs.be",
-  avatar: {
-    src: "https://i.pravatar.cc/150?u=adminuser",
-    alt: "Admin User Avatar",
-    icon: "i-lucide-image",
-  },
-}));
 
 export const mockCurrentDateTime = dayjs("2026-03-29T16:31:00Z");
 

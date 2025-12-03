@@ -1,5 +1,6 @@
 import { PrismaClient, SubmissionType } from "./generated/prisma/client";
 import type {
+  AdminCreateManyInput,
   ParticipantCreateManyInput,
   RoomCreateInput,
   ScheduleItemCreateInput,
@@ -11,7 +12,7 @@ import "dotenv/config";
 
 const prisma = new PrismaClient();
 
-// Teams and Participants
+// Teams
 const teams: TeamCreateInput[] = [
   {
     name: "Team Alpha",
@@ -35,8 +36,14 @@ const teams: TeamCreateInput[] = [
   },
 ];
 
-type ParticipantSeed = Omit<ParticipantCreateManyInput, "teamId"> & { teamName?: string | null };
-const participantSeeds: ParticipantSeed[] = [
+// Participants
+type ParticipantSeed = Omit<ParticipantCreateManyInput, "teamId" | "userId"> & {
+  teamName?: string | null,
+  firstName: string,
+  lastName: string,
+  email: string,
+};
+const participants: ParticipantSeed[] = [
   {
     email: "aline@example.com",
     firstName: "Aline",
@@ -126,6 +133,16 @@ const participantSeeds: ParticipantSeed[] = [
     teamName: "Team Delta",
     imageAgreement: true,
     newsletter: true,
+  },
+];
+
+// Admins
+type AdminSeed = Omit<AdminCreateManyInput, "userId"> & { firstName: string, lastName: string, email: string };
+const admins: AdminSeed[] = [
+  {
+    firstName: "Admin",
+    lastName: "User",
+    email: "it@cslabs.be",
   },
 ];
 
@@ -231,39 +248,87 @@ const rooms: RoomCreateInput[] = [
   {
     id: "info-i31",
     name: "Salle I31",
-    sequence: 2
+    sequence: 2,
   },
   {
     id: "info-i32",
     name: "Salle I32",
-    sequence: 3
+    sequence: 3,
   },
   {
     id: "info-i33",
     name: "Salle I33",
-    sequence: 4
+    sequence: 4,
   },
   {
     id: "info-open-space-3",
     name: "Salle Open Space",
-    sequence: 5
+    sequence: 5,
   },
 ];
 
 async function main() {
-  //region Teams and Participants
+  //region Teams
   await prisma.team.createMany({data: teams, skipDuplicates: true});
 
   const teamRows = await prisma.team.findMany({select: {id: true, name: true}});
   const teamIdByName = new Map(teamRows.map(t => [t.name, t.id]));
+  //endregion
 
-  const participantData: ParticipantCreateManyInput[] = participantSeeds.map(({teamName, ...rest}) => ({
+  //region Users
+  // Create users for admins
+  const adminUserData = admins.map(({email, firstName, lastName}) => ({
+    email,
+    firstName,
+    lastName,
+  }));
+  await prisma.user.createMany({
+    data: adminUserData,
+    skipDuplicates: true,
+  });
+
+  // Create users for participants
+  const userData = participants.map(({email, firstName, lastName}) => ({
+    email,
+    firstName,
+    lastName,
+  }));
+  await prisma.user.createMany({
+    data: userData,
+    skipDuplicates: true,
+  });
+
+  // Fetch all users to map email to userId
+  const users = await prisma.user.findMany();
+  const userIdByEmail = new Map(users.map(u => [u.email, u.id]));
+  //endregion
+
+  //region Participants
+  const participantData: ParticipantCreateManyInput[] = participants.map(({
+                                                                            teamName,
+                                                                            firstName,
+                                                                            lastName,
+                                                                            email,
+                                                                            ...rest
+                                                                          }) => ({
     ...rest,
     teamId: teamName ? teamIdByName.get(teamName) ?? null : null,
+    userId: userIdByEmail.get(email)!,
   }));
 
   await prisma.participant.createMany({
     data: participantData,
+    skipDuplicates: true,
+  });
+  //endregion
+
+  //region Admins
+  const adminData: AdminCreateManyInput[] = admins.map(({firstName, lastName, email, ...rest}) => ({
+    ...rest,
+    userId: userIdByEmail.get(email)!,
+  }));
+  await prisma.admin.createMany({
+    data: adminData,
     skipDuplicates: true,
   });
   //endregion

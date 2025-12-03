@@ -2,9 +2,16 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavigationMenu.vue";
 import type { ButtonProps } from "#ui/components/Button.vue";
+import LoginModal from "~/components/LoginModal.vue";
 
 const route = useRoute();
 const {teaserEnabled} = useRuntimeConfig().public;
+
+const supabaseClient = useSupabaseClient();
+const user = useSupabaseUser();
+
+const overlay = useOverlay();
+const loginModal = overlay.create(LoginModal);
 
 const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
   {
@@ -91,6 +98,10 @@ const footerLogos: FooterLogos[] = [{
   to: "https://www.instagram.com/cslabs_namur/",
   ariaLabel: "Instagram",
 }];
+
+watchEffect(() => {
+  console.log("User changed:", user.value);
+});
 </script>
 
 <template>
@@ -102,11 +113,14 @@ const footerLogos: FooterLogos[] = [{
     <ConditionalNavigationMenu :items="headerItems"/>
 
     <template #right>
-      <UColorModeButton>
+      <UColorModeButton :ui="{base: 'p-0'}">
         <template #fallback>
           <UButton loading variant="ghost" color="neutral"/>
         </template>
       </UColorModeButton>
+      <USeparator orientation="vertical" class="h-6 mx-2"/>
+      <UButton v-if="!user" variant="soft" @click="loginModal.open">Connexion</UButton>
+      <UButton v-else variant="soft" @click="supabaseClient.auth.signOut()">Déconnexion</UButton>
     </template>
 
     <template #body>

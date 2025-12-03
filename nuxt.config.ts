@@ -58,6 +58,10 @@ export default defineNuxtConfig({
   supabase: {
     types: false,
     redirect: false,
+    redirectOptions: {
+      login: "/auth/login",
+      callback: "/auth/callback",
+    },
   },
 
   dayjs: {
