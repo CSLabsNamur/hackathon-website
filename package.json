@@ -7,7 +7,14 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare && prisma generate"
+    "postinstall": "nuxt prepare && pnpm run db:generate",
+    "start": "node .output/server/index.mjs",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
   },
   "packageManager": "pnpm@9.15.9",
   "dependencies": {
@@ -33,6 +40,7 @@
     "eslint": "^9.39.1",
     "nuxt": "^4.2.1",
     "nuxt-echarts": "1.0.1",
+    "prisma": "^6.19.0",
     "pinia": "^3.0.4",
     "postcss-nesting": "^13.0.2",
     "valibot": "1.2.0",
@@ -43,7 +51,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "prisma": "^6.19.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }

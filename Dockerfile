@@ -1,7 +1,10 @@
-FROM node:22-alpine AS base
+FROM node:22-slim AS base
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml .npmrc ./
+RUN apt-get update -y && apt-get install -y openssl
+
+COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
+COPY server/prisma/schema.prisma ./server/prisma/schema.prisma
 
 RUN corepack enable && pnpm install --prod --frozen-lockfile && pnpm add @nuxt/cli
 
@@ -14,11 +17,13 @@ COPY . ./
 # Build the project
 RUN pnpm run build
 
-FROM base as runtime
+FROM base AS runtime
 WORKDIR /app
 
 # Only `.output` folder is needed from the build stage
-COPY --from=build /app/.output/ ./
+COPY --from=build /app/tsconfig*.json .
+COPY --from=build /app/.output ./.output
+COPY --from=build /app/server/prisma ./server/prisma
 
 # Change the port and host
 ENV PORT=80
@@ -26,4 +31,7 @@ ENV HOST=0.0.0.0
 
 EXPOSE 80
 
-CMD ["node", "/app/server/index.mjs"]
+COPY --chmod=0755 docker-entrypoint.sh .
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["node", "/app/.output/server/index.mjs"]

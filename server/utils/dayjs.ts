@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import isBetween from "dayjs/plugin/isBetween";
-import fr from "dayjs/locale/fr";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+import isBetween from "dayjs/plugin/isBetween.js";
+import fr from "dayjs/locale/fr.js";
 
 // Load French locale
 dayjs.locale(fr);
