@@ -90,39 +90,22 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <!-- School, Diet & Needs -->
-        <UFormField label="École" name="school">
-          <USelect v-model="state.school"
-                   class="w-full"
-                   :items="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Hors Belgique', 'Autre']"
-                   icon="i-lucide-graduation-cap">
-            <template #trailing>
-              <UButton v-if="state.school" aria-label="Effacer la sélection"
-                       icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
-                       @pointerdown.stop.prevent
-                       @keydown.enter.stop.prevent="state.school = undefined"
-                       @keydown.space.stop.prevent="state.school = undefined"
-                       @click.stop="state.school = undefined"
-                       class="text-muted"/>
-            </template>
-          </USelect>
-        </UFormField>
-
-        <UFormField label="Régime alimentaire spécifique" name="diet">
-          <USelect v-model="state.diet"
-                   class="w-full"
-                   :items="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
-                   icon="i-lucide-apple">
-            <template #trailing>
-              <UButton v-if="state.diet" aria-label="Effacer la sélection"
-                       icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
-                       @pointerdown.stop.prevent
-                       @keydown.enter.stop.prevent="state.diet = undefined"
-                       @keydown.space.stop.prevent="state.diet = undefined"
-                       @click.stop="state.diet = undefined"
-                       class="text-muted"/>
-            </template>
-          </USelect>
-        </UFormField>
+        <HybridSelectInput 
+          v-model="state.school"
+          label="École"
+          name="school"
+          :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
+          icon="i-lucide-graduation-cap"
+          placeholder="Précisez votre école..."
+        />
+        <HybridSelectInput 
+          v-model="state.diet"
+          label="Régime alimentaire spécifique"
+          name="diet"
+          :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
+          icon="i-lucide-apple"
+          placeholder="Précisez votre régime alimentaire..."
+        />
 
         <UFormField label="Besoins spécifiques" name="needs"
                     hint="(Accessibilité, etc.)">
