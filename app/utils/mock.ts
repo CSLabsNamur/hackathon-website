@@ -1,6 +1,6 @@
 const dayjs = useDayjs();
 
-export const mockCurrentDateTime = dayjs("2026-03-29T16:31:00Z");
+export const mockCurrentDateTime = dayjs("2026-03-27T16:31:00Z");
 
 //region ==== Assets & Resources ====
 //export type Asset = {

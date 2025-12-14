@@ -19,7 +19,7 @@ const timeline: TimelineItem[] = [
     title: "3e édition – Le Bien Vieillir",
     icon: "i-lucide-heart-pulse",
     //icon: "i-lucide-rocking-chair",
-    description: "Après 3 reports dus à la pandémie, le Hackathon 'Le Bien Vieillir' s'organise, dans le cadre du 50e anniversaire de la Faculté d'Informatique de l'Université de Namur.\nL'idée : *Repenser la technologie pour tous*, en imaginant des solutions pour aider les personnes âgées à mieux appréhender les technologies modernes.",
+    description: "Après 2 reports dus à la pandémie, le Hackathon 'Le Bien Vieillir' s'organise, dans le cadre du 50e anniversaire de la Faculté d'Informatique de l'Université de Namur.\nL'idée : *Repenser la technologie pour tous*, en imaginant des solutions pour aider les personnes âgées à mieux appréhender les technologies modernes.",
   },
   {
     date: "17-19 Février 2023",
@@ -37,7 +37,7 @@ const timeline: TimelineItem[] = [
     date: "28 Février - 2 Mars 2025",
     title: "6e édition – La Culture",
     icon: "i-lucide-book-open",
-    description: "Namur finaliste pour devenir capitale européenne de la culture... Alors évidemment, on en a profité ! Les participants développeront leurs idées autour de cette grande question : *comment l'informatique peut-elle contribuer à la promotion et la préservation du patrimoine culturel ?*",
+    description: "Namur candidate pour devenir capitale européenne de la culture... Alors évidemment, on en a profité ! Les participants développeront leurs idées autour de cette grande question : *comment l'informatique peut-elle contribuer à la promotion et la préservation du patrimoine culturel ?*",
   },
   {
     date: "27-29 Mars 2026",

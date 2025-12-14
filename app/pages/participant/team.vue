@@ -182,7 +182,7 @@ const copyToken = () => {
           </UCard>
           <div class="grid gap-2 row-span-2">
             <ParticipantTeamStatusCard :participant="currentParticipant"/>
-            <!--            <ParticipantScheduleCard/>-->
+            <ParticipantScheduleCard/>
           </div>
           <UTable :columns :data="currentParticipant.team.members" class="col-span-full">
             <template #empty>

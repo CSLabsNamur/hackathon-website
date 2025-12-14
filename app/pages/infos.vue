@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
+import type { TimelineItem } from "@nuxt/ui";
 
 const {copy} = useClipboard();
 const toast = useToast();
 const {eventDateStart, eventDateEnd} = useRuntimeConfig().public;
+
+const {data: schedule} = await useSchedule({lazy: false});
 
 const fullAddress = ["Faculté d'informatique de l'Université de Namur", "Rue Grandgagnage 21, 5000 Namur, Belgique"];
 const copyAddress = () => {
@@ -32,6 +35,13 @@ const amenities: PageFeatureProps[] = [
     description: "Accès aux installations de l'Université",
   },
 ];
+
+const timeline = computed<TimelineItem[] | undefined>(() => schedule.value?.map((item) => ({
+  title: item.title,
+  description: item.description,
+  date: item.dateString,
+  icon: item.icon,
+})));
 </script>
 
 <template>
@@ -63,7 +73,9 @@ const amenities: PageFeatureProps[] = [
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-              <UButton class="justify-center" color="primary" icon="i-lucide-navigation" variant="solid">
+              <UButton class="justify-center" color="primary" icon="i-lucide-navigation" variant="solid"
+                       to="https://www.openstreetmap.org/directions?from=&to=50.46588169490292,4.857644508142088&engine=osrm_car"
+                       target="_blank">
                 Itinéraire
               </UButton>
               <UButton variant="soft" color="neutral" icon="i-lucide-copy" @click="copyAddress"
@@ -85,9 +97,9 @@ const amenities: PageFeatureProps[] = [
               </div>
               <div class="flex-1">
                 <p class="text-xs font-medium text-muted uppercase tracking-wide">Début</p>
-                <p class="text-lg font-semibold text-highlighted">{{
-                    $dayjs(eventDateStart).format("DD MMMM YYYY")
-                  }}</p>
+                <p class="text-lg font-semibold text-highlighted">
+                  {{ $dayjs(eventDateStart).format("DD MMMM YYYY") }}
+                </p>
               </div>
             </div>
 
@@ -136,10 +148,11 @@ const amenities: PageFeatureProps[] = [
               <div class="grid gap-2">
                 <p class="text-xs font-medium text-muted uppercase tracking-wide">Réseaux sociaux</p>
                 <div class="grid grid-cols-2 gap-2">
-                  <UButton to="https://www.facebook.com/ComputerScienceLabs/" target="_blank"
-                           icon="i-simple-icons-facebook" variant="soft" class="flex-1 justify-center"
+                  <!-- TODO: Centralize socials links to avoid duplication -->
+                  <UButton to="https://www.instagram.com/cslabs_namur/" target="_blank"
+                           icon="i-simple-icons-instagram" variant="soft" class="flex-1 justify-center"
                            :ui="{base: 'p-2.5'}">
-                    Facebook
+                    Instagram
                   </UButton>
                   <UButton to="https://discord.gg/Jf2Dht8" target="_blank" icon="i-simple-icons-discord"
                            color="secondary" variant="soft" class="flex-1 justify-center" :ui="{base: 'p-2.5'}">
@@ -166,7 +179,8 @@ const amenities: PageFeatureProps[] = [
     <UPageSection title="Programme" icon="i-lucide-calendar-check" description="Aperçu du week‑end (indicatif)"
                   :ui="{container: '!py-4 sm:!py-6 lg:!py-8'}">
       <div class="grid justify-center">
-        <UTimeline :items="timeline"/>
+        <UTimeline v-if="timeline" :items="timeline"/>
+        <p v-else class="text-muted">Le programme sera bientôt disponible.</p>
       </div>
     </UPageSection>
 
