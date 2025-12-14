@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
-import type { SerializeObject } from "nitropack";
 
 definePageMeta({
   layout: "user-dashboard",
 });
 
-const {data: participants} = await useParticipants();
-const {data: teams} = await useTeams();
+const {data: teams} = await useTeams({lazy: true});
 
 const columns: TableColumn<Team>[] = [
   {
@@ -25,7 +23,7 @@ const columns: TableColumn<Team>[] = [
   {
     header: "Membres",
     accessorFn: (row) => {
-      return participants.value?.filter((u) => u.teamId === row.id).length;
+      return row.members.length;
     },
   },
 ];

@@ -6,5 +6,13 @@ export default defineEventHandler(async (event) => {
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  return prisma.room.create({data});
+  const lastSequence = await prisma.room.aggregate({
+    _max: {
+      sequence: true,
+    },
+  });
+
+  const sequence = (lastSequence._max.sequence ?? 0) + 1;
+
+  return prisma.room.create({data: {...data, sequence}});
 });

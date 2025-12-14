@@ -1,6 +1,6 @@
 import * as v from "valibot";
 
-export default v.object({
+const schema = v.object({
   firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
   lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
@@ -15,3 +15,6 @@ export default v.object({
   imageAgreement: v.optional(v.boolean(), false),
   newsletter: v.optional(v.boolean()),
 });
+
+export default schema;
+export type CreateParticipantSchema = v.InferOutput<typeof schema>;

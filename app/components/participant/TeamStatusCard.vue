@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const props = defineProps<{ participant: Participant }>();
 
+const {data: submissionsRequests} = await useSubmissionsRequests({lazy: true});
+
 // TODO: obviously move there functions elsewhere
 enum TeamIssueSeverity {
   INFO = 0,
@@ -41,15 +43,15 @@ const teamIssues = computed<TeamIssue[]>(() => {
     });
   }
   // Check if all members have submitted every required submission
-  //if (!props.participant.team.members.every((member) => {
-  //  return submissionRequests.value.every((request) => !request.required || member.submissions.some((submission) => submission.requestId === request.id));
-  //})) {
-  //  issues.push({
-  //    severity: TeamIssueSeverity.WARNING,
-  //    message: "Certains membres n'ont pas encore soumis tous les livrables requis demandés.",
-  //    description: "Assurez-vous que tous les membres de votre équipe ont soumis les livrables requis.",
-  //  });
-  //}
+  if (!props.participant.team?.members.every((member) => {
+    return submissionsRequests.value?.every((request) => !request.required || member.submissions?.some((submission) => submission.requestId === request.id));
+  })) {
+    issues.push({
+      severity: TeamIssueSeverity.WARNING,
+      message: "Certains membres n'ont pas encore soumis tous les livrables requis demandés.",
+      description: "Assurez-vous que tous les membres de votre équipe ont soumis les livrables requis.",
+    });
+  }
 
   return issues;
 });

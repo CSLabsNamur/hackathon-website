@@ -3,7 +3,7 @@ import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 
-const props = defineProps<{ participant: Participant }>();
+const props = defineProps<{ participant: Participant, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -17,21 +17,21 @@ const schema = v.object({
   school: v.optional(v.string()),
   diet: v.optional(v.string()),
   needs: v.optional(v.string()),
-  curriculumVitae: v.boolean(),
+  //curriculumVitae: v.boolean(),
 });
 
 type Schema = v.InferOutput<typeof schema>
 
 const state: Reactive<Schema> = reactive({
-  firstName: props.participant.firstName,
-  lastName: props.participant.lastName,
-  email: props.participant.email,
+  firstName: props.participant.user.firstName,
+  lastName: props.participant.user.lastName,
+  email: props.participant.user.email,
   githubAccount: props.participant.githubAccount || undefined,
   linkedInAccount: props.participant.linkedInAccount || undefined,
   school: props.participant.school || undefined,
   diet: props.participant.diet || undefined,
   needs: props.participant.needs || undefined,
-  curriculumVitae: false,
+  //curriculumVitae: false,
 });
 
 const isSubmitting = ref(false);
@@ -39,23 +39,20 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
+    if (props.adminEdit) {
+      const actions = useParticipantsActions();
+      await actions.updateParticipant(props.participant.id, event.data);
+    } else {
+      const actions = useCurrentParticipantActions();
+      await actions.updateParticipant(event.data);
+    }
+
     toast.add({
-      title: "Participant modifié",
-      description: "Le participant a été modifié avec succès.",
+      title: props.adminEdit ? "Participant modifié" : "Profil mis à jour",
+      description: props.adminEdit ? "Le participant a été modifié avec succès." : "Vos informations ont été modifiées avec succès.",
       color: "success",
     });
-    // Update user in the mock list
-    //participants.find(u => u.id === props.participant.id)!.firstName = event.data.firstName;
-    //participants.find(u => u.id === props.participant.id)!.lastName = event.data.lastName;
-    //participants.find(u => u.id === props.participant.id)!.email = event.data.email;
-    //participants.find(u => u.id === props.participant.id)!.githubAccount = event.data.githubAccount || null;
-    //participants.find(u => u.id === props.participant.id)!.linkedInAccount = event.data.linkedInAccount || null;
-    //participants.find(u => u.id === props.participant.id)!.school = event.data.school || null;
-    //participants.find(u => u.id === props.participant.id)!.diet = event.data.diet || null;
-    //participants.find(u => u.id === props.participant.id)!.needs = event.data.needs || null;
-    //if (event.data.curriculumVitae) {
-    //  participants.find(u => u.id === props.participant.id)!.curriculumVitae = null;
-    //}
+
     console.log(event.data);
     emit("close", true);
   } finally {
@@ -73,10 +70,11 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UModal :close="{onClick: () => emit('close', false)}" title="Modifier l'utilisateur"
-          :description="`Modifier les informations de ${participant.firstName} ${participant.lastName}`"
-          :ui="{content: 'max-w-2xl'}">
+  <UModal :title="adminEdit ? 'Modifier le participant' : 'Modifier mon profil'"
+          :description="adminEdit ? `Modifier les informations de ${participant.user.firstName} ${participant.user.lastName}` : 'Modifiez les informations de votre profil'"
+          :close="{onClick: () => emit('close', false)}" :ui="{content: 'max-w-2xl'}">
     <template #body>
+      <!-- TODO: Put form in a separate component and use it in registration as well -->
       <UForm :schema :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
              id="participant-edit-form">
         <!-- First & Last name -->

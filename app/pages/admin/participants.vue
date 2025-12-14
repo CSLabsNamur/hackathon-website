@@ -3,14 +3,14 @@ import type { TableColumn } from "#ui/components/Table.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { AdminParticipantCautionModal, ParticipantEditModal } from "#components";
+// TODO: uniformize import paths throughout modals
+import { AdminParticipantCautionModal, AdminParticipantsRemoveModal, ParticipantEditModal } from "#components";
 
 definePageMeta({
   layout: "dashboard",
 });
 
-const {status: participantsStatus, data: participants} = await useParticipants({lazy: true});
-const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
+const {status, data: participants} = await useParticipants({lazy: true});
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -22,13 +22,13 @@ const overlay = useOverlay();
 
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
+const removeModal = overlay.create(AdminParticipantsRemoveModal);
 
-
-const columns: TableColumn<ParticipantWithTeam>[] = [
+const columns: TableColumn<Participant>[] = [
   {
     id: "name",
     header: "Nom",
-    accessorFn: (row: ParticipantWithTeam) => `${row.firstName} ${row.lastName}`,
+    accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
   },
   {
     header: "Email",
@@ -53,9 +53,7 @@ const columns: TableColumn<ParticipantWithTeam>[] = [
   },
   {
     header: "Équipe",
-    accessorFn: (row: ParticipantWithTeam) => {
-      return row.team ? teams.value?.find(t => t.id === row.team?.id)?.name : "Aucune";
-    },
+    accessorFn: (row) => row.team?.name,
   },
   {
     header: "Réseaux",
@@ -137,14 +135,14 @@ const columns: TableColumn<ParticipantWithTeam>[] = [
               {
                 content: {align: "end"},
                 items: getRowItems(row),
-                "aria-label": `Actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+                "aria-label": `Actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
               },
               () => h(UButton, {
                 icon: "i-lucide-ellipsis-vertical",
                 color: "neutral",
                 variant: "ghost",
                 class: "ml-auto",
-                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
               }),
           ),
       );
@@ -160,35 +158,30 @@ const columns: TableColumn<ParticipantWithTeam>[] = [
   //}
 ];
 
-function getRowItems(row: Row<ParticipantWithTeam>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
   return [
     {
       type: "label",
       label: `Inscrit le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
       class: "text-muted",
     },
-    {
-      type: "label",
-      label: "Actions",
-    },
-    {
-      label: "Voir le profil",
-      icon: "i-lucide-user",
-    },
-    {
-      label: "Envoyer un email",
-      icon: "i-lucide-mail",
-    },
+    // TODO: View profile
+    // TODO: Send email actions
+    //{
+    //  type: "label",
+    //  label: "Actions",
+    //},
+    //{
+    //  label: "Voir le profil",
+    //  icon: "i-lucide-user",
+    //},
+    //{
+    //  label: "Envoyer un email",
+    //  icon: "i-lucide-mail",
+    //},
     {
       type: "label",
       label: "Administration",
-    },
-    {
-      label: "Éditer l'utilisateur",
-      icon: "i-lucide-edit-2",
-      onSelect: () => {
-        editModal.open({participant: row.original});
-      },
     },
     {
       label: "Gérer la caution",
@@ -198,8 +191,18 @@ function getRowItems(row: Row<ParticipantWithTeam>): Array<DropdownMenuItem> {
       },
     },
     {
-      label: "Réinitialiser le mot de passe",
-      icon: "i-lucide-key",
+      label: "Éditer l'utilisateur",
+      icon: "i-lucide-edit-2",
+      onSelect: () => {
+        editModal.open({participant: row.original});
+      },
+    },
+    {
+      label: "Supprimer l'utilisateur",
+      icon: "i-lucide-trash-2",
+      onSelect: () => {
+        removeModal.open({participant: row.original});
+      },
     },
   ];
 }
@@ -218,7 +221,15 @@ function getRowItems(row: Row<ParticipantWithTeam>): Array<DropdownMenuItem> {
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
           <AdminParticipantStats/>
-          <UTable :columns="columns" :data="participants!" sticky/>
+          <UTable :columns="columns" :data="participants" sticky :loading="status === 'pending'">
+            <template #empty>
+              <div class="max-w-1/2 mx-auto">
+                <UEmpty title="Aucun participant"
+                        description="Aucun participant ne s'est encore inscrit à l'événement... Mais ça va arriver !"
+                        icon="i-lucide-circle-slash"/>
+              </div>
+            </template>
+          </UTable>
         </div>
       </UContainer>
     </template>

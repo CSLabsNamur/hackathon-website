@@ -24,7 +24,7 @@ const participantChartData = computed<RegistrationTimelineData[]>(() => {
       .sort((a, b) => a.month.localeCompare(b.month));
 });
 
-const options: Ref<ECOption> = ref({
+const options = computed<ECOption>(() => ({
   backgroundColor: "transparent",
   title: {
     text: "Inscriptions des participants au fil du temps",
@@ -55,7 +55,7 @@ const options: Ref<ECOption> = ref({
   series: [
     {
       type: "line",
-      data: participantChartData,
+      data: participantChartData.value,
       areaStyle: {
         opacity: 0.3,
       },
@@ -70,11 +70,17 @@ const options: Ref<ECOption> = ref({
       label: {},
     },
   ],
-});
+}));
 </script>
 
 <template>
-  <div class="h-80">
-    <VChart :option="options" autoresize/>
-  </div>
+  <ClientOnly>
+    <template #fallback>
+      <USkeleton class="h-80 rounded-md" v-bind="$attrs"/>
+    </template>
+
+    <div class="h-80">
+      <VChart :option="options" autoresize/>
+    </div>
+  </ClientOnly>
 </template>

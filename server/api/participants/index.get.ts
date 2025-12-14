@@ -1,10 +1,23 @@
 export default defineEventHandler(async (event) => {
-  //await requireAuth(event, UserRole.ADMIN);
+  await requireAuth(event, UserRole.ADMIN);
 
   return prisma.participant.findMany({
     include: {
-      team: {include: {members: true}},
-      submissions: {include: {request: true}},
+      team: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+      submissions: {
+        include: {
+          request: true,
+        },
+      },
+      user: true,
     },
   });
 });

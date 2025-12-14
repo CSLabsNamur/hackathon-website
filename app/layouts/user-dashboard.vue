@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const route = useRoute();
-const toast = useToast();
-const {eventTitle} = useRuntimeConfig().public;
-
-const {data: currentParticipant, status} = useCurrentParticipant();
+const {data: currentParticipant, status} = await useCurrentParticipant();
 
 const open = ref(false);
 

@@ -17,8 +17,8 @@ definePageMeta({
             <AdminTeamStats :rounded="false" class="*:first:rounded-bl-lg *:last:rounded-br-lg"/>
           </div>
           <UPageGrid class="lg:flex">
-            <AdminChartsRegistrationTimeline class="lg:w-2/3"/>
-            <AdminChartsTeamFormation class="lg:w-1/3"/>
+            <AdminChartsRegistrationTimeline class="w-2/3"/>
+            <AdminChartsTeamFormation class="w-1/3"/>
           </UPageGrid>
         </div>
       </UContainer>

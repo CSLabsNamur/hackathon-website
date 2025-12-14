@@ -29,6 +29,14 @@ export const useParticipantsActions = () => {
     //  });
     //}
   };
+
+  const updateParticipant = async (id: string, data: Omit<ParticipantCreateWithoutUserInput, "curriculumVitae" | "caution">, cv?: File) => {
+    await $fetch(`/api/participants/${id}`, {
+      method: "PUT",
+      body: data,
+    });
+  };
+
   const updateCaution = async (id: string, caution: CautionStatus) => {
     return $fetch(`/api/participants/${id}/caution`, {
       method: "PATCH",
@@ -42,5 +50,5 @@ export const useParticipantsActions = () => {
     });
   };
 
-  return {createParticipant, updateCaution, removeParticipant};
+  return {createParticipant, updateParticipant, updateCaution, removeParticipant};
 };

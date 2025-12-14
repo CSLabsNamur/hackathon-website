@@ -4,7 +4,6 @@ import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavi
 import type { ButtonProps } from "#ui/components/Button.vue";
 import LoginModal from "~/components/LoginModal.vue";
 
-const route = useRoute();
 const {teaserEnabled} = useRuntimeConfig().public;
 
 const supabaseClient = useSupabaseClient();
@@ -17,45 +16,37 @@ const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
   {
     label: "Inscription",
     to: "/inscription",
-    active: route.path.startsWith("/inscription"),
     condition: !teaserEnabled,
   },
   {
     label: "Partenaires",
     to: "/partenaires",
-    active: route.path.startsWith("/partenaires"),
     condition: !teaserEnabled,
   },
   {
     label: "Infos",
     to: "/infos",
-    active: route.path.startsWith("/infos"),
     condition: !teaserEnabled,
   },
   {
     label: "Historique",
     to: "/historique",
-    active: route.path.startsWith("/historique"),
   },
   {
     label: "Plus loin",
     to: "/plus-loin",
-    active: route.path.startsWith("/plus-loin"),
   },
   {
-    label: "Panels",
-    condition: import.meta.dev,
-    children: [{
-      label: "Admin Panel",
-      to: "/admin",
-      icon: "i-lucide-shield-check",
-      active: route.path.startsWith("/admin"),
-    }, {
-      label: "Participant Panel",
-      to: "/participant",
-      icon: "i-lucide-user-2",
-      active: route.path.startsWith("/participant"),
-    }],
+    label: "Panel Admin",
+    condition: user.value?.role === "admin",
+    to: "/admin",
+    icon: "i-lucide-shield",
+  },
+  {
+    label: "Panel Participant",
+    condition: user.value?.role === "participant",
+    to: "/participant",
+    icon: "i-lucide-user",
   },
 ]);
 
@@ -74,7 +65,6 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
   {
     label: "Politique de cookies",
     to: "/cookie-policy",
-    active: route.path.startsWith("/cookie-policy"),
   },
 ]);
 
@@ -99,9 +89,9 @@ const footerLogos: FooterLogos[] = [{
   ariaLabel: "Instagram",
 }];
 
-watchEffect(() => {
-  console.log("User changed:", user.value);
-});
+//watchEffect(() => {
+//  console.log("User changed:", user.value);
+//});
 </script>
 
 <template>
@@ -119,7 +109,7 @@ watchEffect(() => {
         </template>
       </UColorModeButton>
       <USeparator orientation="vertical" class="h-6 mx-2"/>
-      <UButton v-if="!user" variant="soft" @click="loginModal.open">Connexion</UButton>
+      <UButton v-if="!user" variant="soft" @click="loginModal.open()">Connexion</UButton>
       <UButton v-else variant="soft" @click="supabaseClient.auth.signOut()">Déconnexion</UButton>
     </template>
 

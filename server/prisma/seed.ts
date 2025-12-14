@@ -152,7 +152,7 @@ const submissionRequests: SubmissionRequestCreateInput[] = [
     title: "CV",
     type: SubmissionType.FILE,
     description: "Envoyez votre curriculum vitae au format PDF.",
-    deadline: new Date("2025-12-31T23:59:59Z"),
+    deadline: new Date("2026-03-28T23:59:59Z"),
     acceptedFormats: ".pdf",
     multiple: false,
   },
@@ -160,7 +160,7 @@ const submissionRequests: SubmissionRequestCreateInput[] = [
     title: "Objectifs et motivation",
     type: SubmissionType.TEXT,
     description: "Décrivez vos objectifs personnels pour l'événement et ce qui vous motive à y participer.",
-    deadline: new Date("2026-01-15T23:59:59Z"),
+    deadline: new Date("2026-03-27T23:59:59Z"),
     required: true,
   },
 ];

@@ -5,16 +5,16 @@ type TeamFormationData = {
   name: "En équipe" | "Solo";
   color: string;
   value: number;
-}
+};
 
-const participantWithTeamCount = participants.value?.filter(participant => participant.team).length ?? 0;
+const participantWithTeamCount = computed(() => participants.value?.filter(participant => participant.team).length ?? 0);
 
-const teamFormationData: TeamFormationData[] = [
-  {name: "En équipe", color: "#0e8d62", value: participantWithTeamCount},
-  {name: "Solo", color: "#ea6f1c", value: participants.value?.length ?? 0 - participantWithTeamCount},
-];
+const teamFormationData = computed<TeamFormationData[]>(() => ([
+  {name: "En équipe", color: "#0e8d62", value: participantWithTeamCount.value},
+  {name: "Solo", color: "#ea6f1c", value: participants.value?.length ?? 0 - participantWithTeamCount.value},
+]));
 
-const options: ECOption = {
+const options = computed<ECOption>(() => ({
   backgroundColor: "transparent",
   title: {
     text: "Répartition des utilisateurs",
@@ -32,22 +32,26 @@ const options: ECOption = {
   series: [
     {
       type: "pie",
-      data: teamFormationData.map(item => ({
+      data: teamFormationData.value.map(item => ({
         value: item.value,
         name: item.name,
-        itemStyle: {
-          color: item.color,
-        },
+        itemStyle: {color: item.color},
       })),
       animationDuration: 750,
       emphasis: {disabled: true},
     },
   ],
-};
+}));
 </script>
 
 <template>
-  <div class="h-80">
-    <VChart :option="options" autoresize/>
-  </div>
+  <ClientOnly>
+    <template #fallback>
+      <USkeleton class="h-80 rounded-md" v-bind="$attrs"/>
+    </template>
+
+    <div class="h-80">
+      <VChart :option="options" autoresize/>
+    </div>
+  </ClientOnly>
 </template>

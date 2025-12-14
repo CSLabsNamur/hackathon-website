@@ -7,11 +7,23 @@ definePageMeta({
 
 const toast = useToast();
 
-const {data: roomsOriginal, refresh} = await useRooms();
+const {status, data: roomsOriginal, refresh} = await useRooms({lazy: true});
 const {reorderRooms} = useRoomsActions();
-const {status: teamsStatus, data: teams} = await useTeams();
+const {data: teams} = await useTeams({lazy: false});
 
-const {cloned: rooms, isModified} = useCloned(roomsOriginal);
+const {cloned: rooms, isModified} = useCloned(() => roomsOriginal.value ?? []);
+
+const unassignedTeamsRoom = ref({
+  id: "unassigned",
+  name: "Équipes non assignées",
+  teams: teams.value?.filter((team) => !roomsOriginal.value?.some((room) => room.teams.some((rTeam) => rTeam.id === team.id))) ?? [],
+  sequence: 999,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+});
+watchEffect(() => {
+  unassignedTeamsRoom.value.teams = teams.value?.filter((team) => !roomsOriginal.value?.some((room) => room.teams.some((rTeam) => rTeam.id === team.id))) ?? [];
+});
 
 const [isModifying, modify] = useToggle(false);
 
@@ -51,7 +63,7 @@ async function confirm() {
       <DashboardNavbar title="Salles">
         <template #right>
           <UButton variant="ghost" @click="isModifying ? confirm() : modify()"
-                   :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'">
+                   loading-auto :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'">
             {{ isModifying ? "Confirmer" : "Modifier" }}
           </UButton>
         </template>
@@ -59,36 +71,25 @@ async function confirm() {
     </template>
     <template #body>
       <UContainer>
-        <div v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying}]"
-             :key="`rooms-${isModifying}`"
-             class="flex flex-wrap gap-6">
-          <UPageCard v-for="room in rooms" :key="room.id" :ui="{body: 'p-6 md:p-8 w-full'}" class="size-72">
+        <div v-if="status === 'pending'" class="flex flex-wrap gap-6">
+          <UPageCard v-for="n in 4" :key="n" :ui="{body: 'p-6 md:p-8 w-full'}" class="size-72">
             <template #header>
-              <div class="flex gap-2.5 items-center">
-                <UIcon v-if="isModifying" name="i-lucide-grip-vertical" class="handle"/>
-                <div class="text-lg font-semibold">
-                  {{ room.name }}
-                </div>
-              </div>
+              <USkeleton class="h-6 w-32"/>
             </template>
-            <template #body v-if="teams">
-              <div v-draggable="[room.teams, {group: 'teams', animation: 150,
-                                ghostClass: 'ghost', disabled: !isModifying}]"
-                   :key="`teams-${isModifying}`"
-                   class="grid grid-cols-2 h-full place-items-center justify-center group"
-                   :class="{'animate-wiggle': isModifying}">
-                <div v-for="team in room.teams.map(t => teams!.find(ts => ts.id === t.id)!)" :key="team.id"
-                     :class="{ 'col-span-2 group-[&:has(.ghost)]:col-span-1': room.teams.length === 1 }">
-                  <div class="grid gap-1.5 place-items-center" :title="team.name">
-                    <UIcon name="i-lucide-users" class="size-8"/>
-                    <div class="text-xs font-medium truncate w-24 text-center">
-                      {{ team.name }}
-                    </div>
-                  </div>
-                </div>
+            <template #body>
+              <div class="flex flex-col h-full items-center justify-center gap-2">
+                <USkeleton class="h-12 rounded w-12"></USkeleton>
+                <USkeleton class="h-4 rounded w-24"></USkeleton>
               </div>
             </template>
           </UPageCard>
+        </div>
+
+        <div v-else v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying}]"
+             :key="`rooms-${isModifying}`" class="flex flex-wrap gap-6">
+          <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room" :is-modifying="isModifying"/>
+          <AdminRoomCard v-if="teams && teams.length > 0 && status === 'success'" :room="unassignedTeamsRoom"
+                         :is-modifying="isModifying" hide-handle/>
         </div>
       </UContainer>
     </template>

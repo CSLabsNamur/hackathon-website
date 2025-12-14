@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
+import schema from "~~/shared/schemas/teams/join";
 
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
-
-// TODO: use UUID when not using mock data anymore
-const schema = v.object({
-  token: v.pipe(v.string(), v.nonEmpty("Le token est requis"), v.minLength(12, "Le token doit contenir au moins 12 caractères")),
-});
+const actions = useTeamsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -22,30 +19,24 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
-    //const team = teams.value.find(t => t.token === event.data.token);
-    //if (team) {
-    //  // Simulate API call
-    //  await new Promise(resolve => setTimeout(resolve, 1000));
-    //
-    //  currentParticipant.team = team.id;
-    //  team.members.push(currentParticipant.id);
-    //
-    //  toast.add({
-    //    title: "Équipe rejointe !",
-    //    description: "Vous avez rejoint l'équipe avec succès. Vous pouvez maintenant collaborer avec vos coéquipiers.",
-    //    color: "success",
-    //  });
-    //
-    //  emit("close", true);
-    //} else {
-    //  toast.add({
-    //    title: "Erreur",
-    //    description: "Le token fourni est invalide. Veuillez vérifier et réessayer.",
-    //    color: "error",
-    //  });
-    //}
 
+    await actions.joinTeam(event.data.token);
+
+    toast.add({
+      title: "Équipe rejointe !",
+      description: "Vous avez rejoint l'équipe avec succès. Vous pouvez maintenant collaborer avec vos coéquipiers.",
+      color: "success",
+    });
+
+    emit("close", true);
     console.log(event.data);
+  } catch (error) {
+    // TODO: handle other errors
+    toast.add({
+      title: "Erreur",
+      description: "Le token fourni est invalide. Veuillez vérifier et réessayer.",
+      color: "error",
+    });
   } finally {
     isSubmitting.value = false;
   }

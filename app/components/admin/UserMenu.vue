@@ -1,34 +1,37 @@
 <script setup lang="ts">
-import type { AvatarProps } from "#ui/components/Avatar.vue";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 
-defineProps<{
-  user: {
-    name: string,
-    description?: string,
-    avatar: Omit<AvatarProps, "size"> & { [key: string]: any; }
-  },
+const props = defineProps<{
+  admin: Admin;
   collapsed?: boolean
 }>();
 
-const items: DropdownMenuItem[][] = [[{
-  label: "Profil",
-  icon: "i-lucide-user-circle",
-  to: "/profile",
-}, {
-  label: "Paramètres",
-  icon: "i-lucide-settings",
-  to: "/settings",
-}, {
-  label: "Se déconnecter",
-  icon: "i-lucide-log-out",
-  to: "/logout",
-}]];
+const avatarUrl = computed(() => {
+  const seed = encodeURIComponent(`${props.admin.user.firstName} ${props.admin.user.lastName}`);
+  return `https://api.dicebear.com/6.x/initials/svg?seed=${seed}`;
+});
+
+const items: DropdownMenuItem[][] = [[
+//  {
+//  label: "Paramètres",
+//  icon: "i-lucide-settings",
+//  to: "/settings",
+//},
+  {
+    label: "Se déconnecter",
+    icon: "i-lucide-log-out",
+    to: "/logout",
+  }]];
 </script>
 
 <template>
   <UDropdownMenu :content="{align: 'center'}" :items>
-    <UUser v-if="!collapsed" :name="user.name" :description="user.description" :avatar="user.avatar"/>
-    <UUser v-else :avatar="user.avatar"/>
+    <UUser
+        v-if="!collapsed"
+        :name="`${admin.user.firstName} ${admin.user.lastName}`"
+        :description="admin.user.email"
+        :avatar="{ src: avatarUrl }"
+    />
+    <UUser v-else :avatar="{ src: avatarUrl }"/>
   </UDropdownMenu>
 </template>

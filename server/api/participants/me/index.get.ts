@@ -1,18 +1,26 @@
 export default defineEventHandler(async (event) => {
-  //const user = await requireAuth(event, UserRole.USER);
+  const user = await requireAuth(event, UserRole.USER);
 
-  //return prisma.participant.findUnique({where: {id: user.sub}}).team().members();
+  const dbUser = await getDbUser(user);
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  const participants = await prisma.participant.findMany({
+  return prisma.participant.findUnique({
+    where: {userId: dbUser.id},
     include: {
       team: {
         include: {
-          members: true,
+          members: {
+            include: {
+              user: true,
+            },
+          },
         },
       },
-      submissions: true,
+      submissions: {
+        include: {
+          request: true,
+        },
+      },
+      user: true,
     },
   });
-  return participants[0];
 });

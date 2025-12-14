@@ -3,6 +3,8 @@ import type { TableColumn } from "#ui/components/Table.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import EditModal from "~/components/admin/teams/EditModal.vue";
+import RemoveModal from "~/components/admin/teams/RemoveModal.vue";
 
 definePageMeta({
   layout: "dashboard",
@@ -12,13 +14,16 @@ const {status, data: teams} = await useTeams({lazy: true});
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
-const UCheckbox = resolveComponent("UCheckbox");
+//const UCheckbox = resolveComponent("UCheckbox");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const toast = useToast();
 const dayjs = useDayjs();
-//const overlay = useOverlay();
+const overlay = useOverlay();
 const {copy} = useClipboard();
+
+const editModal = overlay.create(EditModal);
+const removeModal = overlay.create(RemoveModal);
 
 const columns: TableColumn<Team>[] = [
   {
@@ -113,10 +118,11 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
         });
       },
     },
-    {
-      label: "Envoyer un email",
-      icon: "i-lucide-mail",
-    },
+    // TODO: Email functionality
+    //{
+    //  label: "Envoyer un email",
+    //  icon: "i-lucide-mail",
+    //},
     {
       type: "label",
       label: "Administration",
@@ -125,12 +131,15 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
       label: "Éditer l'équipe",
       icon: "i-lucide-edit-2",
       onSelect: () => {
-        //editModal.open({user: row.original});
+        editModal.open({team: row.original});
       },
     },
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
+      onSelect: () => {
+        removeModal.open({team: row.original});
+      },
     },
   ];
 }
@@ -149,10 +158,14 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
           <AdminTeamStats/>
-          <UTable :columns="columns" :data="teams ?? []" sticky>
-            <UEmpty>
-              LOADING MAYBE IDK
-            </UEmpty>
+          <UTable :columns="columns" :data="teams" sticky :loading="status === 'pending'">
+            <template #empty>
+              <div class="max-w-1/2 mx-auto">
+                <UEmpty title="Aucune équipe"
+                        description="Aucun équipe ne s'est encore formée."
+                        icon="i-lucide-circle-slash"/>
+              </div>
+            </template>
           </UTable>
         </div>
       </UContainer>

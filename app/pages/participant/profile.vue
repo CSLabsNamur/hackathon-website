@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ParticipantEditModal, ParticipantPasswordEditModal } from "#components";
+import { ParticipantEditModal } from "#components";
 
 definePageMeta({
   layout: "user-dashboard",
 });
 
-const {data: currentParticipant} = await useCurrentParticipant();
+const {status, data: currentParticipant} = await useCurrentParticipant();
 
 const overlay = useOverlay();
 const editModal = overlay.create(ParticipantEditModal);
-const passwordModal = overlay.create(ParticipantPasswordEditModal);
 </script>
 
 <template>
@@ -19,16 +18,16 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
     </template>
     <template #body>
       <UContainer>
-        <UCard>
+        <UCard v-if="status === 'success'">
           <template #default>
             <div class="grid gap-2">
               <div class="grid grid-cols-2 gap-6 *:w-full">
                 <ParticipantProfileLabel label="Nom complet" icon="i-lucide-user">
-                  {{ currentParticipant!.firstName }} {{ currentParticipant!.lastName }}
+                  {{ currentParticipant!.user.firstName }} {{ currentParticipant!.user.lastName }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Adresse e-mail" icon="i-lucide-at-sign">
-                  {{ currentParticipant!.email }}
+                  {{ currentParticipant!.user.email }}
                 </ParticipantProfileLabel>
 
                 <ParticipantProfileLabel label="Compte GitHub" icon="i-simple-icons-github">
@@ -80,12 +79,10 @@ const passwordModal = overlay.create(ParticipantPasswordEditModal);
               <UButton @click="editModal.open({participant: currentParticipant!})">
                 Modifier mon profil
               </UButton>
-              <UButton color="warning" @click="passwordModal.open()">
-                Modifier le mot de passe
-              </UButton>
             </div>
           </template>
         </UCard>
+
       </UContainer>
     </template>
   </UDashboardPanel>

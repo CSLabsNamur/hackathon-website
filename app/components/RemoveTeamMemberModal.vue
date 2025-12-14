@@ -12,7 +12,7 @@ async function onSubmit() {
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    //
+
     //// Remove member from team
     //const team = teams.value.find(t => t.id === props.participant.team);
     //if (team) {

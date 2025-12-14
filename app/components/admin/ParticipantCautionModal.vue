@@ -18,7 +18,7 @@ const save = async () => {
 
 <template>
   <UModal :close="{onClick: () => emit('close', false)}" title="Modifier la caution de l'utilisateur"
-          :description="`Mettre à jour le statut de la caution de ${participant.firstName} ${participant.lastName}`">
+          :description="`Mettre à jour le statut de la caution de ${participant.user.firstName} ${participant.user.lastName}`">
     <template #body>
       <div class="space-y-4">
         <URadioGroup v-model="newCaution" label="Statut de la caution" :items="cautionStatus" variant="table"/>

@@ -9,7 +9,7 @@ definePageMeta({
   layout: "user-dashboard",
 });
 
-const {data: currentParticipant, team: currentTeam} = await useCurrentParticipant();
+const {data: currentParticipant} = await useCurrentParticipant();
 
 const UButton = resolveComponent("UButton");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -24,7 +24,7 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
     id: "name",
     header: "Nom",
-    accessorFn: (row) => `${row.firstName} ${row.lastName}`,
+    accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
   },
   {
     header: "Réseaux",
@@ -92,14 +92,14 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
               {
                 content: {align: "end"},
                 items: getRowItems(row),
-                "aria-label": `Actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+                "aria-label": `Actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
               },
               () => h(UButton, {
                 icon: "i-lucide-ellipsis-vertical",
                 color: "neutral",
                 variant: "ghost",
                 class: "ml-auto",
-                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.firstName} ${row.original.lastName}`,
+                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
               }),
           ),
       );
@@ -129,9 +129,9 @@ const noMembersLinks: ButtonProps[] = [
 ];
 
 const copyToken = () => {
-  if (!currentTeam) return;
+  if (!currentParticipant.value?.team) return;
 
-  copy(currentTeam.token);
+  copy(currentParticipant.value.team.token);
   toast.add({
     title: "Code d'invitation copié",
     description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers.",
@@ -147,22 +147,30 @@ const copyToken = () => {
     </template>
     <template #body>
       <UContainer>
-        <ParticipantNoTeamCTA v-if="!currentTeam"/>
+        <UCard v-if="!currentParticipant">
+          <template #default>
+            <USkeleton class="h-20 w-40"/>
+          </template>
+        </UCard>
+
+        <ParticipantNoTeamCTA v-else-if="!currentParticipant!.team"/>
 
         <UPageGrid v-else>
           <UCard class="col-span-2 row-span-2" variant="subtle">
             <div class="grid gap-6">
-              <p class="text-3xl font-semibold text-center">{{ currentTeam.name }}</p>
+              <p class="text-3xl font-semibold text-center">{{ currentParticipant.team.name }}</p>
               <div class="grid grid-cols-3 gap-3">
                 <UPageCard variant="subtle" title="Description" icon="i-lucide-text">
-                  {{ currentTeam.description || "Aucune description fournie." }}
+                  {{ currentParticipant.team.description || "Aucune description fournie." }}
                 </UPageCard>
                 <UPageCard variant="subtle" title="Idée" icon="i-lucide-lightbulb">
-                  {{ currentTeam.idea || "Aucune idée fournie." }}
+                  {{ currentParticipant.team.idea || "Aucune idée fournie." }}
                 </UPageCard>
                 <UPageCard variant="subtle" title="Code d'invitation" icon="i-lucide-key">
                   <div class="flex items-center gap-2">
-                    <p class="font-mono text-lg">{{ currentTeam.token }}</p>
+                    <p class="font-mono text-lg truncate w-1/4" :title="currentParticipant.team.token">
+                      {{ currentParticipant.team.token }}
+                    </p>
                     <UButton variant="soft" color="neutral" icon="i-lucide-copy" size="sm"
                              @click="copyToken">
                       Copier
@@ -176,7 +184,7 @@ const copyToken = () => {
             <ParticipantTeamStatusCard :participant="currentParticipant"/>
             <!--            <ParticipantScheduleCard/>-->
           </div>
-          <UTable :columns :data="currentTeam!.members" class="col-span-full">
+          <UTable :columns :data="currentParticipant.team.members" class="col-span-full">
             <template #empty>
               <div class="max-w-1/2 mx-auto">
                 <UEmpty title="Aucun membre dans l'équipe"

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const route = useRoute();
-const toast = useToast();
-const {eventTitle} = useRuntimeConfig().public;
+const {data: adminUser} = await useCurrentAdmin();
 
 const colorMode = useColorMode();
+// Provide theme to echarts components
 const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
 provide(THEME_KEY, theme);
 
@@ -42,7 +41,7 @@ const links: NavigationMenuItem[][] = [[{
 }, {
   label: "Soumissions",
   icon: "i-lucide-file-text",
-  to: "/admin/submissions",
+  to: "/admin/submissions-requests",
   onSelect: () => {
     open.value = false;
   },
@@ -97,7 +96,9 @@ const groups = [{
       </template>
 
       <template #footer="{collapsed}">
-        <AdminUserMenu :user="adminUser" :collapsed/>
+        <USkeleton v-if="!adminUser" :width="collapsed ? '2.5rem' : '100%'" :height="collapsed ? '2.5rem' : '3rem'"
+                   class="mx-auto rounded"/>
+        <AdminUserMenu v-else :admin="adminUser" :collapsed/>
       </template>
     </UDashboardSidebar>
 

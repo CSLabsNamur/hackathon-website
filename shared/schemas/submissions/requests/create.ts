@@ -1,4 +1,3 @@
-// TODO: Check deadline hardcoded hours
 import * as v from "valibot";
 import dayjs from "~~/server/utils/dayjs";
 
@@ -14,6 +13,8 @@ export const createSubmissionRequestSchema = (
   const eventDateEndParsed = dayjs(eventDateEnd);
 
   return v.object({
+    // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
+    // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
     type: v.picklist(["text", "file", "files"]),
     title: v.pipe(
       v.string(),
@@ -40,3 +41,29 @@ export const createSubmissionRequestSchema = (
     required: v.optional(v.boolean()),
   });
 };
+
+const tempSchema = v.object({
+  // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
+  // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
+  type: v.picklist(["text", "file", "files"]),
+  title: v.pipe(
+    v.string(),
+    v.nonEmpty(),
+    v.minWords("fr", 1),
+    v.maxLength(50),
+  ),
+  description: v.optional(
+    v.pipe(
+      v.string(),
+      v.minWords("fr", 3),
+      v.maxLength(150),
+    ),
+  ),
+  deadline: v.pipe(
+    v.string(),
+    v.isoDateTime(),
+  ),
+  acceptedFormats: v.optional(v.string()),
+  required: v.optional(v.boolean()),
+})
+export type CreateSubmissionRequestSchema = v.InferOutput<typeof tempSchema>;

@@ -10,8 +10,10 @@ const dayjs = useDayjs();
 const toast = useToast();
 const {eventDateStart, eventDateEnd} = useRuntimeConfig().public;
 
+const {createSubmissionRequest} = useSubmissionsRequestsActions();
+
 // Create the schema with composables (safe here in setup)
-const schema = createSubmissionRequestSchema(dayjs, eventDateStart, eventDateEnd);
+const schema = createSubmissionRequestSchema(eventDateStart, eventDateEnd);
 
 const eventDateStartParsed = dayjs(eventDateStart);
 const eventDateEndParsed = dayjs(eventDateEnd);
@@ -44,23 +46,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    // Example payload shaping – adapt to your API as needed
-    const type = event.data.type === "files" ? "file" : event.data.type;
-    const payload = {
-      type: type,
-      title: event.data.title,
-      description: event.data.description,
-      deadline: dayjs(event.data.deadline).valueOf(),
-      acceptedFormats: type === "file" ? event.data.acceptedFormats : undefined,
-      multiple: event.data.type === "files",
-      required: event.data.required ?? false,
-    };
-
-    //submissionRequests.value.push({
-    //  id: `sr_${Math.random().toString(36).substring(2, 9)}`,
-    //  ...payload,
-    //  createdAt: dayjs().valueOf(),
-    //} as SubmissionRequest)
+    await createSubmissionRequest(event.data);
 
     toast.add({
       title: "Demande de soumission créée",
@@ -69,7 +55,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
     });
 
     // For now, log the payload
-    console.log(payload);
+    console.log(event.data);
 
     emit("close", true);
   } finally {

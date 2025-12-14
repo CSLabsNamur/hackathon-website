@@ -1,7 +1,6 @@
 export const useCurrentAdmin = async () => {
-  const {status, data, refresh} = await useFetch("/api/admins/me", {
-    cache: "force-cache",
+  return useFetch("/api/admins/me", {
+    //server: false,
+    credentials: "same-origin",
   });
-
-  return {data, status, refresh};
 };

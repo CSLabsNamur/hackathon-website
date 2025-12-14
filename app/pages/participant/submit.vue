@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import type { StepperItem } from "#ui/components/Stepper.vue";
 
 definePageMeta({
   layout: "user-dashboard",
 });
 
-const toast = useToast();
+const {data: submissionsRequests} = await useSubmissionsRequests({lazy: false});
+const {data: currentParticipant} = await useCurrentParticipant();
 
 const active = ref(0);
-const stepperItems = computed<StepperItem[]>(() => submissionRequests.value.map((submission) => ({
+const stepperItems = useArrayMap(submissionsRequests.value ?? [], (submission) => ({
   title: submission.title,
   // If the submission is done by the user, show a check icon, else show an icon based on the type
-  icon: currentParticipant.submissions.map(s => s.requestId).includes(submission.id) ? "i-lucide-check" : submission.type === "text" ? "i-lucide-text" : "i-lucide-file",
-})));
+  icon: currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id) ? "i-lucide-check" : submission.type === "TEXT" ? "i-lucide-text" : "i-lucide-file",
+}));
 
-const allCompleted = computed<boolean>(() => submissionRequests.value.every((submission) => currentParticipant.submissions.map(s => s.requestId).includes(submission.id)));
+const allCompleted = useArrayEvery(submissionsRequests.value ?? [], (submission) => currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id));
 const wantToModify = ref(false);
 
-onMounted(() => {
-  const nextActive = submissionRequests.value.findIndex((submission) => !currentParticipant.submissions.map(s => s.requestId).includes(submission.id));
+onMounted(async () => {
+  const nextActive = submissionsRequests.value!.findIndex((submission) => !currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id));
   if (nextActive !== -1) {
     active.value = nextActive;
   }
@@ -27,7 +27,7 @@ onMounted(() => {
 const onSubmit = (status: boolean) => {
   if (status) {
     wantToModify.value = false;
-    if (active.value < submissionRequests.value.length - 1) {
+    if (active.value < submissionsRequests.value!.length - 1) {
       active.value += 1;
     }
   }
@@ -48,8 +48,8 @@ const onSubmit = (status: boolean) => {
               <Transition name="slide-left" mode="out-in">
                 <ParticipantSubmissionForm
                     :key="active"
-                    :submission="submissionRequests[active]!"
-                    @close="toast.add({ title: 'Soumission réussie', description: 'Votre document a été soumis avec succès.', color: 'success' })"
+                    :participant="currentParticipant!"
+                    :submission-request="submissionsRequests![active]!"
                     @submit="onSubmit"
                     class="min-h-56"
                 />

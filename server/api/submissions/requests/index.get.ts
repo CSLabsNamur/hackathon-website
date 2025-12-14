@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN | UserRole.USER);
 
-  return prisma.submissionRequest.findMany();
+  return prisma.submissionRequest.findMany({include: {submissions: true}});
 });
