@@ -16,5 +16,14 @@ export default defineEventHandler(async (event) => {
     participant: {connect: {userId: dbUser.id}},
   };
 
-  return prisma.submission.create({data: payload});
+  return prisma.submission.upsert({
+    where: {
+      requestId_participantId: {
+        requestId: id,
+        participantId: dbUser.id,
+      },
+    },
+    create: payload,
+    update: payload,
+  });
 });
