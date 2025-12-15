@@ -94,6 +94,8 @@ model SubmissionRequest {
   submissions     Submission[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+
+  @@unique([title, deadline])
 }
 
 model Submission {
@@ -106,15 +108,17 @@ model Submission {
   skipped       Boolean           @default(false)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  @@unique([requestId, participantId])
 }
 
 // ==== Program Schedule ====
 // TODO: Add a check to ensure no overlapping exactDateTime ranges when the event is noted as special.
 model ScheduleItem {
   id          String   @id @default(cuid())
-  title       String
+  title       String   @unique
   description String
-  icon        String?
+  icon        String?  @default("i-lucide-calendar")
   dateString  String
   startTime   DateTime
   endTime     DateTime
@@ -126,8 +130,8 @@ model ScheduleItem {
 // ==== Room Assignments ====
 model Room {
   id        String   @id @default(cuid())
-  name      String
-  sequence  Int      @db.SmallInt
+  name      String   @unique
+  sequence  Int      @unique @db.SmallInt
   teams     Team[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -21,7 +21,6 @@ FROM base AS runtime
 WORKDIR /app
 
 # Only `.output` folder is needed from the build stage
-COPY --from=build /app/tsconfig*.json .
 COPY --from=build /app/.output ./.output
 COPY --from=build /app/server/prisma ./server/prisma
 

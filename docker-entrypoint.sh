@@ -13,12 +13,6 @@ if ! command -v pnpm &> /dev/null; then
   exit 1
 fi
 
-# Check if prisma is installed
-#if ! command -v prisma &> /dev/null; then
-#  log "Error: Prisma is not installed or not in PATH"
-#  exit 1
-#fi
-
 log "Running migrations"
 if pnpm run db:deploy; then
   log "Migrations completed successfully"

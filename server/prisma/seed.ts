@@ -148,14 +148,14 @@ const admins: AdminSeed[] = [
 
 // Submission Requests
 const submissionRequests: SubmissionRequestCreateInput[] = [
-  {
-    title: "CV",
-    type: SubmissionType.FILE,
-    description: "Envoyez votre curriculum vitae au format PDF.",
-    deadline: new Date("2026-03-28T23:59:59Z"),
-    acceptedFormats: ".pdf",
-    multiple: false,
-  },
+  //{
+  //  title: "CV",
+  //  type: SubmissionType.FILE,
+  //  description: "Envoyez votre curriculum vitae au format PDF.",
+  //  deadline: new Date("2026-03-28T23:59:59Z"),
+  //  acceptedFormats: ".pdf",
+  //  multiple: false,
+  //},
   {
     title: "Objectifs et motivation",
     type: SubmissionType.TEXT,
