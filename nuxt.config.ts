@@ -2,7 +2,14 @@
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: {enabled: true},
-  
+
+  // TODO: Delete when fixed https://github.com/prisma/prisma/issues/28804
+  nitro: {
+    rollupConfig: {
+      external: [/^@prisma\//, /\.wasm$/],
+    },
+  },
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui",
