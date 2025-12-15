@@ -1,5 +1,6 @@
 import type { ParticipantCreateWithoutUserInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import type { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
+import type { EditParticipantSchema } from "#shared/schemas/participants/edit";
 
 interface UseParticipantsParams {
   lazy?: boolean;
@@ -30,7 +31,7 @@ export const useParticipantsActions = () => {
     //}
   };
 
-  const updateParticipant = async (id: string, data: Omit<ParticipantCreateWithoutUserInput, "curriculumVitae" | "caution">, cv?: File) => {
+  const updateParticipant = async (id: string, data: EditParticipantSchema, cv?: File) => {
     await $fetch(`/api/participants/${id}`, {
       method: "PUT",
       body: data,
@@ -46,6 +47,7 @@ export const useParticipantsActions = () => {
 
   const removeParticipant = async (id: string) => {
     return $fetch(`/api/participants/${id}`, {
+      //@ts-expect-error wtf
       method: "DELETE",
     });
   };

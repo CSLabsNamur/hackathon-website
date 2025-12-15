@@ -5,6 +5,7 @@ const editSchema = v.omit(schema, [
   "cautionAgreement",
   "codeOfConduct",
   "curriculumVitae",
+  "imageAgreement"
 ]);
 
 export default editSchema;

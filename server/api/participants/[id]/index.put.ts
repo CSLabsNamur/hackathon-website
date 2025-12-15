@@ -3,12 +3,11 @@ import * as v from "valibot";
 import type { ParticipantUpdateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  await requireAuth(event, UserRole.ADMIN);
 
-  const dbUser = await getDbUser(user);
+  const id = getRouterParam(event, "id");
 
   const {firstName, lastName, email, ...data} = await readValidatedBody(event, v.parser(schema));
-
   const payload: ParticipantUpdateInput = {
     ...data,
     user: {
@@ -20,5 +19,5 @@ export default defineEventHandler(async (event) => {
     },
   };
 
-  return prisma.participant.update({where: {userId: dbUser.id}, data: payload});
+  return prisma.participant.update({where: {id}, data: payload});
 });

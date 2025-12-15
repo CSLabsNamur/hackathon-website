@@ -17,6 +17,7 @@ const schema = v.object({
   school: v.optional(v.string()),
   diet: v.optional(v.string()),
   needs: v.optional(v.string()),
+  // TODO: implement CV upload/removal
   //curriculumVitae: v.boolean(),
 });
 
@@ -140,9 +141,9 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <!-- CV -->
-        <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae">
-          <UCheckbox label="Supprimer le CV" v-model="state.curriculumVitae"/>
-        </UFormField>
+<!--        <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae">-->
+<!--          <UCheckbox label="Supprimer le CV" v-model="state.curriculumVitae"/>-->
+<!--        </UFormField>-->
       </UForm>
     </template>
     <template #footer>

@@ -7,4 +7,4 @@ const schema = v.object({
 });
 
 export default schema;
-export type CreateTeamSchema = v.InferType<typeof schema>;
+export type CreateTeamSchema = v.InferOutput<typeof schema>;

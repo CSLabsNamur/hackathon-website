@@ -3,6 +3,11 @@ WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y openssl
 
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
 COPY server/prisma/schema.prisma ./server/prisma/schema.prisma
 
