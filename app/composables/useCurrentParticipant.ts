@@ -1,7 +1,7 @@
 import type { EditParticipantSchema } from "#shared/schemas/participants/edit";
 
 export const useCurrentParticipant = async () => {
-  return useAPI("/api/participants/me", {
+  return useFetch("/api/participants/me", {
     //server: false,
     credentials: "same-origin",
     //cache: "force-cache",

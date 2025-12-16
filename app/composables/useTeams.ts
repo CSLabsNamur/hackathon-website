@@ -5,7 +5,7 @@ interface UseTeamsParams {
 }
 
 export const useTeams = async (params?: UseTeamsParams) => {
-  return useAPI("/api/teams", {
+  return useFetch("/api/teams", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });

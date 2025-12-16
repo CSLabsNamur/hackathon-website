@@ -7,7 +7,7 @@ interface UseRoomsParams {
 }
 
 export const useRooms = async (params?: UseRoomsParams) => {
-  return useAPI("/api/rooms", {
+  return useFetch("/api/rooms", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });

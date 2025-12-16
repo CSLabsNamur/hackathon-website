@@ -3,7 +3,7 @@ interface UseScheduleParams {
 }
 
 export const useSchedule = async (params?: UseScheduleParams) => {
-  return useAPI("/api/schedule", {
+  return useFetch("/api/schedule", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });
