@@ -4,8 +4,9 @@ import schema from "./create";
 const editSchema = v.omit(schema, [
   "cautionAgreement",
   "codeOfConduct",
+  "imageAgreement",
   "curriculumVitae",
-  "imageAgreement"
+  "turnstileToken",
 ]);
 
 export default editSchema;

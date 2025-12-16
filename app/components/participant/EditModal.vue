@@ -1,29 +1,14 @@
 <script setup lang="ts">
-import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
+import { default as schema, type EditParticipantSchema } from "#shared/schemas/participants/edit";
 
 const props = defineProps<{ participant: Participant, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
 
-const schema = v.object({
-  firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
-  lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
-  email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-  githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-  linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-  school: v.optional(v.string()),
-  diet: v.optional(v.string()),
-  needs: v.optional(v.string()),
-  // TODO: implement CV upload/removal
-  //curriculumVitae: v.boolean(),
-});
-
-type Schema = v.InferOutput<typeof schema>
-
-const state: Reactive<Schema> = reactive({
+const state: Reactive<EditParticipantSchema> = reactive({
   firstName: props.participant.user.firstName,
   lastName: props.participant.user.lastName,
   email: props.participant.user.email,
@@ -32,12 +17,13 @@ const state: Reactive<Schema> = reactive({
   school: props.participant.school || undefined,
   diet: props.participant.diet || undefined,
   needs: props.participant.needs || undefined,
+  // TODO: implement CV upload/removal
   //curriculumVitae: false,
 });
 
 const isSubmitting = ref(false);
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event: FormSubmitEvent<EditParticipantSchema>) {
   try {
     isSubmitting.value = true;
     if (props.adminEdit) {
@@ -76,7 +62,7 @@ async function onError(event: FormErrorEvent) {
           :close="{onClick: () => emit('close', false)}" :ui="{content: 'max-w-2xl'}">
     <template #body>
       <!-- TODO: Put form in a separate component and use it in registration as well -->
-      <UForm :schema :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
+      <UForm :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
              id="participant-edit-form">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
@@ -141,9 +127,9 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <!-- CV -->
-<!--        <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae">-->
-<!--          <UCheckbox label="Supprimer le CV" v-model="state.curriculumVitae"/>-->
-<!--        </UFormField>-->
+        <!--        <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae">-->
+        <!--          <UCheckbox label="Supprimer le CV" v-model="state.curriculumVitae"/>-->
+        <!--        </UFormField>-->
       </UForm>
     </template>
     <template #footer>
