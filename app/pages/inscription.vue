@@ -1,26 +1,24 @@
 <script setup lang="ts">
-import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
-import schema from "#shared/schemas/participants/create";
+import { type CreateParticipantSchema, default as schema } from "#shared/schemas/participants/create";
 
 const toast = useToast();
 const actions = useParticipantsActions();
 
-type Schema = v.InferOutput<typeof schema>
-
-const state: Reactive<Schema> = reactive({
+const state: Reactive<CreateParticipantSchema> = reactive({
   firstName: "",
   lastName: "",
   email: "",
   cautionAgreement: false,
   codeOfConduct: false,
   imageAgreement: false,
+  turnstileToken: "",
 });
 
 const isSubmitting = ref(false);
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
   try {
     isSubmitting.value = true;
 
@@ -29,8 +27,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
     toast.add({
       title: "Inscription soumise !",
-      description: "Merci pour votre inscription, nous reviendrons vers vous rapidement.",
+      description: "Merci pour votre inscription ! Vous recevrez bientôt un email de confirmation.",
       color: "success",
+      icon: "i-lucide-check-circle",
     });
     console.log(event.data);
   } finally {
@@ -50,7 +49,7 @@ async function onError(event: FormErrorEvent) {
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <PageHero title="Formulaire d'inscription"
-              subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement. Nous reviendrons vers vous rapidement.">
+              subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement.">
     </PageHero>
   </UPageHero>
 
@@ -64,7 +63,7 @@ async function onError(event: FormErrorEvent) {
         </p>
       </template>
 
-      <UForm :schema :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
+      <UForm :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
              id="registration-form">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
@@ -90,21 +89,21 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <!-- School, Diet & Needs -->
-        <HybridSelectInput 
-          v-model="state.school"
-          label="École"
-          name="school"
-          :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
-          icon="i-lucide-graduation-cap"
-          placeholder="Précisez votre école..."
+        <HybridSelectInput
+            v-model="state.school"
+            label="École"
+            name="school"
+            :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
+            icon="i-lucide-graduation-cap"
+            placeholder="Précisez votre école..."
         />
-        <HybridSelectInput 
-          v-model="state.diet"
-          label="Régime alimentaire spécifique"
-          name="diet"
-          :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
-          icon="i-lucide-apple"
-          placeholder="Précisez votre régime alimentaire..."
+        <HybridSelectInput
+            v-model="state.diet"
+            label="Régime alimentaire spécifique"
+            name="diet"
+            :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
+            icon="i-lucide-apple"
+            placeholder="Précisez votre régime alimentaire..."
         />
 
         <UFormField label="Besoins spécifiques" name="needs"
@@ -144,6 +143,10 @@ async function onError(event: FormErrorEvent) {
         <UFormField name="newsletter">
           <UCheckbox v-model="state.newsletter" name="newsletter"
                      label="Je souhaite recevoir la newsletter pour être informé des futurs événements."/>
+        </UFormField>
+
+        <UFormField name="turnstileToken" required>
+          <NuxtTurnstile v-model="state.turnstileToken"/>
         </UFormField>
       </UForm>
 

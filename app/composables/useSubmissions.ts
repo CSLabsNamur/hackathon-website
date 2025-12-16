@@ -6,29 +6,31 @@ interface UseSubmissionsParams {
 }
 
 export const useSubmissionsRequests = async (params?: UseSubmissionsParams) => {
-  return useFetch("/api/submissions/requests", {
+  return useAPI("/api/submissions/requests", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });
 };
 
 export const useSubmissionsRequestsActions = () => {
+  const { $api } = useNuxtApp()
+
   const createSubmissionRequest = async (data: CreateSubmissionRequestSchema) => {
-    return await $fetch("/api/submissions/requests", {
+    return await $api("/api/submissions/requests", {
       method: "POST",
       body: data,
     });
   };
 
   const editSubmissionRequest = async (id: string, data: EditSubmissionRequestSchema) => {
-    return await $fetch(`/api/submissions/requests/${id}`, {
+    return await $api(`/api/submissions/requests/${id}`, {
       method: "PUT",
       body: data,
     });
   };
 
   const removeSubmissionRequest = async (id: string) => {
-    return await $fetch(`/api/submissions/requests/${id}`, {
+    return await $api(`/api/submissions/requests/${id}`, {
       method: "DELETE",
     });
   };
@@ -41,15 +43,17 @@ export const useSubmissionsRequestsActions = () => {
 };
 
 export const useSubmissions = async (params?: UseSubmissionsParams) => {
-  return useFetch("/api/submissions/me", {
+  return useAPI("/api/submissions/me", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });
 };
 
 export const useSubmissionsActions = () => {
+  const { $api } = useNuxtApp()
+
   const submit = async (requestId: string, content?: string, skipped?: boolean) => {
-    return $fetch(`/api/submissions/requests/${requestId}/submit`, {
+    return $api(`/api/submissions/requests/${requestId}/submit`, {
       method: "POST",
       body: {
         content,

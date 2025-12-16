@@ -24,8 +24,10 @@ export default defineNuxtConfig({
     "@nuxtjs/device",
     "@nuxtjs/supabase",
     "@pinia/nuxt",
+    "@nuxtjs/turnstile",
   ],
 
+  // TODO: Is this still necessary?
   postcss: {
     plugins: {
       "postcss-nesting": {},
@@ -55,6 +57,9 @@ export default defineNuxtConfig({
       eventTitle: "Le Hackathon du CSLabs",
       eventSlogan: "",
     },
+    turnstile: {
+      secretKey: "",
+    },
   },
 
   supabase: {
@@ -78,5 +83,9 @@ export default defineNuxtConfig({
     charts: ["LineChart", "PieChart"],
     components: ["AriaComponent", "DatasetComponent", "TooltipComponent", "GridComponent", "TitleComponent"],
     features: ["LabelLayout", "UniversalTransition"],
+  },
+
+  turnstile: {
+    siteKey: process.env.NUXT_TURNSTILE_SITE_KEY,
   },
 });

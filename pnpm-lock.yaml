@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@googlemaps/markerclusterer':
-        specifier: ^2.6.2
-        version: 2.6.2
       '@iconify-json/lucide':
         specifier: ^1.2.81
         version: 1.2.81
@@ -44,6 +41,9 @@ importers:
       '@nuxtjs/supabase':
         specifier: 2.0.3
         version: 2.0.3
+      '@nuxtjs/turnstile':
+        specifier: 1.1.1
+        version: 1.1.1(@nuxt/scripts@0.13.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.19(vue@3.5.25(typescript@5.9.3)))(db0@0.3.4(@electric-sql/pglite@0.3.2)(better-sqlite3@12.5.0)(mysql2@3.15.3))(ioredis@5.8.2)(magicast@0.5.1)(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3)))(magicast@0.5.1)
       '@pinia/nuxt':
         specifier: 0.11.3
         version: 0.11.3(magicast@0.5.1)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3)))
@@ -1182,6 +1182,11 @@ packages:
   '@nuxtjs/supabase@2.0.3':
     resolution: {integrity: sha512-zfhuOqhbQUijMd5rXS9qzzuVqBMU00gcJyvxFuTBXdS9TAk/gboQZxxX7EQp6eAi5asvtJNM+mwBKqzQwtZi7g==}
 
+  '@nuxtjs/turnstile@1.1.1':
+    resolution: {integrity: sha512-EiS0JgzzSRhTYXhZSmqT7643f6eKOHeB7jouejepsPkcomSdQ/sf7Fkh9AEU8fhDYAfYc+spuK524LQ4u2CLng==}
+    peerDependencies:
+      '@nuxt/scripts': ^0.11.0 || ^0.12.0
+
   '@oxc-minify/binding-android-arm64@0.96.0':
     resolution: {integrity: sha512-lzeIEMu/v6Y+La5JSesq4hvyKtKBq84cgQpKYTYM/yGuNk2tfd5Ha31hnC+mTh48lp/5vZH+WBfjVUjjINCfug==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -2011,6 +2016,9 @@ packages:
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
+
+  '@types/cloudflare-turnstile@0.2.2':
+    resolution: {integrity: sha512-3Yf7b1Glci+V2bFWwWBbZkRgTuegp7RDgNTOG4U0UNPB9RV4AWvwqg2/qqLff8G+SwKFNXoXvTkqaRBZrAFdKA==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -6592,6 +6600,7 @@ snapshots:
       '@types/supercluster': 7.1.3
       fast-equals: 5.4.0
       supercluster: 8.0.1
+    optional: true
 
   '@hono/node-server@1.19.6(hono@4.10.6)':
     dependencies:
@@ -7610,6 +7619,16 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@nuxtjs/turnstile@1.1.1(@nuxt/scripts@0.13.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.19(vue@3.5.25(typescript@5.9.3)))(db0@0.3.4(@electric-sql/pglite@0.3.2)(better-sqlite3@12.5.0)(mysql2@3.15.3))(ioredis@5.8.2)(magicast@0.5.1)(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3)))(magicast@0.5.1)':
+    dependencies:
+      '@nuxt/kit': 3.20.2(magicast@0.5.1)
+      '@nuxt/scripts': 0.13.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.19(vue@3.5.25(typescript@5.9.3)))(db0@0.3.4(@electric-sql/pglite@0.3.2)(better-sqlite3@12.5.0)(mysql2@3.15.3))(ioredis@5.8.2)(magicast@0.5.1)(typescript@5.9.3)(vue@3.5.25(typescript@5.9.3))
+      '@types/cloudflare-turnstile': 0.2.2
+      defu: 6.1.4
+      pathe: 2.0.3
+    transitivePeerDependencies:
+      - magicast
+
   '@oxc-minify/binding-android-arm64@0.96.0':
     optional: true
 
@@ -8268,13 +8287,16 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/cloudflare-turnstile@0.2.2': {}
+
   '@types/debug@4.1.12':
     dependencies:
       '@types/ms': 2.1.0
 
   '@types/estree@1.0.8': {}
 
-  '@types/geojson@7946.0.16': {}
+  '@types/geojson@7946.0.16':
+    optional: true
 
   '@types/hast@3.0.4':
     dependencies:
@@ -8311,6 +8333,7 @@ snapshots:
   '@types/supercluster@7.1.3':
     dependencies:
       '@types/geojson': 7946.0.16
+    optional: true
 
   '@types/unist@2.0.11': {}
 
@@ -9721,7 +9744,8 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-equals@5.4.0: {}
+  fast-equals@5.4.0:
+    optional: true
 
   fast-fifo@1.3.2: {}
 
@@ -10372,7 +10396,8 @@ snapshots:
 
   json5@2.2.3: {}
 
-  kdbush@4.0.2: {}
+  kdbush@4.0.2:
+    optional: true
 
   keyv@4.5.4:
     dependencies:
@@ -12349,6 +12374,7 @@ snapshots:
   supercluster@8.0.1:
     dependencies:
       kdbush: 4.0.2
+    optional: true
 
   superjson@2.2.6:
     dependencies:

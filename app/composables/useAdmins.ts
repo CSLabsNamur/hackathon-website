@@ -3,7 +3,7 @@ interface UseAdminsParams {
 }
 
 export const useAdmins = async (params?: UseAdminsParams) => {
-  return useFetch("/api/admins", {
+  return useAPI("/api/admins", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });

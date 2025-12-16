@@ -1,7 +1,7 @@
 import type { EditParticipantSchema } from "#shared/schemas/participants/edit";
 
 export const useCurrentParticipant = async () => {
-  return useFetch("/api/participants/me", {
+  return useAPI("/api/participants/me", {
     //server: false,
     credentials: "same-origin",
     //cache: "force-cache",
@@ -13,8 +13,10 @@ export const useCurrentParticipant = async () => {
 };
 
 export const useCurrentParticipantActions = () => {
+  const { $api } = useNuxtApp()
+
   const updateParticipant = async (data: EditParticipantSchema) => {
-    return $fetch("/api/participants/me", {
+    return $api("/api/participants/me", {
       method: "PUT",
       body: data,
     });

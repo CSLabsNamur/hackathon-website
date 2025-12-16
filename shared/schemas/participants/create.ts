@@ -14,6 +14,7 @@ const schema = v.object({
   codeOfConduct: v.pipe(v.boolean(), v.value(true, "Vous devez accepter le code de conduite pour vous inscrire")),
   imageAgreement: v.optional(v.boolean(), false),
   newsletter: v.optional(v.boolean()),
+  turnstileToken: v.pipe(v.string(), v.nonEmpty("La vérification anti-robot est requise")),
 });
 
 export default schema;

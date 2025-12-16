@@ -1,22 +1,34 @@
-import schema, { type CreateParticipantSchema } from "#shared/schemas/participants/create";
+import schema from "#shared/schemas/participants/create";
 import * as v from "valibot";
 import { serverSupabaseClient } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
-import type {
-  UserCreateInput,
-  UserCreateNestedOneWithoutParticipantInput,
-} from "~~/server/prisma/generated/prisma/models/User";
+import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  //const {public: {registrationsDateOpen, registrationsDateClose}} = useRuntimeConfig(event);
 
-  const {firstName, lastName, email, curriculumVitae, ...body} = await readValidatedBody(event, v.parser(schema));
+  //const now = dayjs();
+  //if (!now.isBetween(registrationsDateOpen, registrationsDateClose)) {
+  //  throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
+  //}
 
-  const payload: Omit<CreateParticipantSchema, "curriculumVitae" | keyof UserCreateInput> & {
-    user: UserCreateNestedOneWithoutParticipantInput,
-    curriculumVitae?: string,
-    caution: CautionStatus
-  } = {
+  // Get the validated body, and extract fields that don't belong to ParticipantCreateInput
+  const {
+    firstName,
+    lastName,
+    email,
+    curriculumVitae,
+    turnstileToken,
+    cautionAgreement,
+    codeOfConduct,
+    ...body
+  } = await readValidatedBody(event, v.parser(schema));
+
+  if (!await verifyTurnstileToken(turnstileToken, event)) {
+    throw createError({statusCode: 400, statusMessage: "Échec de la vérification anti-bot."});
+  }
+
+  const payload: ParticipantCreateInput = {
     ...body,
     user: {
       create: {
