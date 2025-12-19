@@ -4,10 +4,10 @@ const dayjs = useDayjs();
 
 const nextSpecialEvent = computed<ScheduleItem | null>(() => {
   return schedule.value?.find(item => {
-    // TODO: Replace mockCurrentDateTime with actual current date time in production
+    const now = dayjs();
     return item.special &&
-        !dayjs(item.startTime).isBefore(mockCurrentDateTime) &&
-        mockCurrentDateTime.isAfter(dayjs(item.startTime).subtract(2, "hour"));
+        !dayjs(item.startTime).isBefore(now) &&
+        now.isAfter(dayjs(item.startTime).subtract(2, "hour"));
   }) || null;
 });
 </script>

@@ -14,12 +14,16 @@ export const useParticipants = async (params?: UseParticipantsParams) => {
 };
 
 export const useParticipantsActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
-  const createParticipant = async (data: CreateParticipantSchema, cv?: File) => {
+  const createParticipant = async (data: CreateParticipantSchema) => {
+    const formData = new FormData();
+    for (const item in data) {
+      formData.append(item, (data as any)[item]);
+    }
     await $api("/api/participants", {
       method: "POST",
-      body: data,
+      body: formData,
     });
 
     // TODO: Re-enable CV upload when backend supports it

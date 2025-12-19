@@ -114,7 +114,9 @@ async function onError(event: FormErrorEvent) {
         <!-- CV Upload -->
         <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae"
                     hint="Pourrait être rendu disponible aux partenaires de l'événement">
-          <UFileUpload accept="application/pdf" hint="Déposez votre CV ici"
+          <UFileUpload v-model="state.curriculumVitae"
+                       accept="application/pdf,application/acrobat,application/nappdf,application/x-pdf,image/pdf"
+                       hint="Déposez votre CV ici"
                        label="Déposez votre CV ici" description="PDF, max 5MB"
                        icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
         </UFormField>

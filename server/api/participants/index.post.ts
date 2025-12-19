@@ -1,8 +1,13 @@
 import schema from "#shared/schemas/participants/create";
 import * as v from "valibot";
-import { serverSupabaseClient } from "#supabase/server";
+import { serverSupabaseServiceRole } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
+import formidable from "formidable";
+import fs from "fs";
+
+const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_CV_MIME_TYPES = ["application/pdf", "application/acrobat", "application/nappdf", "application/x-pdf", "image/pdf"];
 
 export default defineEventHandler(async (event) => {
   //const {public: {registrationsDateOpen, registrationsDateClose}} = useRuntimeConfig(event);
@@ -12,22 +17,56 @@ export default defineEventHandler(async (event) => {
   //  throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
   //}
 
+  // We do not process file uploads directly because we need to do checks before saving everything
+  const [bodyRaw, files] = await formidable({
+    allowEmptyFiles: false,
+    keepExtensions: true,
+    maxFiles: 1,
+    maxFileSize: 5 * 1024 * 1024,
+    multiples: false,
+  }).parse(event.node.req);
+  console.log({bodyRaw, files});
+
+  if (!bodyRaw) {
+    throw createError({statusCode: 400, statusMessage: "Données de formulaire invalides."});
+  }
+
+  const curriculumVitae = files.curriculumVitae?.[0];
+
+  if (curriculumVitae && (curriculumVitae.size > MAX_CV_SIZE || !ACCEPTED_CV_MIME_TYPES.includes(curriculumVitae.mimetype!))) {
+    throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
+  }
+
+  const bodyFlat = Object.fromEntries(Object.entries(bodyRaw).map(([key, value]) => {
+    if (Array.isArray(value)) {
+      return [key, value[0]];
+    } else {
+      return [key, value];
+    }
+  }));
+
   // Get the validated body, and extract fields that don't belong to ParticipantCreateInput
+  // TODO: Use v.safeParser throughout the project to handle validation errors
   const {
     firstName,
     lastName,
     email,
-    curriculumVitae,
     turnstileToken,
     cautionAgreement,
     codeOfConduct,
     ...body
-  } = await readValidatedBody(event, v.parser(schema));
+  } = v.parse(schema, bodyFlat);
 
   if (!await verifyTurnstileToken(turnstileToken, event)) {
     throw createError({statusCode: 400, statusMessage: "Échec de la vérification anti-bot."});
   }
 
+  // Check if the user already exists
+  if (await prisma.user.count({where: {email}}) > 0) {
+    throw createError({statusCode: 400, statusMessage: "Un utilisateur avec cet email existe déjà."});
+  }
+
+  // Prepare the payload for creating the participant
   const payload: ParticipantCreateInput = {
     ...body,
     user: {
@@ -43,19 +82,22 @@ export default defineEventHandler(async (event) => {
 
   // Upload CV to Supabase Storage if provided
   if (curriculumVitae) {
-    const supabase = await serverSupabaseClient(event);
+    const supabase = serverSupabaseServiceRole(event);
 
-    const file = curriculumVitae;
     const {data, error} = await supabase.storage
       .from("cvs")
-      .upload(`${Date.now()}_${file.name}`, file);
+      .upload(`${firstName + lastName}_${curriculumVitae.originalFilename}`, curriculumVitae.filepath ? fs.createReadStream(curriculumVitae.filepath) : "", {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: curriculumVitae.mimetype || undefined,
+      });
 
     if (error) {
-      throw new Error("Erreur lors du téléchargement du CV.");
+      throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
     }
 
     // Replace the curriculum vitae field with the file path or URL
-    payload.curriculumVitae = data.path;
+    payload.curriculumVitae = data.fullPath;
   }
 
   return prisma.participant.create({data: payload});

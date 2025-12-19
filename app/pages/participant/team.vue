@@ -70,17 +70,17 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
     accessorKey: "diet",
   },
   //TODO: Profile button?
-  {
-    header: "Profil",
-    cell: ({row}) => {
-      return h(UButton, {
-        variant: "ghost",
-        size: "sm",
-        icon: "i-lucide-user",
-        //onClick: () => editModal.open({participant: row.original}),
-      });
-    },
-  },
+  //{
+  //  header: "Profil",
+  //  cell: ({row}) => {
+  //    return h(UButton, {
+  //      variant: "ghost",
+  //      size: "sm",
+  //      icon: "i-lucide-user",
+  //      //onClick: () => editModal.open({participant: row.original}),
+  //    });
+  //  },
+  //},
   {
     id: "actions",
     cell: ({row}) => {
@@ -108,17 +108,17 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
 ];
 
 // TODO: Do we allow participants to remove others from their team?
-function getRowItems(row: Row<ParticipantWithoutRelations>): Array<DropdownMenuItem> {
-  return [
-    {
-      label: "Retirer de l'équipe",
-      icon: "i-lucide-user-minus",
-      onClick: () => {
-        removeMemberModal.open({participant: row.original});
-      },
-    },
-  ];
-}
+//function getRowItems(row: Row<ParticipantWithoutRelations>): Array<DropdownMenuItem> {
+//  return [
+//    {
+//      label: "Retirer de l'équipe",
+//      icon: "i-lucide-user-minus",
+//      onClick: () => {
+//        removeMemberModal.open({participant: row.original});
+//      },
+//    },
+//  ];
+//}
 
 const noMembersLinks: ButtonProps[] = [
   {
