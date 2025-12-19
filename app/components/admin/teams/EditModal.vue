@@ -74,7 +74,7 @@ async function onError(event: FormErrorEvent) {
     </template>
     <template #footer="{close}">
       <UButton type="submit" form="team-edit-form" :loading="isSubmitting">Enregistrer</UButton>
-      <UButton color="neutral" @click="close">Annuler</UButton>
+      <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>
 </template>

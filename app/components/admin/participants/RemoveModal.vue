@@ -27,9 +27,9 @@ async function onSubmit() {
 </script>
 
 <template>
-  <!-- TODO: Add loading and closing states throughout modals -->
-  <UModal :close="{onClick: () => emit('close', false)}" title="Supprimer le participant"
+  <UModal title="Supprimer le participant"
           description="Êtes-vous sûr de vouloir supprimer ce participant ? Cette action est irréversible."
+          :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl'}">
     <template #footer="{close}">
       <div class="flex justify-end gap-3 w-full">

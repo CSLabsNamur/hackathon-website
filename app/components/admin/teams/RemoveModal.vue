@@ -27,13 +27,14 @@ async function onSubmit() {
 </script>
 
 <template>
-  <UModal :close="{onClick: () => emit('close', false)}" title="Supprimer l'équipe"
+  <UModal title="Supprimer l'équipe"
           description="Êtes-vous sûr de vouloir supprimer cette équipe ? Cette action est irréversible."
+          :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl'}">
     <template #footer="{close}">
       <div class="flex justify-end gap-3 w-full">
         <UButton :loading="isSubmitting" @click="onSubmit">Confirmer</UButton>
-        <UButton color="neutral" @click="close">Annuler</UButton>
+        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
       </div>
     </template>
   </UModal>

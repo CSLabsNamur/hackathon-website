@@ -3,6 +3,7 @@ const props = defineProps<{participant: Participant | ParticipantWithoutRelation
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
+const actions = useCurrentParticipantActions();
 
 const isSubmitting = ref(false);
 
@@ -34,13 +35,14 @@ async function onSubmit() {
 </script>
 
 <template>
-  <UModal :close="{onClick: () => emit('close', false)}" title="Retirer un membre de l'équipe"
+  <UModal title="Retirer un membre de l'équipe"
           description="Êtes-vous sûr de vouloir retirer ce membre de votre équipe ? Cette action ne peut pas être annulée."
-          :ui="{content: 'max-w-2xl'}">
+          :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
+          :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #footer="{close}">
       <div class="flex justify-end gap-3 w-full">
         <UButton :loading="isSubmitting" @click="onSubmit">Confirmer</UButton>
-        <UButton color="neutral" @click="close">Annuler</UButton>
+        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
       </div>
     </template>
   </UModal>

@@ -26,6 +26,7 @@ const isSubmitting = ref(false);
 async function onSubmit(event: FormSubmitEvent<EditParticipantSchema>) {
   try {
     isSubmitting.value = true;
+
     if (props.adminEdit) {
       const actions = useParticipantsActions();
       await actions.updateParticipant(props.participant.id, event.data);
@@ -59,11 +60,12 @@ async function onError(event: FormErrorEvent) {
 <template>
   <UModal :title="adminEdit ? 'Modifier le participant' : 'Modifier mon profil'"
           :description="adminEdit ? `Modifier les informations de ${participant.user.firstName} ${participant.user.lastName}` : 'Modifiez les informations de votre profil'"
-          :close="{onClick: () => emit('close', false)}" :ui="{content: 'max-w-2xl'}">
+          :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
+          :ui="{content: 'max-w-2xl'}">
     <template #body>
       <!-- TODO: Put form in a separate component and use it in registration as well -->
       <UForm :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
-             id="participant-edit-form">
+             :disabled="isSubmitting" id="participant-edit-form">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
           <UInput v-model="state.firstName" icon="i-lucide-user" class="w-full"/>
@@ -132,10 +134,10 @@ async function onError(event: FormErrorEvent) {
         <!--        </UFormField>-->
       </UForm>
     </template>
-    <template #footer>
+    <template #footer="{close}">
       <div class="flex justify-end gap-3">
         <UButton type="submit" form="participant-edit-form" :loading="isSubmitting">Enregistrer</UButton>
-        <UButton color="neutral" @click="emit('close', false)">Annuler</UButton>
+        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
       </div>
     </template>
   </UModal>

@@ -37,7 +37,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   }
 }
 
-// TODO: move to utils
 async function onError(event: FormErrorEvent) {
   if (event?.errors?.[0]?.id) {
     const element = document.getElementById(event.errors[0].id);
@@ -71,7 +70,7 @@ async function onError(event: FormErrorEvent) {
     </template>
     <template #footer="{close}">
       <UButton type="submit" form="team-creation-form" :loading="isSubmitting">Soumettre</UButton>
-      <UButton color="neutral" @click="close">Annuler</UButton>
+      <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>
 </template>

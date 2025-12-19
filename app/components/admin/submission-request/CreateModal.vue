@@ -73,11 +73,12 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UModal :close="{onClick: () => emit('close', false)}" title="Nouvelle demande de soumission"
-          :ui="{content: 'max-w-xl'}">
+  <UModal title="Nouvelle demande de soumission"
+          :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
+          :ui="{content: 'max-w-xl', footer: 'justify-end'}">
     <template #body>
       <UForm :schema :state class="grid gap-4 lg:gap-6" @submit="onSubmit" @error="onError"
-             id="create-submission-form">
+             :disabled="isSubmitting" id="create-submission-form">
         <UFormField label="Type de demande" name="type" required>
           <URadioGroup v-model="state.type" :items="typeItems"
                        :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
@@ -109,8 +110,8 @@ async function onError(event: FormErrorEvent) {
     </template>
     <template #footer="{close}">
       <div class="flex justify-end space-x-2">
-        <UButton type="submit" form="create-submission-form">Enregistrer</UButton>
-        <UButton color="neutral" @click="close">Annuler</UButton>
+        <UButton type="submit" form="create-submission-form" :loading="isSubmitting">Enregistrer</UButton>
+        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
       </div>
     </template>
   </UModal>
