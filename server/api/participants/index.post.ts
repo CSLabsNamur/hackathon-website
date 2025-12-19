@@ -5,17 +5,18 @@ import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import formidable from "formidable";
 import fs from "fs";
+import { fileTypeFromFile } from "file-type";
 
 const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_CV_MIME_TYPES = ["application/pdf", "application/acrobat", "application/nappdf", "application/x-pdf", "image/pdf"];
 
 export default defineEventHandler(async (event) => {
-  //const {public: {registrationsDateOpen, registrationsDateClose}} = useRuntimeConfig(event);
+  const {public: {registrationsDateOpen, registrationsDateClose}} = useRuntimeConfig(event);
 
-  //const now = dayjs();
-  //if (!now.isBetween(registrationsDateOpen, registrationsDateClose)) {
-  //  throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
-  //}
+  const now = dayjs();
+  if (!now.isBetween(registrationsDateOpen, registrationsDateClose)) {
+    throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
+  }
 
   // We do not process file uploads directly because we need to do checks before saving everything
   const [bodyRaw, files] = await formidable({
@@ -25,7 +26,6 @@ export default defineEventHandler(async (event) => {
     maxFileSize: 5 * 1024 * 1024,
     multiples: false,
   }).parse(event.node.req);
-  console.log({bodyRaw, files});
 
   if (!bodyRaw) {
     throw createError({statusCode: 400, statusMessage: "Données de formulaire invalides."});
@@ -33,8 +33,11 @@ export default defineEventHandler(async (event) => {
 
   const curriculumVitae = files.curriculumVitae?.[0];
 
-  if (curriculumVitae && (curriculumVitae.size > MAX_CV_SIZE || !ACCEPTED_CV_MIME_TYPES.includes(curriculumVitae.mimetype!))) {
-    throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
+  if (curriculumVitae) {
+    const fileType = await fileTypeFromFile(curriculumVitae.filepath);
+    if (!fileType || curriculumVitae.size > MAX_CV_SIZE || !ACCEPTED_CV_MIME_TYPES.includes(fileType.mime) || fileType.ext !== "pdf") {
+      throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
+    }
   }
 
   const bodyFlat = Object.fromEntries(Object.entries(bodyRaw).map(([key, value]) => {
@@ -56,6 +59,7 @@ export default defineEventHandler(async (event) => {
     codeOfConduct,
     ...body
   } = v.parse(schema, bodyFlat);
+  console.log({firstName, lastName, email, cautionAgreement, codeOfConduct, ...body});
 
   if (!await verifyTurnstileToken(turnstileToken, event)) {
     throw createError({statusCode: 400, statusMessage: "Échec de la vérification anti-bot."});
@@ -96,7 +100,6 @@ export default defineEventHandler(async (event) => {
       throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
     }
 
-    // Replace the curriculum vitae field with the file path or URL
     payload.curriculumVitae = data.fullPath;
   }
 

@@ -12,7 +12,7 @@ export const editSubmissionRequestSchema = (
   const eventDateStartParsed = dayjs(eventDateStart);
   const eventDateEndParsed = dayjs(eventDateEnd);
 
-  return v.object({
+  return v.strictObject({
     title: v.pipe(
       v.string(),
       v.nonEmpty("Le titre ne peut pas être vide"),
@@ -39,7 +39,7 @@ export const editSubmissionRequestSchema = (
   });
 };
 
-const tempSchema = v.object({
+const tempSchema = v.strictObject({
   title: v.pipe(
     v.string(),
     v.nonEmpty(),

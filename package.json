@@ -39,6 +39,7 @@
     "dayjs-nuxt": "2.1.11",
     "echarts": "^6.0.0",
     "eslint": "^9.39.2",
+    "file-type": "^21.1.1",
     "formidable": "^3.5.4",
     "nuxt": "4.2.1",
     "nuxt-echarts": "1.0.1",

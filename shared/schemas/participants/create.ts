@@ -1,6 +1,6 @@
 import * as v from "valibot";
 
-const schema = v.object({
+const schema = v.strictObject({
   firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
   lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),

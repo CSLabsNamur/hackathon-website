@@ -12,7 +12,7 @@ export const createSubmissionRequestSchema = (
   const eventDateStartParsed = dayjs(eventDateStart);
   const eventDateEndParsed = dayjs(eventDateEnd);
 
-  return v.object({
+  return v.strictObject({
     // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
     // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
     type: v.picklist(["text", "file", "files"]),
@@ -42,7 +42,7 @@ export const createSubmissionRequestSchema = (
   });
 };
 
-const tempSchema = v.object({
+const tempSchema = v.strictObject({
   // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
   // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
   type: v.picklist(["text", "file", "files"]),
