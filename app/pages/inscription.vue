@@ -22,7 +22,7 @@ async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.createParticipant(data);
+    await actions.createParticipant(event.data);
 
     toast.add({
       title: "Inscription soumise !",
