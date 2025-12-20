@@ -64,9 +64,18 @@ export default defineNuxtConfig({
     },
   },
 
-  //routeRules: {
-  //  "/": {isr: true},
-  //},
+  routeRules: {
+    "/": {swr: 3600},
+    "/devenir-partenaire": {swr: 3600},
+    "/infos": {swr: 1800},
+    "/partenaires": {swr: 1800},
+    "/plus-loin": {swr: 3600},
+    "/historique": {static: true},
+    "/cookie-policy": {static: true},
+    "/admin/**": {ssr: false},
+    "/participant/**": {ssr: false},
+    "/auth/**": {ssr: false},
+  },
 
   security: {
     csrf: true,
@@ -88,7 +97,8 @@ export default defineNuxtConfig({
 
   supabase: {
     types: false,
-    redirect: true,
+    // We handle auth redirects ourselves to check user role
+    redirect: false,
     redirectOptions: {
       login: "/",
       callback: "/auth/callback",
