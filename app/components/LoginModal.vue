@@ -17,11 +17,11 @@ const fields: AuthFormField[] = [{
   placeholder: "Entrez votre adresse email",
   required: true,
 }];
+//@ts-expect-error Wrong type definition on Nuxt UI's side. This is valid.
 const codeFields: AuthFormField[] = [{
   name: "code",
   type: "otp",
   length: 6,
-  //@ts-expect-error Wrong type definition on Nuxt UI's side. This is valid.
   otp: {type: "number"},
   mask: true,
   required: true,

@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
 import type { ButtonProps } from "#ui/components/Button.vue";
-import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import type { Row } from "@tanstack/vue-table";
-import { RemoveTeamMemberModal } from "#components";
+//import { RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
   layout: "user-dashboard",
@@ -12,13 +10,13 @@ definePageMeta({
 const {data: currentParticipant} = await useCurrentParticipant();
 
 const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
+//const UDropdownMenu = resolveComponent("UDropdownMenu");
 
-const overlay = useOverlay();
+//const overlay = useOverlay();
 const toast = useToast();
 const {copy} = useClipboard();
 
-const removeMemberModal = overlay.create(RemoveTeamMemberModal);
+//const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
 const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
@@ -81,30 +79,30 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
   //    });
   //  },
   //},
-  {
-    id: "actions",
-    cell: ({row}) => {
-      return h(
-          "div",
-          {class: "text-right"},
-          h(
-              UDropdownMenu,
-              {
-                content: {align: "end"},
-                items: getRowItems(row),
-                "aria-label": `Actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
-              },
-              () => h(UButton, {
-                icon: "i-lucide-ellipsis-vertical",
-                color: "neutral",
-                variant: "ghost",
-                class: "ml-auto",
-                "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
-              }),
-          ),
-      );
-    },
-  },
+  //{
+  //  id: "actions",
+  //  cell: ({row}) => {
+  //    return h(
+  //        "div",
+  //        {class: "text-right"},
+  //        h(
+  //            UDropdownMenu,
+  //            {
+  //              content: {align: "end"},
+  //              items: getRowItems(row),
+  //              "aria-label": `Actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
+  //            },
+  //            () => h(UButton, {
+  //              icon: "i-lucide-ellipsis-vertical",
+  //              color: "neutral",
+  //              variant: "ghost",
+  //              class: "ml-auto",
+  //              "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
+  //            }),
+  //        ),
+  //    );
+  //  },
+  //},
 ];
 
 // TODO: Do we allow participants to remove others from their team?
@@ -124,7 +122,7 @@ const noMembersLinks: ButtonProps[] = [
   {
     label: "Inviter des membres",
     icon: "i-lucide-user-plus",
-    //onClick: () => {}
+    onClick: () => copyToken(),
   },
 ];
 
@@ -134,7 +132,7 @@ const copyToken = () => {
   copy(currentParticipant.value.team.token);
   toast.add({
     title: "Code d'invitation copié",
-    description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers.",
+    description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers. Partagez-le avec vos amis pour les inviter dans votre équipe !",
     color: "success",
   });
 };
