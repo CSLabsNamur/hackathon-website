@@ -67,7 +67,14 @@ export default defineNuxtConfig({
   routeRules: {
     "/": {swr: 3600},
     "/devenir-partenaire": {swr: 3600},
-    "/infos": {swr: 1800},
+    "/infos": {
+      swr: 1800,
+      security: {
+        headers: {
+          crossOriginEmbedderPolicy: "unsafe-none",
+        },
+      },
+    },
     "/partenaires": {swr: 1800},
     "/plus-loin": {swr: 3600},
     "/historique": {static: true},
@@ -86,7 +93,7 @@ export default defineNuxtConfig({
       contentSecurityPolicy: {
         "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${new URL(process.env.SUPABASE_URL || "").host}`, "https://lh3.googleusercontent.com"],
         "connect-src": ["'self'", `https://${new URL(process.env.SUPABASE_URL || "").host}`, `wss://${new URL(process.env.SUPABASE_URL || "").host}`],
-        "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://openstreetmap.org"],
+        "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
         "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
       },
     },
