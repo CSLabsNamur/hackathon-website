@@ -22,8 +22,7 @@ async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
   try {
     isSubmitting.value = true;
 
-    const {curriculumVitae, ...data} = event.data;
-    await actions.createParticipant(data, curriculumVitae);
+    await actions.createParticipant(data);
 
     toast.add({
       title: "Inscription soumise !",
@@ -31,7 +30,6 @@ async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
       color: "success",
       icon: "i-lucide-check-circle",
     });
-    console.log(event.data);
   } finally {
     isSubmitting.value = false;
   }

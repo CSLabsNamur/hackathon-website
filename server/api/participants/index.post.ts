@@ -4,8 +4,9 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import formidable from "formidable";
-import fs from "fs";
 import { fileTypeFromFile } from "file-type";
+import registrationMailTemplate from "~~/server/mail/templates/registration";
+import fs from "fs";
 
 const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_CV_MIME_TYPES = ["application/pdf", "application/acrobat", "application/nappdf", "application/x-pdf", "image/pdf"];
@@ -59,7 +60,6 @@ export default defineEventHandler(async (event) => {
     codeOfConduct,
     ...body
   } = v.parse(schema, bodyFlat);
-  console.log({firstName, lastName, email, cautionAgreement, codeOfConduct, ...body});
 
   if (!await verifyTurnstileToken(turnstileToken, event)) {
     throw createError({statusCode: 400, statusMessage: "Échec de la vérification anti-bot."});
@@ -103,5 +103,35 @@ export default defineEventHandler(async (event) => {
     payload.curriculumVitae = data.fullPath;
   }
 
-  return prisma.participant.create({data: payload});
+  try {
+    await prisma.participant.create({data: payload});
+  } catch (e) {
+    if (curriculumVitae) {
+      // Clean up uploaded CV in case of error
+      const supabase = serverSupabaseServiceRole(event);
+      const {error} = await supabase.storage.from("cvs").remove([`${firstName + lastName}_${curriculumVitae.originalFilename}`]);
+      if (error) {
+        console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
+      }
+    }
+    throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
+  }
+
+  // Send confirmation email
+  try {
+    const {sendMail} = useNodeMailer();
+
+    await sendMail({
+      to: email,
+      subject: "Confirmation d'inscription au Hackathon du CSLabs",
+      html: registrationMailTemplate,
+    });
+  } catch (e) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Inscription enregistrée, mais erreur lors de l'envoi de l'email de confirmation.",
+    });
+  }
+
+  return {success: true, message: "Inscription enregistrée avec succès."};
 });

@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     "@nuxtjs/supabase",
     "@pinia/nuxt",
     "@nuxtjs/turnstile",
+    "nuxt-nodemailer",
   ],
 
   // TODO: Is this still necessary?
@@ -64,9 +65,9 @@ export default defineNuxtConfig({
 
   supabase: {
     types: false,
-    redirect: false,
+    redirect: true,
     redirectOptions: {
-      login: "/auth/login",
+      login: "/",
       callback: "/auth/callback",
     },
   },
@@ -87,5 +88,17 @@ export default defineNuxtConfig({
 
   turnstile: {
     siteKey: process.env.NUXT_TURNSTILE_SITE_KEY,
+  },
+
+  nodemailer: {
+    from: "\"Hackathon CSLabs\" <hackathon@cslabs.be>",
+    host: process.env.NUXT_SMTP_HOST,
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.NUXT_SMTP_USER,
+      pass: process.env.NUXT_SMTP_PASSWORD,
+    },
+    replyTo: process.env.NUXT_SMTP_REPLY_TO || "event@cslabs.be",
   },
 });
