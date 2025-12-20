@@ -39,6 +39,11 @@ export default defineEventHandler(async (event) => {
     if (!fileType || curriculumVitae.size > MAX_CV_SIZE || !ACCEPTED_CV_MIME_TYPES.includes(fileType.mime) || fileType.ext !== "pdf") {
       throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
     }
+    // AV Scan
+    const scan = await (await clamscan).scanFile(curriculumVitae.filepath);
+    if (scan.isInfected) {
+      throw createError({statusCode: 400, statusMessage: "Le fichier CV est infecté par un virus."});
+    }
   }
 
   const bodyFlat = Object.fromEntries(Object.entries(bodyRaw).map(([key, value]) => {

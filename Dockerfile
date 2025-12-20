@@ -1,7 +1,8 @@
 FROM node:22-slim AS base
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl
+RUN apt-get update -y && apt-get install -y openssl clamav clamav-daemon && \
+    freshclam
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
