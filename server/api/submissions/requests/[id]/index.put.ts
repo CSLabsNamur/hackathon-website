@@ -1,9 +1,10 @@
 import { editSubmissionRequestSchema } from "#shared/schemas/submissions/requests/edit";
 import * as v from "valibot";
+import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
-  const id = getRouterParam(event, "id");
+  const id = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   // Get runtime config from event context (server-side)
   const config = useRuntimeConfig(event);
