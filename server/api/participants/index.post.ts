@@ -125,6 +125,7 @@ export default defineEventHandler(async (event) => {
       to: email,
       subject: "Confirmation d'inscription au Hackathon du CSLabs",
       html: registrationMailTemplate,
+      replyTo: "event@cslabs.be",
     });
   } catch (e) {
     throw createError({

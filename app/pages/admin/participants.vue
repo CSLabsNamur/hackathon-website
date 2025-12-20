@@ -165,7 +165,7 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
       label: `Inscrit le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
       class: "text-muted",
     },
-    // TODO: View profile
+    // TODO: View profile?
     // TODO: Send email actions
     //{
     //  type: "label",

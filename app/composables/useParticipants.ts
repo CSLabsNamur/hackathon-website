@@ -25,16 +25,6 @@ export const useParticipantsActions = () => {
       method: "POST",
       body: formData,
     });
-
-    // TODO: Re-enable CV upload when backend supports it
-    //if (cv) {
-    //  const formData = new FormData();
-    //  formData.append("file", cv);
-    //  await $fetch("/api/participants/curriculum-vitae", {
-    //    method: "POST",
-    //    body: formData,
-    //  });
-    //}
   };
 
   const updateParticipant = async (id: string, data: EditParticipantSchema, cv?: File) => {

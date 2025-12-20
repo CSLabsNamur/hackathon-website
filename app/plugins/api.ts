@@ -1,11 +1,13 @@
 export default defineNuxtPlugin((nuxtApp) => {
   const session = useSupabaseSession();
+  const {csrf, headerName: csrfHeaderName} = useCsrf();
 
   const api = $fetch.create({
     onRequest({options}) {
       if (session.value?.access_token) {
         options.headers.set("Authorization", `Bearer ${session.value?.access_token}`);
       }
+      options.headers.set(csrfHeaderName, csrf);
     },
 
     async onResponseError({response}) {

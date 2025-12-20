@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxtjs/turnstile",
     "nuxt-nodemailer",
+    "nuxt-security",
   ],
 
   // TODO: Is this still necessary?
@@ -60,6 +61,28 @@ export default defineNuxtConfig({
     },
     turnstile: {
       secretKey: "",
+    },
+  },
+
+  //routeRules: {
+  //  "/": {isr: true},
+  //},
+
+  security: {
+    csrf: true,
+    corsHandler: {
+      origin: ["http://localhost:3000", "https://hackathon.cslabs.be", process.env.SUPABASE_URL || ""],
+    },
+    headers: {
+      contentSecurityPolicy: {
+        "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${new URL(process.env.SUPABASE_URL || "").host}`, "https://lh3.googleusercontent.com"],
+        "connect-src": ["'self'", `https://${new URL(process.env.SUPABASE_URL || "").host}`, `wss://${new URL(process.env.SUPABASE_URL || "").host}`],
+        "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://openstreetmap.org"],
+        "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
+      },
+    },
+    requestSizeLimiter: {
+      maxUploadFileRequestInBytes: 5 * 1024 * 1024, // 5MB
     },
   },
 
