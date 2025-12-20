@@ -16,7 +16,7 @@ datasource db {
 
 // ==== Users and Teams ====
 model User {
-  id          String       @id @default(cuid())
+  id          String       @id @default(cuid(2))
   email       String       @unique
   firstName   String
   lastName    String
@@ -27,7 +27,7 @@ model User {
 }
 
 model Admin {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid(2))
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   createdAt DateTime @default(now())
@@ -42,7 +42,7 @@ enum CautionStatus {
 }
 
 model Participant {
-  id              String        @id @default(cuid())
+  id              String        @id @default(cuid(2))
   user            User          @relation(fields: [userId], references: [id])
   userId          String        @unique
   githubAccount   String?       @unique
@@ -62,11 +62,11 @@ model Participant {
 }
 
 model Team {
-  id          String        @id @default(cuid())
+  id          String        @id @default(cuid(2))
   name        String        @unique
   description String
   idea        String?
-  token       String        @unique @default(cuid())
+  token       String        @unique @default(nanoid(16))
   members     Participant[]
   room        Room?         @relation(fields: [roomId], references: [id])
   roomId      String?
@@ -81,7 +81,7 @@ enum SubmissionType {
 }
 
 model SubmissionRequest {
-  id              String         @id @default(cuid())
+  id              String         @id @default(cuid(2))
   title           String
   description     String?
   type            SubmissionType
@@ -98,7 +98,7 @@ model SubmissionRequest {
 }
 
 model Submission {
-  id            String            @id @default(cuid())
+  id            String            @id @default(cuid(2))
   request       SubmissionRequest @relation(fields: [requestId], references: [id])
   requestId     String
   participant   Participant       @relation(fields: [participantId], references: [id])
@@ -114,7 +114,7 @@ model Submission {
 // ==== Program Schedule ====
 // TODO: Add a check to ensure no overlapping exactDateTime ranges when the event is noted as special.
 model ScheduleItem {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid(2))
   title       String   @unique
   description String
   icon        String?  @default("i-lucide-calendar")
@@ -128,7 +128,7 @@ model ScheduleItem {
 
 // ==== Room Assignments ====
 model Room {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid(2))
   name      String   @unique
   sequence  Int      @unique @db.SmallInt
   teams     Team[]
