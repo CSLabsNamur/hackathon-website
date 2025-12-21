@@ -3,6 +3,7 @@ import type { TableColumn } from "#ui/components/Table.vue";
 
 definePageMeta({
   layout: "user-dashboard",
+  middleware: "participant-auth",
 });
 
 const {data: teams} = await useTeams({lazy: true});

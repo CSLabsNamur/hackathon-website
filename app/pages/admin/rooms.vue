@@ -3,6 +3,7 @@ import { vDraggable } from "vue-draggable-plus";
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "admin-auth",
 });
 
 const toast = useToast();

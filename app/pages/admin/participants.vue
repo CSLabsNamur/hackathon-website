@@ -8,6 +8,7 @@ import { AdminParticipantCautionModal, AdminParticipantsRemoveModal, Participant
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "admin-auth",
 });
 
 const {status, data: participants} = await useParticipants({lazy: true});

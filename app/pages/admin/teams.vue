@@ -8,6 +8,7 @@ import RemoveModal from "~/components/admin/teams/RemoveModal.vue";
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "admin-auth",
 });
 
 const {status, data: teams} = await useTeams({lazy: true});

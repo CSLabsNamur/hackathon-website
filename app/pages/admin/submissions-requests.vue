@@ -8,6 +8,7 @@ import type { Row } from "@tanstack/vue-table";
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "admin-auth",
 });
 
 const {status: submissionsStatus, data: submissionRequests} = await useSubmissionsRequests({lazy: true});

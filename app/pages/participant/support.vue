@@ -5,6 +5,7 @@ import type { Reactive } from "vue";
 
 definePageMeta({
   layout: "user-dashboard",
+  middleware: "participant-auth",
 });
 
 const toast = useToast();

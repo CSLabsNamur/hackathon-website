@@ -5,6 +5,7 @@ import type { Reactive } from "vue";
 
 definePageMeta({
   layout: "dashboard",
+  middleware: "admin-auth",
 });
 
 const toast = useToast();

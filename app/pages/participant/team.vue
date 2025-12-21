@@ -5,6 +5,7 @@ import type { ButtonProps } from "#ui/components/Button.vue";
 
 definePageMeta({
   layout: "user-dashboard",
+  middleware: "participant-auth",
 });
 
 const {data: currentParticipant} = await useCurrentParticipant();
