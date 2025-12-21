@@ -27,25 +27,32 @@ export default defineNuxtConfig({
     "@nuxtjs/turnstile",
     "nuxt-nodemailer",
     "nuxt-security",
+    "@nuxtjs/seo",
   ],
 
   app: {
     head: {
-      title: "CSLabs – Hackathon : Hack the Narrative",
-      meta: [
-        {
-          id: "description",
-          name: "description",
-          content: "Le Hackathon du CSLabs est un événement de 48 heures où des passionnés de technologie se réunissent pour collaborer, innover et créer des projets technologiques impressionnants.",
-        },
-      ],
       link: [
-        {rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png"},
+        // Not handled by @nuxt/seo-utils
         {rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png"},
         {rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png"},
         {rel: "manifest", href: "/site.webmanifest"},
       ],
     },
+  },
+
+  site: {
+    url: process.env.NUXT_SITE_URL || "https://hackathon.cslabs.be",
+    defaultLocale: "fr-BE",
+  },
+
+  robots: {
+    disallow: ["/admin", "/participant", "/auth", "/cookie-policy"],
+    allow: "/",
+  },
+
+  sitemap: {
+    zeroRuntime: true,
   },
 
   // TODO: Is this still necessary?
@@ -77,6 +84,7 @@ export default defineNuxtConfig({
       registrationsDateClose: "",
       eventTitle: "Le Hackathon du CSLabs",
       eventSlogan: "",
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || "https://hackathon.cslabs.be",
     },
     turnstile: {
       secretKey: "",

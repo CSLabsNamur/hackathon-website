@@ -27,9 +27,14 @@ const links: ButtonProps[] = [
     icon: "i-lucide-external-link",
     external: true,
     target: "_blank",
-    trailing: true
+    trailing: true,
   },
 ];
+
+useSeoMeta({
+  title: "Aller plus loin",
+  description: "Donner vie à son project après le Hackathon : ressources et accompagnement proposés par nos partenaires.",
+});
 </script>
 
 <template>

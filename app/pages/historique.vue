@@ -59,6 +59,11 @@ const pictures = [
   "/images/history/P1038328.jpg",
   "/images/history/P1038360.jpg",
 ];
+
+useSeoMeta({
+  title: "Historique",
+  description: "Retour sur les éditions précédentes du Hackathon du CSLabs : thèmes, dates et souvenirs en images.",
+});
 </script>
 
 <template>

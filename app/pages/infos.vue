@@ -42,6 +42,11 @@ const timeline = computed<TimelineItem[] | undefined>(() => schedule.value?.map(
   date: item.dateString,
   icon: item.icon,
 })));
+
+useSeoMeta({
+  title: "Informations",
+  description: "Lieu, dates, contacts et programme du Hackathon du CSLabs à l’UNamur : tout ce qu’il faut savoir avant de venir.",
+});
 </script>
 
 <template>

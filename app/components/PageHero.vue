@@ -9,7 +9,7 @@ const {title, subtitle, content, images} = defineProps<{
 
 <template>
   <div class="relative w-full">
-    <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="200px lg:240px xl:280px"
+    <NuxtImg src="/images/logo.png" alt="Logo Hackathon" sizes="200px lg:240px xl:280px"
              class="absolute z-10 -top-4 xl:-top-8 left-1/2 -translate-1/2 drop-shadow-2xl
                     origin-center transition-transform duration-1000 active:transform-[rotateY(180deg)]"/>
     <div class="bg-cslabs-500 h-96" id="hero-background">

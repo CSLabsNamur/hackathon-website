@@ -42,6 +42,11 @@ async function onError(event: FormErrorEvent) {
     element?.scrollIntoView({behavior: "smooth", block: "center"});
   }
 }
+
+useSeoMeta({
+  title: "Inscription",
+  description: "Inscrivez-vous au Hackathon du CSLabs : remplissez le formulaire, créez une équipe et préparez-vous à 48h de création et de code.",
+});
 </script>
 
 <template>

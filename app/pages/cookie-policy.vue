@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const {data: page} = await useAsyncData("cookie-policy", () => queryCollection("pages").path("/pages/cookie-policy").first());
+
+useSeoMeta({
+  title: "Politique de cookies",
+  description: "Découvrez comment le site du Hackathon du CSLabs utilise les cookies et comment vous pouvez gérer vos préférences.",
+});
 </script>
 
 <template>
