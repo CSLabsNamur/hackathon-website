@@ -23,7 +23,7 @@ export default defineNuxtConfig({
     "nuxt-echarts",
     "@nuxtjs/device",
     "@nuxtjs/supabase",
-    "@pinia/nuxt",
+    //"@pinia/nuxt",
     "@nuxtjs/turnstile",
     "nuxt-nodemailer",
     "nuxt-security",
