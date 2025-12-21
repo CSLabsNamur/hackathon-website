@@ -50,14 +50,16 @@ const links: NavigationMenuItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
-}, {
-  label: "Aide & Support",
-  icon: "i-lucide-life-buoy",
-  to: "/participant/support",
-  onSelect: () => {
-    open.value = false;
-  },
-}]];
+},
+//  {
+//  label: "Aide & Support",
+//  icon: "i-lucide-life-buoy",
+//  to: "/participant/support",
+//  onSelect: () => {
+//    open.value = false;
+//  },
+//}
+]];
 
 const groups = [{
   id: "links",

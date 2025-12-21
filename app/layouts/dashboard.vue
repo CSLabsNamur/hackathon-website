@@ -52,6 +52,13 @@ const links: NavigationMenuItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
+}, {
+  label: "Administrateurs",
+  icon: "i-lucide-shield-plus",
+  to: "/admin/admins",
+  onSelect: () => {
+    open.value = false;
+  },
 }], [{
   label: "Retour au site",
   icon: "i-lucide-arrow-left-circle",

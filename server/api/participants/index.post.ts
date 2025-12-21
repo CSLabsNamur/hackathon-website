@@ -40,10 +40,15 @@ export default defineEventHandler(async (event) => {
       throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
     }
     // AV Scan
-    const scan = await (await clamscan).scanFile(curriculumVitae.filepath);
-    if (scan.isInfected) {
-      console.error(`CV infecté détecté : ${curriculumVitae.originalFilename}, ${scan.viruses}`);
-      throw createError({statusCode: 400, statusMessage: "Le fichier CV est infecté par un virus."});
+    const scanner = await clamscan;
+    if (scanner) {
+      const scan = await scanner.scanFile(curriculumVitae.filepath);
+      if (scan.isInfected) {
+        console.error(`CV infecté détecté : ${curriculumVitae.originalFilename}, ${scan.viruses}`);
+        throw createError({statusCode: 400, statusMessage: "Le fichier CV est infecté par un virus."});
+      }
+    } else {
+      console.warn("[participants] ClamAV unavailable; skipping virus scan.");
     }
   }
 
