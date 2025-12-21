@@ -3,3 +3,7 @@ definePageMeta({
   middleware: "participant-auth",
 });
 </script>
+
+<template>
+  <NuxtPage/>
+</template>

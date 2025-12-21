@@ -3,3 +3,7 @@ definePageMeta({
   middleware: "admin-auth",
 });
 </script>
+
+<template>
+  <NuxtPage/>
+</template>

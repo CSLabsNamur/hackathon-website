@@ -91,3 +91,6 @@ revoke execute
 grant select
     on table public."User", public."Admin", public."Participant"
     to supabase_auth_admin;
+
+GRANT USAGE ON SCHEMA "public" TO supabase_auth_admin;
+-- GRANT SELECT ON ALL TABLES IN SCHEMA "public" TO supabase_auth_admin;
