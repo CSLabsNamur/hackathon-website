@@ -6,7 +6,7 @@ import idParamSchema from "#shared/schemas/id";
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
 
-  const id = await getValidatedRouterParams(event, v.parser(idParamSchema));
+  const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   const {firstName, lastName, email, ...data} = await readValidatedBody(event, v.parser(schema));
   const payload: ParticipantUpdateInput = {

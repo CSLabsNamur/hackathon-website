@@ -4,7 +4,7 @@ import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event, UserRole.USER);
-  const id = await getValidatedRouterParams(event, v.parser(idParamSchema));
+  const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   const dbUser = await getDbUser(user);
 

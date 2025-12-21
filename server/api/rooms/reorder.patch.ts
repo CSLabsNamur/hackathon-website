@@ -8,13 +8,28 @@ export default defineEventHandler(async (event) => {
 
   const payload = data.map((item, index) => ({id: item.id, teams: item.teams, sequence: index + 1}));
 
-  return prisma.$transaction(payload.map((item) => prisma.room.update({
-    where: {id: item.id},
-    data: {
-      teams: {
-        set: item.teams.map((teamId) => ({id: teamId})),
-      },
-      sequence: item.sequence,
-    },
-  })));
+  return prisma.$transaction(async (tx) => {
+    // First, bump all sequences by 1000 to avoid unique constraint conflicts
+    await Promise.all(
+      payload.map((item) => tx.room.update({
+        where: {id: item.id},
+        data: {
+          sequence: item.sequence + 1000,
+        },
+      })),
+    );
+
+    // Then, set the correct sequences and teams
+    await Promise.all(
+      payload.map((item) => tx.room.update({
+        where: {id: item.id},
+        data: {
+          teams: {
+            set: item.teams.map((teamId) => ({id: teamId})),
+          },
+          sequence: item.sequence,
+        },
+      })),
+    );
+  });
 });

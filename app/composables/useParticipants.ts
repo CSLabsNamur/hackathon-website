@@ -27,7 +27,7 @@ export const useParticipantsActions = () => {
     });
   };
 
-  const updateParticipant = async (id: string, data: EditParticipantSchema, cv?: File) => {
+  const updateParticipant = async (id: string, data: EditParticipantSchema) => {
     await $api(`/api/participants/${id}`, {
       method: "PUT",
       body: data,

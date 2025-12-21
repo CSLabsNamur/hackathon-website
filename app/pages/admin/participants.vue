@@ -33,7 +33,7 @@ const columns: TableColumn<Participant>[] = [
   },
   {
     header: "Email",
-    accessorKey: "email",
+    accessorFn: (row) => row.user.email,
   },
   {
     header: "Caution",

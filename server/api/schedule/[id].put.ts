@@ -4,7 +4,7 @@ import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
-  const scheduleItemId = await getValidatedRouterParams(event, v.parser(idParamSchema));
+  const {id: scheduleItemId} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   const data = await readValidatedBody(event, v.parser(schema));
 
