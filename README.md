@@ -1,75 +1,47 @@
-# Nuxt Minimal Starter
+# CSLabs – Site web du Hackathon
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Ce dépôt contient le code source du site web du Hackathon organisé par CSLabs, disponible
+sur [hackathon.cslabs.be](https://hackathon.cslabs.be).
 
-## Setup
+# Installation
 
-Make sure to install dependencies:
+Assurez-vous d'avoir [Node.js](https://nodejs.org/) installé sur votre machine, d'activer `corepack` et
+d'installer les dépendances :
 
 ```bash
-# npm
-npm install
-
-# pnpm
+corepack enable
+corepack prepare pnpm@latest --activate
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Copiez le fichier d'exemple de configuration et modifiez-le selon vos besoins :
 
 ```bash
-# npm
-npm run dev
+cp .env.example .env
+```
 
-# pnpm
+# Développement
+
+Pour lancer le serveur de développement, utilisez la commande suivante :
+
+```bash
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+# Production
 
-Build the application for production:
+Pour construire le site pour la production, utilisez la commande suivante :
 
 ```bash
-# npm
-npm run build
-
-# pnpm
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+Pour prévisualiser le site construit, utilisez la commande suivante :
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+# Licence
+
+Ce projet est sous licence BSD-3. Voir le fichier [LICENSE](LICENSE) pour plus de détails.

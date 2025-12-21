@@ -1,7 +1,21 @@
 {
-  "name": "nuxt-app",
+  "name": "@cslabs/hackathon-website",
+  "description": "CSLabs' Hackathon Website",
+  "version": "1.0.0",
   "type": "module",
+  "license": "BSD-3-Clause",
+  "author": "CSLabs",
+  "contributors": [
+    {
+      "name": "Martin Jacob",
+      "email": "martin.jcb@proton.me"
+    }
+  ],
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CSLabsNamur/hackathon-front-nuxt.git"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
