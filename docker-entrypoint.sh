@@ -29,8 +29,5 @@ else
   exit 1
 fi
 
-log "Entrypoint script completed. Launching Clamd service."
-clamd
-
-log "Clamd daemon started. Passing control to CMD."
+log "Entrypoint script completed. Passing control to CMD."
 exec "$@"

@@ -7,9 +7,9 @@ export const clamscan = new NodeClam().init({
   debugMode: false,
   scanRecursively: true,
   clamdscan: {
-    socket: process.env.CLAMAV_HOST ? false : '/var/run/clamd.scan/clamd.sock',
-    host: process.env.CLAMAV_HOST || false,
-    port: process.env.CLAMAV_PORT ? parseInt(process.env.CLAMAV_PORT) : false,
+    socket: false, // Disable socket mode - use TCP instead
+    host: process.env.CLAMAV_HOST || 'clamav', // Default to 'clamav' service name
+    port: process.env.CLAMAV_PORT ? parseInt(process.env.CLAMAV_PORT) : 3310, // Default to 3310
     multiscan: true,
     active: true,
     tls: false,

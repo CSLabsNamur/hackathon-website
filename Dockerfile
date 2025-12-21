@@ -1,13 +1,14 @@
 FROM node:22-slim AS base
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl clamav clamav-daemon && \
-    freshclam
+RUN apt-get update -y && apt-get install -y openssl
 
 ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
 ARG DATABASE_URL
+ARG SUPABASE_URL
+ENV NODE_ENV=${NODE_ENV}
 ENV DATABASE_URL=${DATABASE_URL}
+ENV SUPABASE_URL=${SUPABASE_URL}
 
 COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
 COPY server/prisma/schema.prisma ./server/prisma/schema.prisma

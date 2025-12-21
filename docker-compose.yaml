@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        - DATABASE_URL=${DATABASE_URL}
+        - SUPABASE_URL=${SUPABASE_URL}
+    env_file:
+      - .env
+    depends_on:
+      - clamav
+  clamav:
+    image: clamav/clamav:1.5
