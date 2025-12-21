@@ -82,6 +82,13 @@ export default defineNuxtConfig({
     "/admin/**": {ssr: false},
     "/participant/**": {ssr: false},
     "/auth/**": {ssr: false},
+    "/api/participants/": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
   },
 
   security: {
