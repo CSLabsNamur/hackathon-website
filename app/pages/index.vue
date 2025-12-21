@@ -5,6 +5,18 @@ import { formatDateRange } from "~/utils/datetime";
 const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = useRuntimeConfig().public;
 const siteConfig = useSiteConfig();
 
+const description = computed(() => {
+  const base = siteConfig.description;
+  const dates = eventDateStart && eventDateEnd ? `Dates : ${formatDateRange(eventDateStart, eventDateEnd, true, true)}.` : "";
+  const slogan = eventSlogan ? `${eventSlogan}` : "";
+  return `${base} ${dates} ${slogan}`.trim();
+});
+
+useSeoMeta({
+  title: eventTitle || "Le Hackathon du CSLabs",
+  description,
+});
+
 const organizers: Partner[] = [
   {
     name: "CSLabs",
@@ -35,18 +47,6 @@ const prix: PageFeatureProps[] = [
     description: "Attribué au projet qui a reçu le plus de votes du public, reflétant l'impact et l'attrait général de l'idée auprès des participants.",
   },
 ];
-
-const description = computed(() => {
-  const base = siteConfig.description;
-  const dates = eventDateStart && eventDateEnd ? `Dates : ${formatDateRange(eventDateStart, eventDateEnd, true, true)}.` : "";
-  const slogan = eventSlogan ? `${eventSlogan}` : "";
-  return `${base} ${dates} ${slogan}`.trim();
-});
-
-useSeoMeta({
-  title: eventTitle || "Le Hackathon du CSLabs",
-  description,
-});
 </script>
 
 <template>

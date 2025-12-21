@@ -92,18 +92,13 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/": {swr: 3600},
-    "/devenir-partenaire": {swr: 3600},
     "/infos": {
-      swr: 1800,
       security: {
         headers: {
           crossOriginEmbedderPolicy: "unsafe-none",
         },
       },
     },
-    "/partenaires": {swr: 1800},
-    "/plus-loin": {swr: 3600},
     "/historique": {static: true},
     "/cookie-policy": {static: true},
     "/admin/**": {ssr: false},
