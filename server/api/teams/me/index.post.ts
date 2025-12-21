@@ -12,6 +12,24 @@ export default defineEventHandler(async (event) => {
 
   const data = await readValidatedBody(event, v.parser(schema));
 
+  // Ensure the user is not already in a team
+  const existingTeam = await prisma.team.findFirst({
+    where: {
+      members: {
+        some: {
+          userId: dbUser.id,
+        },
+      },
+    },
+  });
+
+  if (existingTeam) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Vous êtes déjà dans une équipe.",
+    });
+  }
+
   const payload: Prisma.TeamCreateInput = {
     ...data,
     members: {
