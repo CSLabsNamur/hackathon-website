@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
 import type { ButtonProps } from "#ui/components/Button.vue";
+import { AdminTeamsEditModal } from "#components";
 //import { RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
@@ -13,7 +14,9 @@ const {data: currentParticipant} = await useCurrentParticipant();
 const UButton = resolveComponent("UButton");
 //const UDropdownMenu = resolveComponent("UDropdownMenu");
 
-//const overlay = useOverlay();
+const overlay = useOverlay();
+const editTeamModal = overlay.create(AdminTeamsEditModal);
+
 const toast = useToast();
 const {copy} = useClipboard();
 
@@ -142,7 +145,15 @@ const copyToken = () => {
 <template>
   <UDashboardPanel>
     <template #header>
-      <DashboardNavbar title="Mon équipe"/>
+      <DashboardNavbar title="Mon équipe">
+        <template #right>
+          <UButton v-if="currentParticipant?.team"
+                   icon="i-lucide-edit-2"
+                   @click="editTeamModal.open({team: currentParticipant.team})">
+            Modifier
+          </UButton>
+        </template>
+      </DashboardNavbar>
     </template>
     <template #body>
       <UContainer>

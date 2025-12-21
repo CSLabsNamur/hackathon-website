@@ -3,12 +3,11 @@ import * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/teams/edit";
 
-const props = defineProps<{ team: Team }>();
+const props = defineProps<{ team: Team, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
-const dayjs = useDayjs();
 const toast = useToast();
-const {editTeam} = useTeamsActions();
+const {editTeam, editMyTeam} = useTeamsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -24,11 +23,17 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await editTeam(props.team.id, event.data);
+    if (props.adminEdit) {
+      await editTeam(props.team.id, event.data);
+    } else {
+      await editMyTeam(event.data);
+    }
 
     toast.add({
-      title: "Équipe modifiée",
-      description: "L'équipe a été modifiée avec succès.",
+      title: props.adminEdit ? "Équipe modifiée" : "Équipe mise à jour",
+      description: props.adminEdit
+          ? "L'équipe a été modifiée avec succès."
+          : "Votre équipe a été mise à jour avec succès.",
       color: "success",
     });
 
@@ -51,7 +56,10 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UModal title="Éditer l'équipe" description="Remplissez le formulaire ci-dessous pour éditer l'équipe."
+  <UModal :title="adminEdit ? 'Modifier l\'équipe' : 'Modifier mon équipe'"
+          :description="adminEdit
+            ? `Modifier les informations de l'équipe ${team.name}`
+            : 'Modifiez les informations de votre équipe'"
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>

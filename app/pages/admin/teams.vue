@@ -132,7 +132,7 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
       label: "Éditer l'équipe",
       icon: "i-lucide-edit-2",
       onSelect: () => {
-        editModal.open({team: row.original});
+        editModal.open({team: row.original, adminEdit: true});
       },
     },
     {
