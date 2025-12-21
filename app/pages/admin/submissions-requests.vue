@@ -11,7 +11,7 @@ definePageMeta({
   middleware: "admin-auth",
 });
 
-const {status: submissionsStatus, data: submissionRequests} = await useSubmissionsRequests({lazy: true});
+const {status: submissionsStatus, data: submissionRequests, refresh: refreshSubmissionRequests} = await useSubmissionsRequests({lazy: true});
 const {status: participantsStatus, data: participants} = await useParticipants({lazy: false});
 
 const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -94,6 +94,11 @@ const columns = computed<TableColumn<SubmissionRequest>[]>(() => [
   },
 ]);
 
+const openCreateModal = async () => {
+  const result = await createModal.open();
+  if (result) await refreshSubmissionRequests();
+};
+
 function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
   return [
     {
@@ -115,15 +120,17 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     {
       label: "Éditer",
       icon: "i-lucide-edit-2",
-      onSelect: () => {
-        editModal.open({submissionRequest: row.original});
+      onSelect: async () => {
+        const result = await editModal.open({submissionRequest: row.original});
+        if (result) await refreshSubmissionRequests();
       },
     },
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
-      onSelect: () => {
-        removeModal.open({submissionRequest: row.original});
+      onSelect: async () => {
+        const result = await removeModal.open({submissionRequest: row.original});
+        if (result) await refreshSubmissionRequests();
       },
     },
   ];
@@ -135,7 +142,7 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     <template #header>
       <DashboardNavbar title="Demandes de soumissions">
         <template #right>
-          <UButton variant="ghost" icon="i-lucide-plus" @click="createModal.open()"
+          <UButton variant="ghost" icon="i-lucide-plus" @click="openCreateModal"
                    :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}">
             <template v-if="$device.isDesktopOrTablet">Nouvelle demande</template>
           </UButton>

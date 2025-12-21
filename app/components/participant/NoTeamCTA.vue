@@ -6,19 +6,28 @@ const overlay = useOverlay();
 const createModal = overlay.create(ParticipantCreateTeamModal);
 const joinModal = overlay.create(ParticipantJoinTeamModal);
 
+const { refresh: refreshCurrentParticipant } = await useCurrentParticipant();
+const { refresh: refreshTeams } = await useTeams({ lazy: true });
+
 const links: ButtonProps[] = [
   {
     label: "Créer une équipe",
     color: "primary",
-    onClick: () => {
-      createModal.open();
+    onClick: async () => {
+      const result = await createModal.open();
+      if (result) {
+        await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
+      }
     },
   },
   {
     label: "Rejoindre une équipe",
     color: "secondary",
-    onClick: () => {
-      joinModal.open();
+    onClick: async () => {
+      const result = await joinModal.open();
+      if (result) {
+        await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
+      }
     },
   },
 ];

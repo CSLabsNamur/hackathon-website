@@ -11,7 +11,7 @@ definePageMeta({
   middleware: "admin-auth",
 });
 
-const {status, data: teams} = await useTeams({lazy: true});
+const {status, data: teams, refresh} = await useTeams({lazy: true});
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -131,15 +131,17 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
     {
       label: "Éditer l'équipe",
       icon: "i-lucide-edit-2",
-      onSelect: () => {
-        editModal.open({team: row.original, adminEdit: true});
+      onSelect: async () => {
+        const result = await editModal.open({team: row.original, adminEdit: true});
+        if (result) await refresh();
       },
     },
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
-      onSelect: () => {
-        removeModal.open({team: row.original});
+      onSelect: async () => {
+        const result = await removeModal.open({team: row.original});
+        if (result) await refresh();
       },
     },
   ];

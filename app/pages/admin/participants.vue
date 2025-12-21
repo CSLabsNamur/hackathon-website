@@ -11,7 +11,7 @@ definePageMeta({
   middleware: "admin-auth",
 });
 
-const {status, data: participants} = await useParticipants({lazy: true});
+const {status, data: participants, refresh} = await useParticipants({lazy: true});
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -187,22 +187,25 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Gérer la caution",
       icon: "i-lucide-wallet",
-      onSelect: () => {
-        cautionModal.open({participant: row.original});
+      onSelect: async () => {
+        const result = await cautionModal.open({participant: row.original});
+        if (result) await refresh();
       },
     },
     {
       label: "Éditer l'utilisateur",
       icon: "i-lucide-edit-2",
-      onSelect: () => {
-        editModal.open({participant: row.original});
+      onSelect: async () => {
+        const result = await editModal.open({participant: row.original});
+        if (result) await refresh();
       },
     },
     {
       label: "Supprimer l'utilisateur",
       icon: "i-lucide-trash-2",
-      onSelect: () => {
-        removeModal.open({participant: row.original});
+      onSelect: async () => {
+        const result = await removeModal.open({participant: row.original});
+        if (result) await refresh();
       },
     },
   ];

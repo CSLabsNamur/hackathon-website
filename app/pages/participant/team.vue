@@ -9,7 +9,7 @@ definePageMeta({
   middleware: "participant-auth",
 });
 
-const {data: currentParticipant} = await useCurrentParticipant();
+const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 
 const UButton = resolveComponent("UButton");
 //const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -140,6 +140,12 @@ const copyToken = () => {
     color: "success",
   });
 };
+
+const openEditTeamModal = async () => {
+  if (!currentParticipant.value?.team) return;
+  const result = await editTeamModal.open({team: currentParticipant.value.team as unknown as Team});
+  if (result) await refreshCurrentParticipant();
+};
 </script>
 
 <template>
@@ -149,7 +155,7 @@ const copyToken = () => {
         <template #right>
           <UButton v-if="currentParticipant?.team"
                    icon="i-lucide-edit-2"
-                   @click="editTeamModal.open({team: currentParticipant.team})">
+                   @click="openEditTeamModal">
             Modifier
           </UButton>
         </template>

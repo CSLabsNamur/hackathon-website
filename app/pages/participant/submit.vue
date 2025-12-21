@@ -6,27 +6,38 @@ definePageMeta({
 });
 
 const {data: submissionsRequests} = await useSubmissionsRequests({lazy: false});
-const {data: currentParticipant} = await useCurrentParticipant();
+const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 
 const active = ref(0);
-const stepperItems = useArrayMap(submissionsRequests.value ?? [], (submission) => ({
-  title: submission.title,
-  // If the submission is done by the user, show a check icon, else show an icon based on the type
-  icon: currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id) ? "i-lucide-check" : submission.type === "TEXT" ? "i-lucide-text" : "i-lucide-file",
-}));
 
-const allCompleted = useArrayEvery(submissionsRequests.value ?? [], (submission) => currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id));
+const submittedRequestIds = computed(() => new Set((currentParticipant.value?.submissions ?? []).map(s => s.requestId)));
+
+const stepperItems = computed(() => (submissionsRequests.value ?? []).map((submission) => ({
+  title: submission.title,
+  icon: submittedRequestIds.value.has(submission.id)
+      ? "i-lucide-check"
+      : submission.type === "TEXT"
+          ? "i-lucide-text"
+          : "i-lucide-file",
+})));
+
+const allCompleted = computed(() =>
+    (submissionsRequests.value ?? []).every((submission) => submittedRequestIds.value.has(submission.id)),
+);
+
 const wantToModify = ref(false);
 
 onMounted(async () => {
-  const nextActive = submissionsRequests.value!.findIndex((submission) => !currentParticipant.value!.submissions.map(s => s.requestId).includes(submission.id));
+  const nextActive = (submissionsRequests.value ?? []).findIndex((submission) => !submittedRequestIds.value.has(submission.id));
   if (nextActive !== -1) {
     active.value = nextActive;
   }
 });
 
-const onSubmit = (status: boolean) => {
+const onSubmit = async (status: boolean) => {
   if (status) {
+    await refreshCurrentParticipant();
+
     wantToModify.value = false;
     if (active.value < submissionsRequests.value!.length - 1) {
       active.value += 1;
