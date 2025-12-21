@@ -42,6 +42,7 @@ export default defineEventHandler(async (event) => {
     // AV Scan
     const scan = await (await clamscan).scanFile(curriculumVitae.filepath);
     if (scan.isInfected) {
+      console.error(`CV infecté détecté : ${curriculumVitae.originalFilename}, ${scan.viruses}`);
       throw createError({statusCode: 400, statusMessage: "Le fichier CV est infecté par un virus."});
     }
   }

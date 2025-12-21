@@ -1,14 +1,6 @@
-import { PrismaClient, SubmissionType } from "./generated/prisma/client";
+import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import type {
-  AdminCreateManyInput,
-  ParticipantCreateManyInput,
-  RoomCreateInput,
-  ScheduleItemCreateInput,
-  SubmissionRequestCreateInput,
-  TeamCreateInput,
-} from "./generated/prisma/models";
-import { CautionStatus } from "./generated/prisma/enums";
+import type { AdminCreateManyInput, RoomCreateInput, ScheduleItemCreateInput } from "./generated/prisma/models";
 import "dotenv/config";
 
 const adapter = new PrismaPg({
@@ -17,157 +9,157 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({adapter});
 
 // Teams
-const teams: TeamCreateInput[] = [
-  {
-    name: "Team Alpha",
-    description: "Platform integration squad focused on auth and SSO.",
-    idea: "Build a unified login experience across products.",
-  },
-  {
-    name: "Team Beta",
-    description: "Experimentation and prototyping team.",
-    idea: "Rapidly validate new product ideas with lightweight prototypes.",
-  },
-  {
-    name: "Team Gamma",
-    description: "Performance and observability team.",
-    idea: "Improve metrics and monitoring pipelines.",
-  },
-  {
-    name: "Team Delta",
-    description: "Customer success integrations.",
-    idea: "Automate onboarding and support workflows.",
-  },
-];
+//const teams: TeamCreateInput[] = [
+//  {
+//    name: "Team Alpha",
+//    description: "Platform integration squad focused on auth and SSO.",
+//    idea: "Build a unified login experience across products.",
+//  },
+//  {
+//    name: "Team Beta",
+//    description: "Experimentation and prototyping team.",
+//    idea: "Rapidly validate new product ideas with lightweight prototypes.",
+//  },
+//  {
+//    name: "Team Gamma",
+//    description: "Performance and observability team.",
+//    idea: "Improve metrics and monitoring pipelines.",
+//  },
+//  {
+//    name: "Team Delta",
+//    description: "Customer success integrations.",
+//    idea: "Automate onboarding and support workflows.",
+//  },
+//];
 
 // Participants
-type ParticipantSeed = Omit<ParticipantCreateManyInput, "teamId" | "userId"> & {
-  teamName?: string | null,
-  firstName: string,
-  lastName: string,
-  email: string,
-};
-const participants: ParticipantSeed[] = [
-  {
-    email: "aline@example.com",
-    firstName: "Aline",
-    lastName: "Boulanger",
-    githubAccount: "alineBO",
-    linkedInAccount: "aline-linkedin",
-    school: "UNamur",
-    diet: null,
-    needs: null,
-    caution: CautionStatus.NOT_PAID,
-    curriculumVitae: "/cvs/aline.pdf",
-    teamName: "Team Alpha",
-    imageAgreement: true,
-    newsletter: false,
-  },
-  {
-    email: "bob@example.com",
-    firstName: "Bob",
-    lastName: "Baker",
-    githubAccount: "bobGH",
-    linkedInAccount: null,
-    school: "Henallux",
-    diet: "Végétarien",
-    needs: null,
-    caution: CautionStatus.NOT_PAID,
-    curriculumVitae: null,
-    teamName: "Team Alpha",
-    imageAgreement: true,
-    newsletter: false,
-  },
-  {
-    email: "carol@example.com",
-    firstName: "Carol",
-    lastName: "Clark",
-    githubAccount: null,
-    linkedInAccount: "carol-linkedin",
-    school: "HEAJ",
-    diet: "Vegan",
-    needs: "Wheelchair access",
-    caution: CautionStatus.PAID,
-    curriculumVitae: "/cvs/carol.pdf",
-    teamName: "Team Beta",
-    imageAgreement: true,
-    newsletter: true,
-  },
-  {
-    email: "dan@example.com",
-    firstName: "Dan",
-    lastName: "Dawson",
-    githubAccount: "danGH",
-    linkedInAccount: null,
-    school: null,
-    diet: "Sans gluten",
-    needs: null,
-    caution: CautionStatus.REFUNDED,
-    curriculumVitae: null,
-    teamName: null, // no team
-    imageAgreement: true,
-    newsletter: false,
-  },
-  {
-    email: "erin@example.com",
-    firstName: "Erin",
-    lastName: "Edwards",
-    githubAccount: null,
-    linkedInAccount: "erin-linkedin",
-    school: "UCLouvain",
-    diet: null,
-    needs: null,
-    caution: CautionStatus.WAIVED,
-    curriculumVitae: null,
-    teamName: "Team Delta",
-    imageAgreement: true,
-    newsletter: false,
-  },
-  {
-    email: "frank@example.com",
-    firstName: "Frank",
-    lastName: "Foster",
-    githubAccount: "frankGH",
-    linkedInAccount: null,
-    school: "UMons",
-    diet: "Halal",
-    needs: null,
-    caution: CautionStatus.PAID,
-    curriculumVitae: null,
-    teamName: "Team Delta",
-    imageAgreement: true,
-    newsletter: true,
-  },
-];
+//type ParticipantSeed = Omit<ParticipantCreateManyInput, "teamId" | "userId"> & {
+//  teamName?: string | null,
+//  firstName: string,
+//  lastName: string,
+//  email: string,
+//};
+//const participants: ParticipantSeed[] = [
+//  {
+//    email: "aline@example.com",
+//    firstName: "Aline",
+//    lastName: "Boulanger",
+//    githubAccount: "alineBO",
+//    linkedInAccount: "aline-linkedin",
+//    school: "UNamur",
+//    diet: null,
+//    needs: null,
+//    caution: CautionStatus.NOT_PAID,
+//    curriculumVitae: "/cvs/aline.pdf",
+//    teamName: "Team Alpha",
+//    imageAgreement: true,
+//    newsletter: false,
+//  },
+//  {
+//    email: "bob@example.com",
+//    firstName: "Bob",
+//    lastName: "Baker",
+//    githubAccount: "bobGH",
+//    linkedInAccount: null,
+//    school: "Henallux",
+//    diet: "Végétarien",
+//    needs: null,
+//    caution: CautionStatus.NOT_PAID,
+//    curriculumVitae: null,
+//    teamName: "Team Alpha",
+//    imageAgreement: true,
+//    newsletter: false,
+//  },
+//  {
+//    email: "carol@example.com",
+//    firstName: "Carol",
+//    lastName: "Clark",
+//    githubAccount: null,
+//    linkedInAccount: "carol-linkedin",
+//    school: "HEAJ",
+//    diet: "Vegan",
+//    needs: "Wheelchair access",
+//    caution: CautionStatus.PAID,
+//    curriculumVitae: "/cvs/carol.pdf",
+//    teamName: "Team Beta",
+//    imageAgreement: true,
+//    newsletter: true,
+//  },
+//  {
+//    email: "dan@example.com",
+//    firstName: "Dan",
+//    lastName: "Dawson",
+//    githubAccount: "danGH",
+//    linkedInAccount: null,
+//    school: null,
+//    diet: "Sans gluten",
+//    needs: null,
+//    caution: CautionStatus.REFUNDED,
+//    curriculumVitae: null,
+//    teamName: null, // no team
+//    imageAgreement: true,
+//    newsletter: false,
+//  },
+//  {
+//    email: "erin@example.com",
+//    firstName: "Erin",
+//    lastName: "Edwards",
+//    githubAccount: null,
+//    linkedInAccount: "erin-linkedin",
+//    school: "UCLouvain",
+//    diet: null,
+//    needs: null,
+//    caution: CautionStatus.WAIVED,
+//    curriculumVitae: null,
+//    teamName: "Team Delta",
+//    imageAgreement: true,
+//    newsletter: false,
+//  },
+//  {
+//    email: "frank@example.com",
+//    firstName: "Frank",
+//    lastName: "Foster",
+//    githubAccount: "frankGH",
+//    linkedInAccount: null,
+//    school: "UMons",
+//    diet: "Halal",
+//    needs: null,
+//    caution: CautionStatus.PAID,
+//    curriculumVitae: null,
+//    teamName: "Team Delta",
+//    imageAgreement: true,
+//    newsletter: true,
+//  },
+//];
 
 // Admins
 type AdminSeed = Omit<AdminCreateManyInput, "userId"> & { firstName: string, lastName: string, email: string };
 const admins: AdminSeed[] = [
   {
-    firstName: "Admin",
-    lastName: "User",
+    firstName: "IT",
+    lastName: "Manager",
     email: "it@cslabs.be",
   },
 ];
 
 // Submission Requests
-const submissionRequests: SubmissionRequestCreateInput[] = [
-  //{
-  //  title: "CV",
-  //  type: SubmissionType.FILE,
-  //  description: "Envoyez votre curriculum vitae au format PDF.",
-  //  deadline: new Date("2026-03-28T23:59:59Z"),
-  //  acceptedFormats: ".pdf",
-  //  multiple: false,
-  //},
-  {
-    title: "Objectifs et motivation",
-    type: SubmissionType.TEXT,
-    description: "Décrivez vos objectifs personnels pour l'événement et ce qui vous motive à y participer.",
-    deadline: new Date("2026-03-27T23:59:59Z"),
-    required: true,
-  },
-];
+//const submissionRequests: SubmissionRequestCreateInput[] = [
+//  //{
+//  //  title: "CV",
+//  //  type: SubmissionType.FILE,
+//  //  description: "Envoyez votre curriculum vitae au format PDF.",
+//  //  deadline: new Date("2026-03-28T23:59:59Z"),
+//  //  acceptedFormats: ".pdf",
+//  //  multiple: false,
+//  //},
+//  {
+//    title: "Objectifs et motivation",
+//    type: SubmissionType.TEXT,
+//    description: "Décrivez vos objectifs personnels pour l'événement et ce qui vous motive à y participer.",
+//    deadline: new Date("2026-03-27T23:59:59Z"),
+//    required: true,
+//  },
+//];
 
 // Schedule Items
 const scheduleItems: ScheduleItemCreateInput[] = [
@@ -273,10 +265,10 @@ const rooms: RoomCreateInput[] = [
 
 async function main() {
   //region Teams
-  await prisma.team.createMany({data: teams, skipDuplicates: true});
-
-  const teamRows = await prisma.team.findMany({select: {id: true, name: true}});
-  const teamIdByName = new Map(teamRows.map(t => [t.name, t.id]));
+  //await prisma.team.createMany({data: teams, skipDuplicates: true});
+  //
+  //const teamRows = await prisma.team.findMany({select: {id: true, name: true}});
+  //const teamIdByName = new Map(teamRows.map(t => [t.name, t.id]));
   //endregion
 
   //region Users
@@ -292,15 +284,15 @@ async function main() {
   });
 
   // Create users for participants
-  const userData = participants.map(({email, firstName, lastName}) => ({
-    email,
-    firstName,
-    lastName,
-  }));
-  await prisma.user.createMany({
-    data: userData,
-    skipDuplicates: true,
-  });
+  //const userData = participants.map(({email, firstName, lastName}) => ({
+  //  email,
+  //  firstName,
+  //  lastName,
+  //}));
+  //await prisma.user.createMany({
+  //  data: userData,
+  //  skipDuplicates: true,
+  //});
 
   // Fetch all users to map email to userId
   const users = await prisma.user.findMany();
@@ -308,22 +300,22 @@ async function main() {
   //endregion
 
   //region Participants
-  const participantData: ParticipantCreateManyInput[] = participants.map(({
-                                                                            teamName,
-                                                                            firstName,
-                                                                            lastName,
-                                                                            email,
-                                                                            ...rest
-                                                                          }) => ({
-    ...rest,
-    teamId: teamName ? teamIdByName.get(teamName) ?? null : null,
-    userId: userIdByEmail.get(email)!,
-  }));
-
-  await prisma.participant.createMany({
-    data: participantData,
-    skipDuplicates: true,
-  });
+  //const participantData: ParticipantCreateManyInput[] = participants.map(({
+  //                                                                          teamName,
+  //                                                                          firstName,
+  //                                                                          lastName,
+  //                                                                          email,
+  //                                                                          ...rest
+  //                                                                        }) => ({
+  //  ...rest,
+  //  teamId: teamName ? teamIdByName.get(teamName) ?? null : null,
+  //  userId: userIdByEmail.get(email)!,
+  //}));
+  //
+  //await prisma.participant.createMany({
+  //  data: participantData,
+  //  skipDuplicates: true,
+  //});
   //endregion
 
   //region Admins
@@ -338,10 +330,10 @@ async function main() {
   //endregion
 
   //region Submission Requests
-  await prisma.submissionRequest.createMany({
-    data: submissionRequests,
-    skipDuplicates: true,
-  });
+  //await prisma.submissionRequest.createMany({
+  //  data: submissionRequests,
+  //  skipDuplicates: true,
+  //});
   //endregion
 
   //region Schedule Items
