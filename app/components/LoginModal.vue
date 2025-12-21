@@ -6,6 +6,7 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
 const supabaseClient = useSupabaseClient();
+const siteConfig = useSiteConfig();
 
 const submitted = ref(false);
 const email = ref("");
@@ -34,7 +35,7 @@ const providers = [{
     const res = await supabaseClient.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `http://localhost:3000/auth/callback`,
+        redirectTo: `${siteConfig.url}/auth/callback`,
       },
     });
     if (res.error) {
@@ -62,7 +63,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
     email: payload.data.email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `http://localhost:3000/auth/callback`,
+      emailRedirectTo: `${siteConfig.url}/auth/callback`,
     },
   });
   if (res.error) {
