@@ -10,8 +10,13 @@ export const partners: Partner[] = [
     name: "Université de Namur – Faculté d'Informatique",
     description: `L'Université de Namur et la Faculté d'Informatique nous fournissent les locaux et le matériel
     nécessaires à l'organisation de cet évènement.`,
-    logo: "/images/partenaires/unamur.png",
+    logo: "/images/partenaires/unamur_fac_info.png",
     url: "https://www.unamur.be/",
+  },
+  {
+    name: "AG Insurance",
+    logo: "/images/partenaires/ag_insurance.png",
+    url: "https://ag.be/",
   },
   //{
   //  name: "Institut NaDI",
