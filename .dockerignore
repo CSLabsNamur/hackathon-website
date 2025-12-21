@@ -1,9 +1,34 @@
-Dockerfile
+# Dependencies and build outputs
 node_modules
-dist
+.output
+.nitro
+.nuxt
+.cache
+coverage
+
+# VCS and IDE
 .git
+.gitignore
 .vscode
 .idea
 *.log
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Local env/secrets
+.env*
+*.local
+
+# Tests & misc
+**/__tests__
+**/*.spec.*
+**/*.test.*
+
+# Docs and top-level miscellanea that should not trigger a rebuild
+README*
+LICENSE*
 *.md
-*.env
+*.pdf
+!content/**/*.md

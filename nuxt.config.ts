@@ -140,7 +140,7 @@ export default defineNuxtConfig({
   nodemailer: {
     from: "\"Hackathon CSLabs\" <hackathon@cslabs.be>",
     host: process.env.NUXT_SMTP_HOST,
-    port: 465,
+    port: parseInt(process.env.NUXT_SMTP_PORT || "8465"),
     secure: true,
     auth: {
       user: process.env.NUXT_SMTP_USER,
