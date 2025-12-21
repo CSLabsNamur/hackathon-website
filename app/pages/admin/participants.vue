@@ -196,7 +196,7 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
       label: "Éditer l'utilisateur",
       icon: "i-lucide-edit-2",
       onSelect: async () => {
-        const result = await editModal.open({participant: row.original});
+        const result = await editModal.open({participant: row.original, adminEdit: true});
         if (result) await refresh();
       },
     },
