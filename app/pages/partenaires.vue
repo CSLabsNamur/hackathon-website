@@ -31,7 +31,7 @@ useSeoMeta({
           </Suspense>
         </div>
 
-        <template #description v-if="partner.description">
+        <template v-if="partner.description" #description>
           <MDC :value="partner.description"/>
         </template>
       </UPageCard>

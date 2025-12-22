@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/submissions/create";
@@ -10,7 +10,6 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ submit: [boolean] }>();
 
-const dayjs = useDayjs();
 const toast = useToast();
 const actions = useSubmissionsActions();
 
@@ -60,7 +59,7 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UForm :schema :state @submit="onSubmit" @error="onError" class="grid gap-6">
+  <UForm :schema :state class="grid gap-6" @submit="onSubmit" @error="onError">
     <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined" name="answer"
                 :required="submissionRequest.required">
       <template v-if="submissionRequest.type === SubmissionType.TEXT">

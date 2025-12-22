@@ -116,7 +116,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     await prisma.participant.create({data: payload});
-  } catch (e) {
+  } catch {
     if (curriculumVitae) {
       // Clean up uploaded CV in case of error
       const supabase = serverSupabaseServiceRole(event);
@@ -138,7 +138,7 @@ export default defineEventHandler(async (event) => {
       html: registrationMailTemplate,
       replyTo: "event@cslabs.be",
     });
-  } catch (e) {
+  } catch {
     throw createError({
       statusCode: 500,
       statusMessage: "Inscription enregistrée, mais erreur lors de l'envoi de l'email de confirmation.",

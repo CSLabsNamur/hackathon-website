@@ -41,8 +41,7 @@ useSeoMeta({
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <PageHero title="Aller plus loin"
               subtitle="Ton projet peut changer les choses.
-                       N'hésite pas à aller consulter nos sponsors pour lui construire un avenir !">
-    </PageHero>
+                       N'hésite pas à aller consulter nos sponsors pour lui construire un avenir !"/>
   </UPageHero>
 
   <UPageSection title="Le TRAKK | LinKube" headline="Toutes tes idées ont un avenir !" :features :links

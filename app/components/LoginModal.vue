@@ -115,9 +115,9 @@ async function onCodeSubmit(payload: FormSubmitEvent<CodeSchema>) {
           description="Un lien de connexion a été envoyé à votre adresse email. Cliquez sur le lien pour vous connecter, ou entrez le code ci-dessous."
           icon="i-lucide-mail"
           :fields="codeFields"
-          @submit="onCodeSubmit"
           loading-auto
-          :ui="{form: 'grid *:first:place-self-center'}">
+          :ui="{form: 'grid *:first:place-self-center'}"
+          @submit="onCodeSubmit">
         <!--        <template #submit="{loading}">-->
         <!--          <UButton :loading="loading" type="submit" :ui="{base: 'w-full justify-center'}">Vérifier le code</UButton>-->
         <!--        </template>-->

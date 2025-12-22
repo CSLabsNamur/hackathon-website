@@ -83,9 +83,9 @@ const colorsSeverityMap = (severity: TeamIssueSeverity) => {
         <template v-else>
           <div class="flex flex-col gap-0.5">
             <template v-for="(issue, index) in teamIssues" :key="`issue-${index}`">
-            <p :class="colorsSeverityMap(issue.severity)">
-              {{ issue.message }}
-            </p>
+              <p :class="colorsSeverityMap(issue.severity)">
+                {{ issue.message }}
+              </p>
             </template>
           </div>
         </template>

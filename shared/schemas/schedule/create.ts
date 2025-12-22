@@ -1,6 +1,6 @@
 import * as v from "valibot";
 
-export default v.strictObject({
+const schema = v.strictObject({
   title: v.pipe(v.string(), v.nonEmpty("Le nom est requis"), v.minLength(3, "Le nom doit contenir au moins 3 caractères"), v.maxLength(30, "Le nom ne peut pas dépasser 30 caractères")),
   description: v.pipe(v.string(), v.maxLength(250, "La description ne peut pas dépasser 250 caractères")),
   icon: v.optional(v.pipe(v.string(), v.maxLength(100, "Le nom de l'icône ne peut pas dépasser 100 caractères"))),
@@ -9,3 +9,6 @@ export default v.strictObject({
   endTime: v.pipe(v.date()),
   special: v.optional(v.boolean(), false),
 });
+
+export default schema;
+export type CreateScheduleItemSchema = v.InferOutput<typeof schema>;

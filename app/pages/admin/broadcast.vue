@@ -77,8 +77,8 @@ async function onError(event: FormErrorEvent) {
       <UContainer class="pb-6 md:pb-8">
         <UCard :ui="{body: 'p-6 md:p-8'}"
                class="mx-auto max-w-4xl rounded-xl bg-white/70 dark:bg-gray-900/30 shadow-xl">
-          <UForm :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit" @error="onError"
-                 id="broadcast-form">
+          <UForm id="broadcast-form" :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit"
+                 @error="onError">
             <UFormField label="Destinataires" name="recipients" required>
               <URadioGroup v-model="state.recipients" :items="recipientsItems"
                            :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
@@ -96,13 +96,13 @@ async function onError(event: FormErrorEvent) {
             </UFormField>
 
             <UFormField label="Message" name="message" required>
-              <UTextarea class="w-full" v-model="state.message" :rows="10"/>
+              <UTextarea v-model="state.message" class="w-full" :rows="10"/>
             </UFormField>
 
             <UFormField label="Pièce(s) jointe(s)" name="attachments">
-              <UFileUpload label="Déposez vos fichiers ici" description="Max 5MB chacun" multiple
-                           icon="i-lucide-file-user" size="sm" position="inside" layout="list"
-                           v-model="state.attachments"/>
+              <UFileUpload v-model="state.attachments" label="Déposez vos fichiers ici" description="Max 5MB chacun"
+                           multiple icon="i-lucide-file-user" size="sm" position="inside"
+                           layout="list"/>
             </UFormField>
           </UForm>
 

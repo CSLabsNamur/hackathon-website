@@ -37,6 +37,8 @@ const options = computed<ECOption>(() => ({
   },
   tooltip: {
     trigger: "axis",
+    // yeah idk what type this is
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     formatter: (params: any) => {
       const param = params[0];
       return `${dayjs(param.axisValue).format("MMM YYYY")}: ${param.data.value} inscriptions`;
@@ -79,7 +81,9 @@ const options = computed<ECOption>(() => ({
       <USkeleton class="h-80 rounded-md" v-bind="$attrs"/>
     </template>
 
-    <div class="h-80">
+    <USkeleton v-if="status !== 'success'" class="h-80 rounded-md" v-bind="$attrs"/>
+
+    <div v-else class="h-80">
       <VChart :option="options" autoresize/>
     </div>
   </ClientOnly>

@@ -1,5 +1,6 @@
 import type { CreateTeamSchema } from "#shared/schemas/teams/create";
 import type { EditTeamSchema } from "#shared/schemas/teams/edit";
+import type { JoinTeamSchema } from "#shared/schemas/teams/join";
 
 interface UseTeamsParams {
   lazy?: boolean;
@@ -13,7 +14,7 @@ export const useTeams = async (params?: UseTeamsParams) => {
 };
 
 export const useTeamsActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
   // TODO: Move this in something like useCurrentTeam
   const createTeam = async (data: CreateTeamSchema) => {
@@ -41,9 +42,10 @@ export const useTeamsActions = () => {
   };
 
   // TODO: Move this in something like useCurrentTeam
-  const joinTeam = async () => {
+  const joinTeam = async (token: JoinTeamSchema) => {
     return $api(`/api/teams/me/join`, {
       method: "POST",
+      body: token,
     });
   };
 

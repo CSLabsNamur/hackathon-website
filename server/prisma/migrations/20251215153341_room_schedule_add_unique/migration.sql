@@ -8,16 +8,17 @@
 
 */
 -- AlterTable
-ALTER TABLE "ScheduleItem" ALTER COLUMN "icon" SET DEFAULT 'i-lucide-calendar';
+ALTER TABLE "ScheduleItem"
+    ALTER COLUMN "icon" SET DEFAULT 'i-lucide-calendar';
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Room_name_key" ON "Room"("name");
+CREATE UNIQUE INDEX "Room_name_key" ON "Room" ("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Room_sequence_key" ON "Room"("sequence");
+CREATE UNIQUE INDEX "Room_sequence_key" ON "Room" ("sequence");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ScheduleItem_title_key" ON "ScheduleItem"("title");
+CREATE UNIQUE INDEX "ScheduleItem_title_key" ON "ScheduleItem" ("title");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Submission_requestId_participantId_key" ON "Submission"("requestId", "participantId");
+CREATE UNIQUE INDEX "Submission_requestId_participantId_key" ON "Submission" ("requestId", "participantId");

@@ -14,10 +14,10 @@ defineProps<{ room: Room, isModifying: boolean, hideHandle?: boolean }>();
         </div>
       </div>
     </template>
-    <template #body v-if="room.teams">
+    <template v-if="room.teams" #body>
       <div
-          v-draggable="[room.teams, {group: 'teams', animation: 150, ghostClass: 'ghost', disabled: !isModifying}]"
           :key="`teams-${isModifying}`"
+          v-draggable="[room.teams, {group: 'teams', animation: 150, ghostClass: 'ghost', disabled: !isModifying}]"
           class="grid grid-cols-2 h-full place-items-center justify-center group"
           :class="{'animate-wiggle': isModifying}">
         <div v-for="team in room.teams.map(t => room.teams!.find(ts => ts.id === t.id)!)" :key="team.id"

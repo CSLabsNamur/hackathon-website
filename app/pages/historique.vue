@@ -68,8 +68,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Historique" subtitle="Retour sur les éditions précédentes !">
-    </PageHero>
+    <PageHero title="Historique" subtitle="Retour sur les éditions précédentes !"/>
   </UPageHero>
 
   <UContainer class="max-w-[80vw]">

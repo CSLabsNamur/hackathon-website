@@ -50,7 +50,9 @@ const options = computed<ECOption>(() => ({
       <USkeleton class="h-80 rounded-md" v-bind="$attrs"/>
     </template>
 
-    <div class="h-80">
+    <USkeleton v-if="status !== 'success'" class="h-80 rounded-md" v-bind="$attrs"/>
+
+    <div v-else class="h-80">
       <VChart :option="options" autoresize/>
     </div>
   </ClientOnly>

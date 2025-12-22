@@ -62,9 +62,9 @@ function clearSelection() {
 
 <template>
   <UFormField :label :name :required>
-    <template #label="{label}">
+    <template #label="{label: tLabel}">
       <label :class="{'after:content-[\'*\'] after:ms-0.5 after:text-error': required}" class="flex gap-1 items-center">
-        {{ label }}
+        {{ tLabel }}
         <Transition>
           <span v-if="isCustom" class="text-xs text-muted">
             &gt; {{ customLabel }}

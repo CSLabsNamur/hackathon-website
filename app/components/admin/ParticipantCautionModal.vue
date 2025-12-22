@@ -43,7 +43,7 @@ const save = async () => {
     </template>
     <template #footer="{close}">
       <div class="flex justify-end space-x-2">
-        <UButton @click="save" :loading="isSubmitting">Enregistrer</UButton>
+        <UButton :loading="isSubmitting" @click="save">Enregistrer</UButton>
         <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
       </div>
     </template>

@@ -6,8 +6,8 @@ const overlay = useOverlay();
 const createModal = overlay.create(ParticipantCreateTeamModal);
 const joinModal = overlay.create(ParticipantJoinTeamModal);
 
-const { refresh: refreshCurrentParticipant } = await useCurrentParticipant();
-const { refresh: refreshTeams } = await useTeams({ lazy: true });
+const {refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const {refresh: refreshTeams} = await useTeams({lazy: true});
 
 const links: ButtonProps[] = [
   {

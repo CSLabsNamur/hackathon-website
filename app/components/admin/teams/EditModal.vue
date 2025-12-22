@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/teams/edit";
 
@@ -64,8 +64,8 @@ async function onError(event: FormErrorEvent) {
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>
       <UContainer>
-        <UForm :schema :state :disabled="isSubmitting" @submit="onSubmit" @error="onError"
-               class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="team-edit-form">
+        <UForm id="team-edit-form" :schema :state :disabled="isSubmitting" class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+               @submit="onSubmit" @error="onError">
           <UFormField label="Nom de l'équipe" name="name" required>
             <UInput v-model="state.name" icon="i-lucide-pen-line" class="w-full"/>
           </UFormField>

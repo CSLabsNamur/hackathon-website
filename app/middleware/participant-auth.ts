@@ -1,4 +1,4 @@
-export default defineNuxtRouteMiddleware(async (to, _from) => {
+export default defineNuxtRouteMiddleware(async (_to, _from) => {
   //const user = useSupabaseUser()
   // TODO: Change when fixed https://github.com/nuxt-modules/supabase/issues/565
   const supabase = useSupabaseClient();

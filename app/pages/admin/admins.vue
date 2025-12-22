@@ -9,7 +9,6 @@ definePageMeta({
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
 
-const dayjs = useDayjs();
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
 

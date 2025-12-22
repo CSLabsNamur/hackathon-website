@@ -1,6 +1,6 @@
 import schema from "#shared/schemas/teams/create";
 import * as v from "valibot";
-import { Prisma } from "~~/server/prisma/generated/prisma/browser";
+import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
 
 /**
  * Create a new team and associate the current user as a member.

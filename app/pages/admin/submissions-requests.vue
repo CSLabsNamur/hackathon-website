@@ -11,7 +11,11 @@ definePageMeta({
   middleware: "admin-auth",
 });
 
-const {status: submissionsStatus, data: submissionRequests, refresh: refreshSubmissionRequests} = await useSubmissionsRequests({lazy: true});
+const {
+  status: submissionsStatus,
+  data: submissionRequests,
+  refresh: refreshSubmissionRequests,
+} = await useSubmissionsRequests({lazy: true});
 const {status: participantsStatus, data: participants} = await useParticipants({lazy: false});
 
 const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -142,8 +146,8 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     <template #header>
       <DashboardNavbar title="Demandes de soumissions">
         <template #right>
-          <UButton variant="ghost" icon="i-lucide-plus" @click="openCreateModal"
-                   :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}">
+          <UButton variant="ghost" icon="i-lucide-plus" :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}"
+                   @click="openCreateModal">
             <template v-if="$device.isDesktopOrTablet">Nouvelle demande</template>
           </UButton>
         </template>

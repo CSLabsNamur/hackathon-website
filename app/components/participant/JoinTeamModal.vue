@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "~~/shared/schemas/teams/join";
 
@@ -20,7 +20,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.joinTeam(event.data.token);
+    await actions.joinTeam(event.data);
 
     toast.add({
       title: "Équipe rejointe !",
@@ -30,7 +30,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 
     emit("close", true);
     console.log(event.data);
-  } catch (error) {
+  } catch {
     // TODO: handle other errors
     toast.add({
       title: "Erreur",
@@ -57,7 +57,7 @@ async function onError(event: FormErrorEvent) {
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>
       <UContainer>
-        <UForm :schema :state :disabled="isSubmitting" @submit="onSubmit" @error="onError" id="team-join-form">
+        <UForm id="team-join-form" :schema :state :disabled="isSubmitting" @submit="onSubmit" @error="onError">
           <UFormField label="Token" name="token" required>
             <UInput v-model="state.token" icon="i-lucide-braces" class="w-full"/>
           </UFormField>

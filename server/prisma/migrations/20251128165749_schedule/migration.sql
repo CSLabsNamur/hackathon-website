@@ -6,12 +6,14 @@
 
 */
 -- AlterTable
-ALTER TABLE "SubmissionRequest" ALTER COLUMN "description" DROP NOT NULL;
+ALTER TABLE "SubmissionRequest"
+    ALTER COLUMN "description" DROP NOT NULL;
 
 -- CreateTable
-CREATE TABLE "Admin" (
-    "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+CREATE TABLE "Admin"
+(
+    "id"        TEXT         NOT NULL,
+    "email"     TEXT         NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -19,26 +21,27 @@ CREATE TABLE "Admin" (
 );
 
 -- CreateTable
-CREATE TABLE "ScheduleItem" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "icon" TEXT,
-    "dateString" TEXT NOT NULL,
-    "startTime" TIMESTAMP(3) NOT NULL,
-    "endTime" TIMESTAMP(3) NOT NULL,
-    "special" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+CREATE TABLE "ScheduleItem"
+(
+    "id"          TEXT         NOT NULL,
+    "title"       TEXT         NOT NULL,
+    "description" TEXT         NOT NULL,
+    "icon"        TEXT,
+    "dateString"  TEXT         NOT NULL,
+    "startTime"   TIMESTAMP(3) NOT NULL,
+    "endTime"     TIMESTAMP(3) NOT NULL,
+    "special"     BOOLEAN      NOT NULL DEFAULT false,
+    "createdAt"   TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt"   TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "ScheduleItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Admin_email_key" ON "Admin"("email");
+CREATE UNIQUE INDEX "Admin_email_key" ON "Admin" ("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Team_name_key" ON "Team"("name");
+CREATE UNIQUE INDEX "Team_name_key" ON "Team" ("name");
 
 -- RenameIndex
 ALTER INDEX "Participant_githubUsername_key" RENAME TO "Participant_githubAccount_key";

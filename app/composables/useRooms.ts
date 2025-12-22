@@ -1,5 +1,5 @@
-import * as v from "valibot";
-import reorder from "#shared/schemas/rooms/reorder";
+import type * as v from "valibot";
+import type reorder from "#shared/schemas/rooms/reorder";
 
 
 interface UseRoomsParams {
@@ -14,7 +14,7 @@ export const useRooms = async (params?: UseRoomsParams) => {
 };
 
 export const useRoomsActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
   const createRoom = async (name: string) => {
     return await $api("/api/rooms", {

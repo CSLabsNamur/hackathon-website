@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/admins/invite";
 
@@ -59,8 +59,8 @@ async function onError(event: FormErrorEvent) {
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>
       <UContainer>
-        <UForm :schema :state :disabled="isSubmitting" @submit="onSubmit" @error="onError"
-               class="grid grid-cols-1 gap-6" id="admin-invite-form">
+        <UForm id="admin-invite-form" :schema :state :disabled="isSubmitting" class="grid grid-cols-1 gap-6"
+               @submit="onSubmit" @error="onError">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <UFormField label="Prénom" name="firstName" required>
               <UInput v-model="state.firstName" icon="i-lucide-user" type="text" class="w-full" placeholder="Prénom"/>

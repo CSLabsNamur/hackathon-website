@@ -42,7 +42,7 @@ export const createSubmissionRequestSchema = (
   });
 };
 
-const tempSchema = v.strictObject({
+const _tempSchema = v.strictObject({
   // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
   // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
   type: v.picklist(["text", "file", "files"]),
@@ -65,5 +65,5 @@ const tempSchema = v.strictObject({
   ),
   acceptedFormats: v.optional(v.string()),
   required: v.optional(v.boolean()),
-})
-export type CreateSubmissionRequestSchema = v.InferOutput<typeof tempSchema>;
+});
+export type CreateSubmissionRequestSchema = v.InferOutput<typeof _tempSchema>;

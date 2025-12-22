@@ -48,7 +48,7 @@ const columns: TableColumn<Team>[] = [
         const caution = member.caution;
         return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
       });
-      let color: BadgeProps["color"] = valid ? "success" : "error";
+      const color: BadgeProps["color"] = valid ? "success" : "error";
 
       return h(UBadge, {class: "capitalize", variant: "subtle", color}, () =>
           valid ? "Valide" : "Invalide",

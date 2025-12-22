@@ -18,25 +18,29 @@ DROP INDEX "Admin_email_key";
 DROP INDEX "Participant_email_key";
 
 -- AlterTable
-ALTER TABLE "Admin" DROP COLUMN "email",
-ADD COLUMN     "userId" TEXT NOT NULL;
+ALTER TABLE "Admin"
+    DROP COLUMN "email",
+    ADD COLUMN "userId" TEXT NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Participant" DROP COLUMN "email",
-DROP COLUMN "firstName",
-DROP COLUMN "lastName",
-ADD COLUMN     "userId" TEXT NOT NULL;
+ALTER TABLE "Participant"
+    DROP COLUMN "email",
+    DROP COLUMN "firstName",
+    DROP COLUMN "lastName",
+    ADD COLUMN "userId" TEXT NOT NULL;
 
 -- AlterTable
-ALTER TABLE "Room" ALTER COLUMN "sequence" DROP DEFAULT;
+ALTER TABLE "Room"
+    ALTER COLUMN "sequence" DROP DEFAULT;
 DROP SEQUENCE "Room_sequence_seq";
 
 -- CreateTable
-CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "firstName" TEXT NOT NULL,
-    "lastName" TEXT NOT NULL,
+CREATE TABLE "User"
+(
+    "id"        TEXT         NOT NULL,
+    "email"     TEXT         NOT NULL,
+    "firstName" TEXT         NOT NULL,
+    "lastName"  TEXT         NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -44,16 +48,18 @@ CREATE TABLE "User" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "User" ("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Admin_userId_key" ON "Admin"("userId");
+CREATE UNIQUE INDEX "Admin_userId_key" ON "Admin" ("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Participant_userId_key" ON "Participant"("userId");
+CREATE UNIQUE INDEX "Participant_userId_key" ON "Participant" ("userId");
 
 -- AddForeignKey
-ALTER TABLE "Admin" ADD CONSTRAINT "Admin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Admin"
+    ADD CONSTRAINT "Admin_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Participant" ADD CONSTRAINT "Participant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Participant"
+    ADD CONSTRAINT "Participant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE;

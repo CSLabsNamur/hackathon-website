@@ -9,8 +9,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Politique de cookies" subtitle="Tu veux un cookie ou pas ?" content="🍪">
-    </PageHero>
+    <PageHero title="Politique de cookies" subtitle="Tu veux un cookie ou pas ?" content="🍪"/>
   </UPageHero>
 
   <div class="flex justify-center px-6 py-10">

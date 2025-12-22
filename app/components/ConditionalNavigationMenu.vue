@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuProps, NavigationMenuItem } from "@nuxt/ui";
+import type { NavigationMenuItem, NavigationMenuProps } from "@nuxt/ui";
 
 // Fix: Use NavigationMenuItem, not NavigationMenuProps["items"]
 export type ConditionalNavigationMenuItem = NavigationMenuItem & { condition?: boolean };

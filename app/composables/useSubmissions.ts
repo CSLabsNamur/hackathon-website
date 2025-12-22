@@ -1,4 +1,4 @@
-import { type CreateSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
+import type { CreateSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
 import type { EditSubmissionRequestSchema } from "#shared/schemas/submissions/requests/edit";
 
 interface UseSubmissionsParams {
@@ -13,7 +13,7 @@ export const useSubmissionsRequests = async (params?: UseSubmissionsParams) => {
 };
 
 export const useSubmissionsRequestsActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
   const createSubmissionRequest = async (data: CreateSubmissionRequestSchema) => {
     return await $api("/api/submissions/requests", {
@@ -50,7 +50,7 @@ export const useSubmissions = async (params?: UseSubmissionsParams) => {
 };
 
 export const useSubmissionsActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
   const submit = async (requestId: string, content?: string, skipped?: boolean) => {
     return $api(`/api/submissions/requests/${requestId}/submit`, {

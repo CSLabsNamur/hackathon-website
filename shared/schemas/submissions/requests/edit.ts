@@ -39,7 +39,7 @@ export const editSubmissionRequestSchema = (
   });
 };
 
-const tempSchema = v.strictObject({
+const _tempSchema = v.strictObject({
   title: v.pipe(
     v.string(),
     v.nonEmpty(),
@@ -59,5 +59,5 @@ const tempSchema = v.strictObject({
   ),
   acceptedFormats: v.optional(v.string()),
   required: v.optional(v.boolean()),
-})
-export type EditSubmissionRequestSchema = v.InferOutput<typeof tempSchema>;
+});
+export type EditSubmissionRequestSchema = v.InferOutput<typeof _tempSchema>;

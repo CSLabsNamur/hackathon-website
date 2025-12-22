@@ -5,4 +5,4 @@
 
 */
 -- CreateIndex
-CREATE UNIQUE INDEX "SubmissionRequest_title_deadline_key" ON "SubmissionRequest"("title", "deadline");
+CREATE UNIQUE INDEX "SubmissionRequest_title_deadline_key" ON "SubmissionRequest" ("title", "deadline");

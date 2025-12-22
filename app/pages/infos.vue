@@ -83,8 +83,8 @@ useSeoMeta({
                        target="_blank">
                 Itinéraire
               </UButton>
-              <UButton variant="soft" color="neutral" icon="i-lucide-copy" @click="copyAddress"
-                       class="justify-center">
+              <UButton variant="soft" color="neutral" icon="i-lucide-copy" class="justify-center"
+                       @click="copyAddress">
                 Copier l'adresse
               </UButton>
             </div>

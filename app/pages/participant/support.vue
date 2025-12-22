@@ -56,15 +56,15 @@ async function onError(event: FormErrorEvent) {
       <UContainer class="pb-6 md:pb-8">
         <UCard :ui="{body: 'p-6 md:p-8'}"
                class="mx-auto max-w-4xl rounded-xl bg-white/70 dark:bg-gray-900/30 shadow-xl">
-          <UForm :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit" @error="onError"
-                 id="support-form">
+          <UForm id="support-form" :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit"
+                 @error="onError">
             <UFormField label="Description du problème" name="description" required>
               <UInput v-model="state.description" icon="i-lucide-type" class="w-full"
                       placeholder="par ex. : Arrivée en retard"/>
             </UFormField>
 
             <UFormField label="Message" name="message" required>
-              <UTextarea class="w-full" v-model="state.message" :rows="10"/>
+              <UTextarea v-model="state.message" class="w-full" :rows="10"/>
             </UFormField>
           </UForm>
 

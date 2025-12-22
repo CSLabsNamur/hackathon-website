@@ -1,4 +1,4 @@
-import { Prisma } from "~~/server/prisma/generated/prisma/browser";
+import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
 import type { SerializeObject } from "nitropack";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
@@ -29,5 +29,5 @@ export type Submission = SerializeObject<Prisma.SubmissionGetPayload<{
 export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPayload<{
   include: { submissions: true }
 }>>;
-export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<{}>>;
+export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];

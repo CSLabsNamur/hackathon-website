@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import { createSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
@@ -77,8 +77,8 @@ async function onError(event: FormErrorEvent) {
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-xl', footer: 'justify-end'}">
     <template #body>
-      <UForm :schema :state class="grid gap-4 lg:gap-6" @submit="onSubmit" @error="onError"
-             :disabled="isSubmitting" id="create-submission-form">
+      <UForm id="create-submission-form" :schema :state class="grid gap-4 lg:gap-6" :disabled="isSubmitting"
+             @submit="onSubmit" @error="onError">
         <UFormField label="Type de demande" name="type" required>
           <URadioGroup v-model="state.type" :items="typeItems"
                        :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
@@ -96,7 +96,7 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <UFormField label="Description" name="description">
-          <UTextarea class="w-full" v-model="state.description" :rows="10"/>
+          <UTextarea v-model="state.description" class="w-full" :rows="10"/>
         </UFormField>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -64,8 +64,8 @@ async function onError(event: FormErrorEvent) {
           :ui="{content: 'max-w-2xl'}">
     <template #body>
       <!-- TODO: Put form in a separate component and use it in registration as well -->
-      <UForm :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
-             :disabled="isSubmitting" id="participant-edit-form">
+      <UForm id="participant-edit-form" :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6"
+             :disabled="isSubmitting" @submit="onSubmit" @error="onError">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
           <UInput v-model="state.firstName" icon="i-lucide-user" class="w-full"/>
@@ -98,11 +98,11 @@ async function onError(event: FormErrorEvent) {
             <template #trailing>
               <UButton v-if="state.school" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
+                       class="text-muted"
                        @pointerdown.stop.prevent
                        @keydown.enter.stop.prevent="state.school = undefined"
                        @keydown.space.stop.prevent="state.school = undefined"
-                       @click.stop="state.school = undefined"
-                       class="text-muted"/>
+                       @click.stop="state.school = undefined"/>
             </template>
           </USelect>
         </UFormField>
@@ -115,17 +115,17 @@ async function onError(event: FormErrorEvent) {
             <template #trailing>
               <UButton v-if="state.diet" aria-label="Effacer la sélection"
                        icon="i-lucide-x" color="neutral" size="xs" variant="ghost"
+                       class="text-muted"
                        @pointerdown.stop.prevent
                        @keydown.enter.stop.prevent="state.diet = undefined"
                        @keydown.space.stop.prevent="state.diet = undefined"
-                       @click.stop="state.diet = undefined"
-                       class="text-muted"/>
+                       @click.stop="state.diet = undefined"/>
             </template>
           </USelect>
         </UFormField>
 
         <UFormField label="Besoins spécifiques" name="needs">
-          <UTextarea class="w-full" v-model="state.needs" :rows="1" :maxrows="3"/>
+          <UTextarea v-model="state.needs" class="w-full" :rows="1" :maxrows="3"/>
         </UFormField>
 
         <!-- CV -->

@@ -55,15 +55,15 @@ const onSubmit = async (status: boolean) => {
       <UContainer>
         <UCard>
           <template v-if="!allCompleted || wantToModify">
-            <UStepper :items="stepperItems" v-model="active" :linear="false"/>
+            <UStepper v-model="active" :items="stepperItems" :linear="false"/>
             <div class="relative min-h-56">
               <Transition name="slide-left" mode="out-in">
                 <ParticipantSubmissionForm
                     :key="active"
                     :participant="currentParticipant!"
                     :submission-request="submissionsRequests![active]!"
-                    @submit="onSubmit"
                     class="min-h-56"
+                    @submit="onSubmit"
                 />
               </Transition>
             </div>

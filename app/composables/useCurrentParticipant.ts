@@ -13,7 +13,7 @@ export const useCurrentParticipant = async () => {
 };
 
 export const useCurrentParticipantActions = () => {
-  const { $api } = useNuxtApp()
+  const {$api} = useNuxtApp();
 
   const updateParticipant = async (data: EditParticipantSchema) => {
     return $api("/api/participants/me", {

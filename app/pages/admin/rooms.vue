@@ -48,7 +48,7 @@ async function confirm() {
 
     isModifying.value = false;
     await refresh();
-  } catch (e) {
+  } catch {
     toast.add({
       title: "Erreur lors de la mise à jour",
       description: "Une erreur est survenue lors de la mise à jour des salles. Veuillez réessayer ou contacter le gérant du site de cette année.",
@@ -63,8 +63,9 @@ async function confirm() {
     <template #header>
       <DashboardNavbar title="Salles">
         <template #right>
-          <UButton variant="ghost" @click="isModifying ? confirm() : modify()"
-                   loading-auto :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'">
+          <UButton variant="ghost" loading-auto
+                   :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'"
+                   @click="isModifying ? confirm() : modify()">
             {{ isModifying ? "Confirmer" : "Modifier" }}
           </UButton>
         </template>
@@ -79,15 +80,16 @@ async function confirm() {
             </template>
             <template #body>
               <div class="flex flex-col h-full items-center justify-center gap-2">
-                <USkeleton class="h-12 rounded w-12"></USkeleton>
-                <USkeleton class="h-4 rounded w-24"></USkeleton>
+                <USkeleton class="h-12 rounded w-12"/>
+                <USkeleton class="h-4 rounded w-24"/>
               </div>
             </template>
           </UPageCard>
         </div>
 
-        <div v-else v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying}]"
-             :key="`rooms-${isModifying}`" class="flex flex-wrap gap-6">
+        <div v-else :key="`rooms-${isModifying}`"
+             v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying}]"
+             class="flex flex-wrap gap-6">
           <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room" :is-modifying="isModifying"/>
           <AdminRoomCard v-if="teams && teams.length > 0 && status === 'success'" :room="unassignedTeamsRoom"
                          :is-modifying="isModifying" hide-handle/>

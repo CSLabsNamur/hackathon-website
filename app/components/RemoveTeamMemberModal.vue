@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{participant: Participant | ParticipantWithoutRelations}>();
+// TODO: Add removing a team member back
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const props = defineProps<{ participant: Participant | ParticipantWithoutRelations }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

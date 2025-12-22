@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as v from "valibot";
+import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import { editSubmissionRequestSchema } from "#shared/schemas/submissions/requests/edit";
@@ -65,14 +65,14 @@ async function onError(event: FormErrorEvent) {
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-xl', footer: 'justify-end'}">
     <template #body>
-      <UForm :schema :state class="grid grid-cols-1 lg:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
-             :disabled="isSubmitting" id="edit-submission-form">
+      <UForm id="edit-submission-form" :schema :state class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+             :disabled="isSubmitting" @submit="onSubmit" @error="onError">
         <UFormField label="Titre" name="title" required>
           <UInput v-model="state.title" icon="i-lucide-type" class="w-full" placeholder="Titre de la demande"/>
         </UFormField>
 
         <UFormField label="Description" name="description">
-          <UTextarea class="w-full" v-model="state.description" :rows="10"/>
+          <UTextarea v-model="state.description" class="w-full" :rows="10"/>
         </UFormField>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

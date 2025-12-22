@@ -1,6 +1,6 @@
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
-import { H3Event } from "h3";
+import type { H3Event } from "h3";
 
 export enum UserRole {
   ADMIN = 1 << 0,
@@ -33,7 +33,7 @@ export const getParticipant = async (user: JwtPayload) => {
         user: true,
       },
     });
-  } catch (e) {
+  } catch {
     throw createError({statusCode: 404, statusMessage: "Participant not found"});
   }
 };
@@ -41,7 +41,7 @@ export const getParticipant = async (user: JwtPayload) => {
 export const getDbUser = defineCachedFunction(async (user: JwtPayload) => {
   try {
     return prisma.user.findUniqueOrThrow({where: {email: user.email!}});
-  } catch (e) {
+  } catch {
     throw createError({statusCode: 404, statusMessage: "User not found"});
   }
 }, {

@@ -52,8 +52,7 @@ useSeoMeta({
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
     <PageHero title="Formulaire d'inscription"
-              subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement.">
-    </PageHero>
+              subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement."/>
   </UPageHero>
 
   <UContainer class="pb-6 md:pb-8">
@@ -66,8 +65,8 @@ useSeoMeta({
         </p>
       </template>
 
-      <UForm :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6" @submit="onSubmit" @error="onError"
-             id="registration-form">
+      <UForm id="registration-form" :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6"
+             @submit="onSubmit" @error="onError">
         <!-- First & Last name -->
         <UFormField label="Prénom" name="firstName" required>
           <UInput v-model="state.firstName" icon="i-lucide-user" class="w-full"/>
@@ -111,7 +110,7 @@ useSeoMeta({
 
         <UFormField label="Besoins spécifiques" name="needs"
                     hint="(Accessibilité, etc.)">
-          <UTextarea class="w-full" icon="i-lucide-heart" v-model="state.needs" :rows="1" :maxrows="3"/>
+          <UTextarea v-model="state.needs" class="w-full" icon="i-lucide-heart" :rows="1" :maxrows="3"/>
         </UFormField>
 
         <!-- CV Upload -->
