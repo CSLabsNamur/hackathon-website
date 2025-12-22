@@ -28,6 +28,7 @@ export default defineNuxtConfig({
     "nuxt-nodemailer",
     "nuxt-security",
     "@nuxtjs/seo",
+    "@nuxt/hints",
   ],
 
   app: {
