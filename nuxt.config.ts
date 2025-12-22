@@ -93,6 +93,9 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    "/__nuxt_content/pages/**": {
+      csurf: false,
+    },
     "/infos": {
       security: {
         headers: {
@@ -124,6 +127,7 @@ export default defineNuxtConfig({
         "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${new URL(process.env.SUPABASE_URL || "").host}`, "https://lh3.googleusercontent.com"],
         "connect-src": ["'self'", `https://${new URL(process.env.SUPABASE_URL || "").host}`, `wss://${new URL(process.env.SUPABASE_URL || "").host}`, "https://api.iconify.design"],
         "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
+        "script-src": ["'self'", "https:", "'unsafe-inline'", "'wasm-unsafe-eval'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
         "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
       },
     },

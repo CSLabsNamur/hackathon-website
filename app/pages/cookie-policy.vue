@@ -14,5 +14,6 @@ useSeoMeta({
 
   <div class="flex justify-center px-6 py-10">
     <ContentRenderer v-if="page" :value="page" class="max-w-4xl"/>
+    <div v-else>Chargement...</div>
   </div>
 </template>
