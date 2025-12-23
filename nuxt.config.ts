@@ -1,3 +1,5 @@
+const supabaseHostname = new URL(process.env.SUPABASE_URL || "http://localhost").host;
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -96,13 +98,6 @@ export default defineNuxtConfig({
     "/__nuxt_content/pages/**": {
       csurf: false,
     },
-    "/infos": {
-      security: {
-        headers: {
-          crossOriginEmbedderPolicy: "unsafe-none",
-        },
-      },
-    },
     "/historique": {static: true},
     "/cookie-policy": {static: true},
     "/admin/**": {ssr: false},
@@ -123,9 +118,10 @@ export default defineNuxtConfig({
       origin: ["http://localhost:3000", "https://hackathon.cslabs.be", "https://hackathon-dev.cslabs.be", process.env.SUPABASE_URL || ""],
     },
     headers: {
+      crossOriginEmbedderPolicy: "unsafe-none",
       contentSecurityPolicy: {
-        "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${new URL(process.env.SUPABASE_URL || "").host}`, "https://lh3.googleusercontent.com"],
-        "connect-src": ["'self'", `https://${new URL(process.env.SUPABASE_URL || "").host}`, `wss://${new URL(process.env.SUPABASE_URL || "").host}`, "https://api.iconify.design"],
+        "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${supabaseHostname}`, "https://lh3.googleusercontent.com"],
+        "connect-src": ["'self'", `https://${supabaseHostname}`, `wss://${supabaseHostname}`, "https://api.iconify.design"],
         "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
         "script-src": ["'self'", "https:", "'unsafe-inline'", "'wasm-unsafe-eval'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
         "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
@@ -161,7 +157,7 @@ export default defineNuxtConfig({
   },
 
   turnstile: {
-    siteKey: process.env.NUXT_TURNSTILE_SITE_KEY,
+    siteKey: process.env.NUXT_TURNSTILE_SITE_KEY || "",
   },
 
   nodemailer: {
