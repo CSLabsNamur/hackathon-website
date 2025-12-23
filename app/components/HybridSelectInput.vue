@@ -74,7 +74,7 @@ function clearSelection() {
     </template>
 
     <template v-if="!isCustom">
-      <USelect v-model="selectedOption" class="w-full" :items="options" :icon="icon"
+      <USelect v-model="selectedOption" class="w-full" :items="options" :icon="icon" :content="{bodyLock: false}"
                @update:model-value="handleSelectChange">
         <template #trailing>
           <UButton v-if="selectedOption" aria-label="Effacer la sélection" icon="i-lucide-x" color="neutral" size="xs"

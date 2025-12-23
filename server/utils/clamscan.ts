@@ -20,6 +20,6 @@ export const clamscan = (async () => {
       },
     });
   } catch (e) {
-    console.warn("[clamscan] Initialization failed; virus scanning will be unavailable.", e);
+    console.warn(`[clamscan] Initialization failed; virus scanning will be unavailable. If this shows as part of the build process, it's fine.\n\t${e}`);
   }
 })();
