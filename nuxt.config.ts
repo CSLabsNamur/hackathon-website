@@ -114,6 +114,7 @@ export default defineNuxtConfig({
 
   security: {
     csrf: true,
+    // TODO: Doesn't work : https://github.com/Baroshem/nuxt-security/issues/515
     corsHandler: {
       origin: ["http://localhost:3000", "https://hackathon.cslabs.be", "https://hackathon-dev.cslabs.be", process.env.SUPABASE_URL || ""],
     },
@@ -125,6 +126,11 @@ export default defineNuxtConfig({
         "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
         "script-src": ["'self'", "https:", "'unsafe-inline'", "'wasm-unsafe-eval'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
         "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "font-src": ["'self'", "data:"],
+        "media-src": ["'self'"],
+        "manifest-src": ["'self'"],
+        "worker-src": ["'self'", "blob:"],
       },
     },
     requestSizeLimiter: {

@@ -13,7 +13,6 @@ const dayjs = useDayjs();
 const {eventDateEnd} = useRuntimeConfig().public;
 
 const stats = computed(() => {
-  console.log("Recomputing participant stats");
   if (!participants.value) {
     return [];
   }
