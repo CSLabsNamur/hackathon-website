@@ -1,3 +1,4 @@
+# Checks that the project lints, typechecks, and builds successfully
 name: CI
 
 on:
@@ -7,52 +8,67 @@ on:
     branches: [ main ]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
-jobs:
-  # Checks that the project lints, typechecks, and builds successfully
-  build:
-    name: Lint / Typecheck / Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+env:
+  NODE_VERSION: 22
+  DATABASE_URL: "postgresql://user:password@localhost:5432/dbname"
 
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # See https://github.com/actions/setup-node/issues/1357 and https://github.com/actions/setup-node/issues/531
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Node + pnpm and install dependencies
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: 22
-          package-manager-cache: false
+          node-version: ${{ env.NODE_VERSION }}
+          database-url: ${{ env.DATABASE_URL }}
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          cache: true
-
-      - name: Setup Node.js cache
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          DATABASE_URL: "postgresql://user:password@localhost:5432/dbname"
-        # Also generates the Prisma client via the postinstall script
-
-      - name: Lint
+      - name: ESLint
         run: pnpm exec eslint .
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node + pnpm and install dependencies
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          database-url: ${{ env.DATABASE_URL }}
 
       - name: Nuxt typecheck
         run: pnpm exec nuxt typecheck
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - lint
+      - typecheck
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node + pnpm and install dependencies
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          database-url: ${{ env.DATABASE_URL }}
 
       - name: Nuxt build
         run: pnpm run build

@@ -1,0 +1,47 @@
+name: Setup Node + pnpm and install dependencies
+inputs:
+  node-version:
+    description: 'The Node.js version to setup'
+    required: false
+    default: '22'
+  pnpm-version:
+    description: 'The pnpm version to setup'
+    required: false
+  database-url:
+    description: 'The database URL to use during dependency installation'
+    required: false
+    default: 'postgresql://user:password@localhost:5432/dbname'
+
+runs:
+  using: composite
+  steps:
+    # See https://github.com/actions/setup-node/issues/1357 and https://github.com/actions/setup-node/issues/531
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        package-manager-cache: false
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        cache: true
+        version: ${{ inputs.pnpm-version }}
+
+    - name: Setup Node.js cache
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Show versions
+      shell: bash
+      run: |
+        node --version
+        pnpm --version
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      env:
+        DATABASE_URL: ${{ inputs.database-url }}
+      # Also generates the Prisma client via the postinstall script
