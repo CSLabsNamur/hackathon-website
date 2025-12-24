@@ -41,6 +41,7 @@ runs:
         pnpm --version
 
     - name: Install dependencies
+      shell: bash
       run: pnpm install --frozen-lockfile
       env:
         DATABASE_URL: ${{ inputs.database-url }}
