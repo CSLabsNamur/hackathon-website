@@ -4,6 +4,9 @@ const supabaseHostname = new URL(process.env.SUPABASE_URL || "http://localhost")
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: {enabled: true},
+  experimental: {
+    checkOutdatedBuildInterval: 1000 * 60,  // 1 minute
+  },
 
   // TODO: Delete when fixed https://github.com/prisma/prisma/issues/28804
   nitro: {

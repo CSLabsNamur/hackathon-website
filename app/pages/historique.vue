@@ -41,9 +41,9 @@ const timeline: TimelineItem[] = [
   },
   {
     date: "27-29 Mars 2026",
-    title: "7e édition – À venir",
+    title: "7e édition – Hack the Narrative",
     icon: "i-lucide-moon-star",
-    description: "Le thème de la prochaine édition sera annoncé prochainement. Restez à l'écoute pour plus d'informations !",
+    description: "Le thème de cette année ! Les participants sont invités à réinventer l’éducation numérique par la fiction. L'objectif est de fusionner storytelling et technologie pour offrir des solutions éducatives innovantes. Nous avons hâte de vous y retrouver !",
   },
 ];
 

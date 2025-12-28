@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useSeoMeta({
   title: "Devenir partenaire",
-  description: "Vous souhaitez soutenir le Hackathon du CSLabs ? Découvrez comment devenir partenaire et contacter l’équipe d’organisation.",
+  description: "Envie de soutenir l’événement ? Contactez l’équipe et découvrons ensemble la formule qui vous convient.",
 });
 </script>
 
