@@ -4,14 +4,14 @@ import * as v from "valibot";
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
 
-  const {email} = await readValidatedBody(event, v.parser(schema));
+  const data = await readValidatedBody(event, v.parser(schema));
 
   // We only want CSLabs SSO addresses
-  if (!email.endsWith("@cslabs.be")) {
+  if (!data.email.endsWith("@cslabs.be")) {
     throw createError({statusCode: 400, statusMessage: "L'email doit se terminer par @cslabs.be"});
   }
 
-  const existingUser = await prisma.user.findUnique({where: {email}});
+  const existingUser = await prisma.user.findUnique({where: {email: data.email}});
 
   if (existingUser) {
     throw createError({statusCode: 400, statusMessage: "Cet email existe déjà dans la base de données.."});
@@ -22,9 +22,9 @@ export default defineEventHandler(async (event) => {
       data: {
         user: {
           create: {
-            email,
-            firstName: "Admin",
-            lastName: "CSLabs",
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
           },
         },
       },
