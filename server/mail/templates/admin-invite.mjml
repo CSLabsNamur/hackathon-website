@@ -1,0 +1,57 @@
+<mjml>
+    <mj-head>
+        <mj-attributes>
+            <mj-text font-size="14px"/>
+            <mj-all font-family="'Helveticaa Neue', 'Arial Nova', 'Nimbus Sans', sans-serif"/>
+        </mj-attributes>
+    </mj-head>
+
+    <mj-body background-color="#1bb17a">
+        <mj-section padding-top="30px">
+            <mj-column background-color="white" border-radius="20px" padding-bottom="10px">
+                <mj-image width="100px" src="https://cslabs.be/wp-content/uploads/2024/01/logo-CSLabs.png"/>
+
+                <mj-text>
+                    <h1 align="center" style="font-size: 24px">
+                        Vous avez été ajouté en tant qu'administrateur
+                    </h1>
+                    <p>
+                        Bonjour {{firstName}},
+                    </p>
+                    <p>
+                        Vous avez été ajouté en tant qu'administrateur au sein de la plateforme du Hackathon.
+                    </p>
+                    <p>
+                        Pour accéder à votre compte administrateur, veuillez vous connecter en utilisant l'adresse
+                        e-mail sur laquelle vous avez reçu ce message.
+                    </p>
+                </mj-text>
+
+                <mj-text>
+                    <p>
+                        Bien à vous,
+                        <br/>
+                        L'équipe CSLabs
+                    </p>
+                </mj-text>
+
+                <mj-divider border-width="1px" border-color="lightgray"/>
+
+                <mj-social icon-size="28px" mode="horizontal">
+                    <mj-social-element href="https://cslabs.be/"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWhvdXNlLWljb24gbHVjaWRlLWhvdXNlIj48cGF0aCBkPSJNMTUgMjF2LThhMSAxIDAgMCAwLTEtMWgtNGExIDEgMCAwIDAtMSAxdjgiLz48cGF0aCBkPSJNMyAxMGEyIDIgMCAwIDEgLjcwOS0xLjUyOGw3LTZhMiAyIDAgMCAxIDIuNTgyIDBsNyA2QTIgMiAwIDAgMSAyMSAxMHY5YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0yeiIvPjwvc3ZnPg=="/>
+                    <mj-social-element href="https://www.facebook.com/ComputerScienceLabs"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik05LjEwMSAyMy42OTF2LTcuOThINi42Mjd2LTMuNjY3aDIuNDc0di0xLjU4YzAtNC4wODUgMS44NDgtNS45NzggNS44NTgtNS45NzhjLjQwMSAwIC45NTUuMDQyIDEuNDY4LjEwM2E5IDkgMCAwIDEgMS4xNDEuMTk1djMuMzI1YTkgOSAwIDAgMC0uNjUzLS4wMzZhMjcgMjcgMCAwIDAtLjczMy0uMDA5Yy0uNzA3IDAtMS4yNTkuMDk2LTEuNjc1LjMwOWExLjcgMS43IDAgMCAwLS42NzkuNjIyYy0uMjU4LjQyLS4zNzQuOTk1LS4zNzQgMS43NTJ2MS4yOTdoMy45MTlsLS4zODYgMi4xMDNsLS4yODcgMS41NjRoLTMuMjQ2djguMjQ1QzE5LjM5NiAyMy4yMzggMjQgMTguMTc5IDI0IDEyLjA0NGMwLTYuNjI3LTUuMzczLTEyLTEyLTEycy0xMiA1LjM3My0xMiAxMmMwIDUuNjI4IDMuODc0IDEwLjM1IDkuMTAxIDExLjY0NyIvPjwvc3ZnPg=="/>
+                    <mj-social-element href="https://www.instagram.com/cslabs_namur"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik03LjAzLjA4NGMtMS4yNzcuMDYtMi4xNDkuMjY0LTIuOTEuNTYzYTUuOSA1LjkgMCAwIDAtMi4xMjQgMS4zODhhNS45IDUuOSAwIDAgMC0xLjM4IDIuMTI3Qy4zMjEgNC45MjYuMTIgNS44LjA2NCA3LjA3NnMtLjA2OSAxLjY4OC0uMDYzIDQuOTQ3cy4wMjEgMy42NjcuMDgzIDQuOTQ3Yy4wNjEgMS4yNzcuMjY0IDIuMTQ5LjU2MyAyLjkxMWMuMzA4Ljc4OS43MiAxLjQ1NyAxLjM4OCAyLjEyM2E1LjkgNS45IDAgMCAwIDIuMTI5IDEuMzhjLjc2My4yOTUgMS42MzYuNDk2IDIuOTEzLjU1MmMxLjI3OC4wNTYgMS42ODkuMDY5IDQuOTQ3LjA2M3MzLjY2OC0uMDIxIDQuOTQ3LS4wODJjMS4yOC0uMDYgMi4xNDctLjI2NSAyLjkxLS41NjNhNS45IDUuOSAwIDAgMCAyLjEyMy0xLjM4OGE1LjkgNS45IDAgMCAwIDEuMzgtMi4xMjljLjI5NS0uNzYzLjQ5Ni0xLjYzNi41NTEtMi45MTJjLjA1Ni0xLjI4LjA3LTEuNjkuMDYzLTQuOTQ4Yy0uMDA2LTMuMjU4LS4wMi0zLjY2Ny0uMDgxLTQuOTQ3Yy0uMDYtMS4yOC0uMjY0LTIuMTQ4LS41NjQtMi45MTFhNS45IDUuOSAwIDAgMC0xLjM4Ny0yLjEyM2E1LjkgNS45IDAgMCAwLTIuMTI4LTEuMzhjLS43NjQtLjI5NC0xLjYzNi0uNDk2LTIuOTE0LS41NUMxNS42NDcuMDA5IDE1LjIzNi0uMDA2IDExLjk3NyAwUzguMzEuMDIxIDcuMDMuMDg0bS4xNCAyMS42OTNjLTEuMTctLjA1LTEuODA1LS4yNDUtMi4yMjgtLjQwOGEzLjcgMy43IDAgMCAxLTEuMzgyLS44OTVhMy43IDMuNyAwIDAgMS0uOS0xLjM3OGMtLjE2NS0uNDIzLS4zNjMtMS4wNTgtLjQxNy0yLjIyOGMtLjA2LTEuMjY0LS4wNzItMS42NDQtLjA4LTQuODQ4Yy0uMDA2LTMuMjA0LjAwNi0zLjU4My4wNjEtNC44NDhjLjA1LTEuMTY5LjI0Ni0xLjgwNS40MDgtMi4yMjhjLjIxNi0uNTYxLjQ3Ny0uOTYuODk1LTEuMzgyYTMuNyAzLjcgMCAwIDEgMS4zNzktLjljLjQyMy0uMTY1IDEuMDU3LS4zNjEgMi4yMjctLjQxN2MxLjI2NS0uMDYgMS42NDQtLjA3MiA0Ljg0OC0uMDhjMy4yMDMtLjAwNiAzLjU4My4wMDYgNC44NS4wNjJjMS4xNjguMDUgMS44MDQuMjQ0IDIuMjI3LjQwOGMuNTYuMjE2Ljk2LjQ3NSAxLjM4Mi44OTVzLjY4MS44MTcuOSAxLjM3OGMuMTY1LjQyMi4zNjIgMS4wNTYuNDE3IDIuMjI3Yy4wNiAxLjI2NS4wNzQgMS42NDUuMDggNC44NDhjLjAwNSAzLjIwMy0uMDA2IDMuNTgzLS4wNjEgNC44NDhjLS4wNTEgMS4xNy0uMjQ1IDEuODA1LS40MDggMi4yM2MtLjIxNi41Ni0uNDc3Ljk2LS44OTYgMS4zOGEzLjcgMy43IDAgMCAxLTEuMzc4LjljLS40MjIuMTY1LTEuMDU4LjM2Mi0yLjIyNi40MThjLTEuMjY2LjA2LTEuNjQ1LjA3Mi00Ljg1LjA3OXMtMy41ODItLjAwNi00Ljg0OC0uMDZtOS43ODMtMTYuMTkyYTEuNDQgMS40NCAwIDEgMCAxLjQzNy0xLjQ0MmExLjQ0IDEuNDQgMCAwIDAtMS40MzcgMS40NDJNNS44MzkgMTIuMDEyYTYuMTYxIDYuMTYxIDAgMSAwIDEyLjMyMy0uMDI0YTYuMTYyIDYuMTYyIDAgMCAwLTEyLjMyMy4wMjRNOCAxMi4wMDhBNCA0IDAgMSAxIDEyLjAwOCAxNkE0IDQgMCAwIDEgOCAxMi4wMDgiLz48L3N2Zz4="/>
+                    <mj-social-element href="https://www.linkedin.com/company/cslabs-namur"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0wIDEuMTQ2QzAgLjUxMy41MjYgMCAxLjE3NSAwaDEzLjY1QzE1LjQ3NCAwIDE2IC41MTMgMTYgMS4xNDZ2MTMuNzA4YzAgLjYzMy0uNTI2IDEuMTQ2LTEuMTc1IDEuMTQ2SDEuMTc1Qy41MjYgMTYgMCAxNS40ODcgMCAxNC44NTR6bTQuOTQzIDEyLjI0OFY2LjE2OUgyLjU0MnY3LjIyNXptLTEuMi04LjIxMmMuODM3IDAgMS4zNTgtLjU1NCAxLjM1OC0xLjI0OGMtLjAxNS0uNzA5LS41Mi0xLjI0OC0xLjM0Mi0xLjI0OFMyLjQgMy4yMjYgMi40IDMuOTM0YzAgLjY5NC41MjEgMS4yNDggMS4zMjcgMS4yNDh6bTQuOTA4IDguMjEyVjkuMzU5YzAtLjIxNi4wMTYtLjQzMi4wOC0uNTg2Yy4xNzMtLjQzMS41NjgtLjg3OCAxLjIzMi0uODc4Yy44NjkgMCAxLjIxNi42NjIgMS4yMTYgMS42MzR2My44NjVoMi40MDFWOS4yNWMwLTIuMjItMS4xODQtMy4yNTItMi43NjQtMy4yNTJjLTEuMjc0IDAtMS44NDUuNy0yLjE2NSAxLjE5M3YuMDI1aC0uMDE2bC4wMTYtLjAyNVY2LjE2OWgtMi40Yy4wMy42NzggMCA3LjIyNSAwIDcuMjI1eiIvPjwvc3ZnPg=="/>
+                    <mj-social-element href="https://x.com/CSLabs"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xNC4yMzQgMTAuMTYyTDIyLjk3NyAwaC0yLjA3MmwtNy41OTEgOC44MjRMNy4yNTEgMEguMjU4bDkuMTY4IDEzLjM0M0wuMjU4IDI0SDIuMzNsOC4wMTYtOS4zMThMMTYuNzQ5IDI0aDYuOTkzem0tMi44MzcgMy4yOTlsLS45MjktMS4zMjlMMy4wNzYgMS41NmgzLjE4Mmw1Ljk2NSA4LjUzMmwuOTI5IDEuMzI5bDcuNzU0IDExLjA5aC0zLjE4MnoiLz48L3N2Zz4="/>
+                    <mj-social-element href="https://www.youtube.com/@CSLabs_Namur"
+                                       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMy40OTggNi4xODZhMy4wMiAzLjAyIDAgMCAwLTIuMTIyLTIuMTM2QzE5LjUwNSAzLjU0NSAxMiAzLjU0NSAxMiAzLjU0NXMtNy41MDUgMC05LjM3Ny41MDVBMy4wMiAzLjAyIDAgMCAwIC41MDIgNi4xODZDMCA4LjA3IDAgMTIgMCAxMnMwIDMuOTMuNTAyIDUuODE0YTMuMDIgMy4wMiAwIDAgMCAyLjEyMiAyLjEzNmMxLjg3MS41MDUgOS4zNzYuNTA1IDkuMzc2LjUwNXM3LjUwNSAwIDkuMzc3LS41MDVhMy4wMiAzLjAyIDAgMCAwIDIuMTIyLTIuMTM2QzI0IDE1LjkzIDI0IDEyIDI0IDEyczAtMy45My0uNTAyLTUuODE0TTkuNTQ1IDE1LjU2OFY4LjQzMkwxNS44MTggMTJ6Ii8+PC9zdmc+"/>
+                </mj-social>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

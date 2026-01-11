@@ -13,7 +13,16 @@ function sanitizeTemplateLiteral(input: string) {
 }
 
 function pascal(input: string) {
-  return input.replace(/(\w)(\w*)/g, (_, g1: string, g2: string) => g1.toUpperCase() + g2.toLowerCase());
+  // Convert e.g. `admin-invite` -> `AdminInvite`
+  const parts = input
+    .split(/[^a-zA-Z0-9]+/g)
+    .filter(Boolean)
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1));
+
+  const out = parts.join("");
+
+  // TypeScript identifiers cannot start with a digit.
+  return out.length === 0 ? "Template" : out.replace(/^[0-9]/, (d) => `_${d}`);
 }
 
 function stripDtsToTemplateDataSource(dtsSource: string, typeName: string) {
