@@ -140,7 +140,7 @@ useSeoMeta({
         </UFormField>
 
         <UFormField name="imageAgreement">
-          <UCheckbox v-model="state.imageAgreement" name="imageAgreement"
+          <UCheckbox v-model="state.imageAgreement" name="imageAgreement" required
                      label="J'accepte que mon image soit utilisée dans le cadre de la promotion de l'événement (photos, vidéos, etc.)."/>
         </UFormField>
 

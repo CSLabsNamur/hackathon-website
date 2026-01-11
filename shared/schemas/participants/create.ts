@@ -13,7 +13,7 @@ const schema = v.strictObject({
   // Have to coerce to boolean because form data are received as strings
   cautionAgreement: v.pipe(v.union([v.boolean(), v.literal("true"), v.literal("false")]), v.transform((x) => x === true || x === "true"), v.value(true, "Vous devez accepter de payer la caution pour vous inscrire")),
   codeOfConduct: v.pipe(v.union([v.boolean(), v.literal("true"), v.literal("false")]), v.transform((x) => x === true || x === "true"), v.value(true, "Vous devez accepter le code de conduite pour vous inscrire")),
-  imageAgreement: v.optional(v.pipe(v.union([v.boolean(), v.literal("true"), v.literal("false")]), v.transform((x) => x === true || x === "true"))),
+  imageAgreement: v.pipe(v.union([v.boolean(), v.literal("true"), v.literal("false")]), v.transform((x) => x === true || x === "true"), v.value(true, "Vous devez accepter l'utilisation des photos pour vous inscrire")),
   newsletter: v.optional(v.pipe(v.union([v.boolean(), v.literal("true"), v.literal("false")]), v.transform((x) => x === true || x === "true"))),
   turnstileToken: v.pipe(v.string(), v.nonEmpty("La vérification anti-robot est requise")),
 });

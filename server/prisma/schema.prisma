@@ -54,7 +54,7 @@ model Participant {
   curriculumVitae String?
   team            Team?         @relation(fields: [teamId], references: [id])
   teamId          String?
-  imageAgreement  Boolean       @default(false)
+  imageAgreement  Boolean
   newsletter      Boolean       @default(false)
   submissions     Submission[]
   createdAt       DateTime      @default(now())
