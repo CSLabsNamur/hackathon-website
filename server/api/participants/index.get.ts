@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
       submissions: {
         include: {
           request: true,
+          // TODO: Urgently check for unnecessary data exposure. Not critical now as only admins can access this endpoint, but still.
+          files: true,
         },
       },
       user: true,
