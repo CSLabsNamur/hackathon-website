@@ -5,6 +5,7 @@ import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 // TODO: uniformize import paths throughout modals
 import { AdminParticipantCautionModal, AdminParticipantsRemoveModal, ParticipantEditModal } from "#components";
+import { CautionStatus, translateCautionStatus } from "#shared/utils/types";
 
 definePageMeta({
   layout: "dashboard",
@@ -39,7 +40,7 @@ const columns: TableColumn<Participant>[] = [
     header: "Caution",
     accessorKey: "caution",
     cell: ({row}) => {
-      const val = row.getValue("caution") as string;
+      const val = row.getValue("caution") as CautionStatus;
       let color: BadgeProps["color"] = "neutral";
 
       if (val === CautionStatus.PAID) color = "success";
@@ -47,8 +48,11 @@ const columns: TableColumn<Participant>[] = [
       else if (val === CautionStatus.REFUNDED) color = "neutral";
       else if (val === CautionStatus.WAIVED) color = "warning";
 
-      return h(UBadge, {class: "capitalize", variant: "subtle", color}, () =>
-          val,
+      return h(UBadge, {
+            class: "capitalize",
+            variant: "subtle",
+            color,
+          }, () => translateCautionStatus(val),
       );
     },
   },

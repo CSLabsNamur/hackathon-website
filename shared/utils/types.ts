@@ -1,4 +1,4 @@
-import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
+import { CautionStatus, type Prisma } from "~~/server/prisma/generated/prisma/browser";
 import type { SerializeObject } from "nitropack";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
@@ -31,3 +31,18 @@ export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPaylo
 }>>;
 export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];
+
+export const translateCautionStatus = (status: CautionStatus) => {
+  switch (status) {
+    case CautionStatus.NOT_PAID:
+      return "Non Payé";
+    case CautionStatus.PAID:
+      return "Payé";
+    case CautionStatus.REFUNDED:
+      return "Remboursé";
+    case CautionStatus.WAIVED:
+      return "Exonéré";
+    default:
+      return "Inconnu";
+  }
+};
