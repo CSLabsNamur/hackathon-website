@@ -9,7 +9,14 @@ export default withNuxt({
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/prefer-literal-enum-member": "off",
       "import/no-named-default": "off",
-      "no-irregular-whitespace": "off"
+      "no-irregular-whitespace": "off",
+      "unused-eslint-disable": "off",
+    },
+  },
+  {
+    files: ["server/mail/generated/**/*.{js,ts}"],
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
     }
   }
 );
