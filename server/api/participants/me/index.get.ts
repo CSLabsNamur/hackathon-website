@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       submissions: {
         include: {
           request: true,
+          files: true,
         },
       },
       user: true,

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
 });
 
 const {data: submissionsRequests} = await useSubmissionsRequests({lazy: false});
+// TODO: Why not use useSubmissions instead?
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 
 const active = ref(0);
@@ -58,11 +58,21 @@ const onSubmit = async (status: boolean) => {
             <UStepper v-model="active" :items="stepperItems" :linear="false"/>
             <div class="relative min-h-56">
               <Transition name="slide-left" mode="out-in">
-                <ParticipantSubmissionForm
+                <ParticipantSubmissionFormText
+                    v-if="submissionsRequests![active]!.type === 'TEXT'"
                     :key="active"
                     :participant="currentParticipant!"
                     :submission-request="submissionsRequests![active]!"
                     class="min-h-56"
+                    @submit="onSubmit"
+                />
+                <ParticipantSubmissionFormFiles
+                    v-else
+                    :key="active"
+                    :participant="currentParticipant!"
+                    :submission-request="submissionsRequests![active]!"
+                    class="min-h-56"
+                    @delete-file="refreshCurrentParticipant"
                     @submit="onSubmit"
                 />
               </Transition>

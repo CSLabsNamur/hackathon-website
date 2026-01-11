@@ -53,7 +53,7 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    disallow: ["/admin", "/participant", "/auth", "/cookie-policy"],
+    disallow: ["/admin", "/participant", "/auth", "/cookie-policy", "/documents/*"],
     allow: "/",
   },
 
@@ -113,6 +113,13 @@ export default defineNuxtConfig({
         },
       },
     },
+    "/api/submissions/requests/**": {
+      security: {
+        xssValidator: {
+          methods: ["GET", "PUT"],
+        },
+      },
+    },
   },
 
   security: {
@@ -124,7 +131,7 @@ export default defineNuxtConfig({
     headers: {
       crossOriginEmbedderPolicy: "unsafe-none",
       contentSecurityPolicy: {
-        "img-src": ["'self'", "data:", "https://api.dicebear.com", `https://${supabaseHostname}`, "https://lh3.googleusercontent.com"],
+        "img-src": ["'self'", "data:", "blob:", "https://api.dicebear.com", `https://${supabaseHostname}`, "https://lh3.googleusercontent.com"],
         "connect-src": ["'self'", `https://${supabaseHostname}`, `wss://${supabaseHostname}`, "https://api.iconify.design"],
         "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
         "script-src": ["'self'", "https:", "'unsafe-inline'", "'wasm-unsafe-eval'", "'strict-dynamic'", "'nonce-{{nonce}}'"],

@@ -3,6 +3,7 @@ import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import { createSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
+import { DEFAULT_ACCEPTED_FORMATS_EXTS, normalizeAcceptedFormats } from "#shared/utils/fileFormats";
 
 const emit = defineEmits<{ close: [boolean] }>();
 
@@ -23,6 +24,7 @@ type Schema = v.InferOutput<typeof schema>
 const state: Reactive<Schema> = reactive({
   type: "text",
   title: "",
+  acceptedFormats: [...DEFAULT_ACCEPTED_FORMATS_EXTS],
   deadline: eventDateEndParsed.subtract(1, "minute").format("YYYY-MM-DDTHH:mm"),
 });
 
@@ -40,13 +42,25 @@ const typeItems = [{
   icon: "i-lucide-files",
 }];
 
+const formatOptions = [
+  {label: "PDF", value: "pdf"},
+  {label: "Word (.docx)", value: "docx"},
+  {label: "Texte (.txt)", value: "txt"},
+  {label: "Images (.jpg/.jpeg)", value: "jpg"},
+  {label: "Images (.png)", value: "png"},
+  {label: "Archive (.zip)", value: "zip"},
+];
+
 const isSubmitting = ref(false);
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await createSubmissionRequest(event.data);
+    await createSubmissionRequest({
+      ...event.data,
+      acceptedFormats: event.data.type === "text" ? undefined : normalizeAcceptedFormats(event.data.acceptedFormats),
+    });
 
     toast.add({
       title: "Demande de soumission créée",
@@ -97,6 +111,19 @@ async function onError(event: FormErrorEvent) {
 
         <UFormField label="Description" name="description">
           <UTextarea v-model="state.description" class="w-full" :rows="10"/>
+        </UFormField>
+
+        <UFormField v-if="state.type === 'file' || state.type === 'files'" label="Formats acceptés"
+                    name="acceptedFormats">
+          <USelectMenu v-model="state.acceptedFormats" :items="formatOptions" value-key="value" label-key="label"
+                       multiple class="w-full" placeholder="Sélectionnez les formats autorisés"/>
+          <template #hint>
+            <span class="text-xs text-muted">Si vide, tous les formats sont acceptés (non recommandé).</span>
+          </template>
+        </UFormField>
+
+        <UFormField label="Obligatoire" name="required">
+          <UCheckbox v-model="state.required" label="Cette soumission est obligatoire"/>
         </UFormField>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

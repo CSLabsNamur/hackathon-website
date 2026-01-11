@@ -87,7 +87,7 @@ model SubmissionRequest {
   type            SubmissionType
   deadline        DateTime
   // File-related fields for FILE type submissions
-  acceptedFormats String?        @default("*.pdf,*.docx,*.txt,*.jpg,*.png,*.zip")
+  acceptedFormats String[]       @default(["pdf", "docx", "txt", "jpg", "png", "zip"])
   multiple        Boolean?
   required        Boolean        @default(false)
   submissions     Submission[]
@@ -103,12 +103,28 @@ model Submission {
   requestId     String
   participant   Participant       @relation(fields: [participantId], references: [id])
   participantId String
-  content       String? // Could be text content or a file URL
+  content       String? // Text content for TEXT submissions; null for FILE submissions
   skipped       Boolean           @default(false)
+  files         SubmissionFile[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
   @@unique([requestId, participantId])
+}
+
+model SubmissionFile {
+  id           String     @id @default(cuid(2))
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submissionId String
+  bucket       String
+  path         String
+  originalName String
+  mimeType     String
+  size         Int
+  sha256       String
+  createdAt    DateTime   @default(now())
+
+  @@unique([submissionId, path])
 }
 
 // ==== Program Schedule ====

@@ -1,5 +1,6 @@
 import * as v from "valibot";
 import dayjs from "~~/server/utils/dayjs";
+import { normalizeAcceptedFormats } from "#shared/utils/fileFormats";
 
 // We cannot call Nuxt composables (useDayjs, useRuntimeConfig) at module top level here
 // because this file is used in both client and server contexts and is not a Nuxt setup/plugin.
@@ -37,7 +38,12 @@ export const createSubmissionRequestSchema = (
         return date.isBetween(eventDateStartParsed, eventDateEndParsed);
       }, "La date doit être entre le début et la fin de l'événement."),
     ),
-    acceptedFormats: v.optional(v.string()),
+    acceptedFormats: v.optional(
+      v.pipe(
+        v.array(v.string()),
+        v.transform((input) => normalizeAcceptedFormats(input)),
+      ),
+    ),
     required: v.optional(v.boolean()),
   });
 };
@@ -63,7 +69,7 @@ const _tempSchema = v.strictObject({
     v.string(),
     v.isoDateTime(),
   ),
-  acceptedFormats: v.optional(v.string()),
+  acceptedFormats: v.optional(v.array(v.string())),
   required: v.optional(v.boolean()),
 });
 export type CreateSubmissionRequestSchema = v.InferOutput<typeof _tempSchema>;

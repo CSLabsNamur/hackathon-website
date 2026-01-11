@@ -1,5 +1,7 @@
 import type { CreateSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
 import type { EditSubmissionRequestSchema } from "#shared/schemas/submissions/requests/edit";
+import type { SubmitTextSchema } from "#shared/schemas/submissions/submitText";
+import type { UploadSchema } from "#shared/schemas/submissions/upload";
 
 interface UseSubmissionsParams {
   lazy?: boolean;
@@ -52,17 +54,37 @@ export const useSubmissions = async (params?: UseSubmissionsParams) => {
 export const useSubmissionsActions = () => {
   const {$api} = useNuxtApp();
 
-  const submit = async (requestId: string, content?: string, skipped?: boolean) => {
+  const submitText = async (requestId: string, data: SubmitTextSchema) => {
     return $api(`/api/submissions/requests/${requestId}/submit`, {
+      body: data,
+    });
+  };
+
+  const uploadFiles = async (requestId: string, data: UploadSchema) => {
+    const form = new FormData();
+    form.set("skipped", data.skipped ? "true" : "false");
+
+    if (data.files) {
+      for (const f of data.files) {
+        form.append("files", f);
+      }
+    }
+
+    return $api(`/api/submissions/requests/${requestId}/upload`, {
       method: "POST",
-      body: {
-        content,
-        skipped,
-      },
+      body: form,
+    });
+  };
+
+  const deleteSubmissionFile = async (requestId: string, fileId: string) => {
+    return $api(`/api/submissions/requests/${requestId}/files/${fileId}`, {
+      method: "DELETE",
     });
   };
 
   return {
-    submit,
+    submitText,
+    uploadFiles,
+    deleteSubmissionFile,
   };
 };

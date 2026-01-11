@@ -3,5 +3,10 @@ export default defineEventHandler(async (event) => {
 
   const dbUser = await getDbUser(user);
 
-  return prisma.participant.findUnique({where: {userId: dbUser.id}}).submissions();
+  return prisma.participant.findUnique({
+    where: {userId: dbUser.id},
+    include: {
+      submissions: {include: {files: true, request: true}},
+    },
+  });
 });

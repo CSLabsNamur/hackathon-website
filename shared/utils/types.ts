@@ -16,7 +16,7 @@ export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
         }
       }
     },
-    submissions: { include: { request: true } },
+    submissions: { include: { request: true, files: true } },
     user: true
   }
 }>>;
@@ -24,7 +24,7 @@ export type ParticipantWithoutRelations = Omit<Participant, "team" | "submission
 export type Admin = SerializeObject<Prisma.AdminGetPayload<{ include: { user: true } }>>;
 export type Room = SerializeObject<Prisma.RoomGetPayload<{ include: { teams: true } }>>;
 export type Submission = SerializeObject<Prisma.SubmissionGetPayload<{
-  include: { participant: true, request: true }
+  include: { participant: true, request: true, files: true }
 }>>;
 export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPayload<{
   include: { submissions: true }

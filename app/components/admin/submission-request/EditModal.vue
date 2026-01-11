@@ -3,6 +3,7 @@ import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import { editSubmissionRequestSchema } from "#shared/schemas/submissions/requests/edit";
+import { normalizeAcceptedFormats } from "#shared/utils/fileFormats";
 
 const props = defineProps<{ submissionRequest: SubmissionRequest }>();
 const emit = defineEmits<{ close: [boolean] }>();
@@ -26,7 +27,17 @@ const state: Reactive<Schema> = reactive({
   description: props.submissionRequest.description || "",
   required: props.submissionRequest.required,
   deadline: dayjs(props.submissionRequest.deadline).format("YYYY-MM-DDTHH:mm"),
+  acceptedFormats: props.submissionRequest.acceptedFormats ?? [],
 });
+
+const formatOptions = [
+  {label: "PDF", value: "pdf"},
+  {label: "Word (.docx)", value: "docx"},
+  {label: "Texte (.txt)", value: "txt"},
+  {label: "Images (.jpg/.jpeg)", value: "jpg"},
+  {label: "Images (.png)", value: "png"},
+  {label: "Archive (.zip)", value: "zip"},
+];
 
 const isSubmitting = ref(false);
 
@@ -34,7 +45,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await editSubmissionRequest(props.submissionRequest.id, event.data);
+    await editSubmissionRequest(props.submissionRequest.id, {
+      ...event.data,
+      acceptedFormats: props.submissionRequest.type === SubmissionType.TEXT ? undefined : normalizeAcceptedFormats(event.data.acceptedFormats),
+    });
 
     toast.add({
       title: "Demande de soumission modifiée",
@@ -82,6 +96,12 @@ async function onError(event: FormErrorEvent) {
                     :max="eventDateEndParsed.format('YYYY-MM-DDTHH:mm')"/>
           </UFormField>
         </div>
+
+        <UFormField v-if="props.submissionRequest.type === SubmissionType.FILE" label="Formats acceptés"
+                    name="acceptedFormats">
+          <USelectMenu v-model="state.acceptedFormats" :items="formatOptions" value-key="value" label-key="label"
+                       multiple class="w-full" placeholder="Sélectionnez les formats autorisés"/>
+        </UFormField>
       </UForm>
     </template>
     <template #footer="{close}">
