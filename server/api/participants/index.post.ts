@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     allowEmptyFiles: false,
     keepExtensions: true,
     maxFiles: 1,
-    maxFileSize: 5 * 1024 * 1024,
+    maxFileSize: MAX_CV_SIZE,
     multiples: false,
   }).parse(event.node.req);
 
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
   if (curriculumVitae) {
     const fileType = await fileTypeFromFile(curriculumVitae.filepath);
-    if (!fileType || curriculumVitae.size > MAX_CV_SIZE || !ACCEPTED_CV_MIME_TYPES.includes(fileType.mime) || fileType.ext !== "pdf") {
+    if (!fileType || !ACCEPTED_CV_MIME_TYPES.includes(fileType.mime) || fileType.ext !== "pdf") {
       throw createError({statusCode: 400, statusMessage: "Le fichier CV est invalide."});
     }
     // AV Scan
@@ -99,9 +99,10 @@ export default defineEventHandler(async (event) => {
   if (curriculumVitae) {
     const supabase = serverSupabaseServiceRole(event);
 
+    // TODO: Sanitize filename to avoid issues, use UUIDs
     const {data, error} = await supabase.storage
       .from("cvs")
-      .upload(`${firstName + lastName}_${curriculumVitae.originalFilename}`, curriculumVitae.filepath ? fs.createReadStream(curriculumVitae.filepath) : "", {
+      .upload(`${firstName + lastName}_${curriculumVitae.originalFilename}`, fs.createReadStream(curriculumVitae.filepath), {
         cacheControl: "3600",
         upsert: false,
         contentType: curriculumVitae.mimetype || undefined,

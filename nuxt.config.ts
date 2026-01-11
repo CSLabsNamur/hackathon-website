@@ -120,6 +120,11 @@ export default defineNuxtConfig({
         },
       },
     },
+    "/api/broadcast": {
+      security: {
+        xssValidator: false,
+      },
+    },
   },
 
   security: {

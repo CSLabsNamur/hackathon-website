@@ -5,5 +5,5 @@ export default defineNitroPlugin(() => {
     return str.toUpperCase();
   });
 
-  console.log("[nitro] Handlebars helpers registered.");
+  console.debug("[nitro] Handlebars helpers registered.");
 });

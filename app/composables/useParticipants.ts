@@ -21,6 +21,7 @@ export const useParticipantsActions = () => {
     for (const item in data) {
       formData.append(item, data[item as keyof CreateParticipantSchema] as string | File);
     }
+
     await $api("/api/participants", {
       method: "POST",
       body: formData,
