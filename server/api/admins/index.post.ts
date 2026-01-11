@@ -47,6 +47,7 @@ export default defineEventHandler(async (event) => {
         statusMessage: "L'administrateur a été créé, mais l'email n'a pas pu être envoyé.",
       });
     }
+    return res;
   } catch {
     // Likely a unique constraint (email or userId) due to race condition.
     throw createError({statusCode: 400, statusMessage: "Impossible d'ajouter cet administrateur (déjà existant ?)"});
