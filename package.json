@@ -17,11 +17,14 @@
     "url": "git+https://github.com/CSLabsNamur/hackathon-front-nuxt.git"
   },
   "scripts": {
+    "postinstall": "nuxt prepare && pnpm run db:generate",
+    "predev": "pnpm run mail:generate",
+    "prebuild": "pnpm run mail:generate",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare && pnpm run db:generate",
+    "mail:generate": "tsx scripts/generate-mail-templates.ts",
     "start": "node .output/server/index.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
@@ -58,6 +61,7 @@
     "eslint": "^9.39.2",
     "file-type": "^21.3.0",
     "formidable": "^3.5.4",
+    "handlebars": "^4.7.8",
     "mjml": "^4.18.0",
     "nodemailer": "^7.0.12",
     "nuxt": "4.2.1",
@@ -67,6 +71,7 @@
     "pinia": "^3.0.4",
     "postcss-nesting": "^13.0.2",
     "prisma": "^7.2.0",
+    "tsx": "^4.21.0",
     "valibot": "1.2.0",
     "vue": "^3.5.26",
     "vue-draggable-plus": "^0.6.0",
@@ -78,7 +83,6 @@
     "@types/formidable": "^3.4.6",
     "@types/mjml": "^4.7.4",
     "@types/node": "^22.19.5",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

@@ -5,7 +5,7 @@ import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import formidable from "formidable";
 import { fileTypeFromFile } from "file-type";
-import registrationMailTemplate from "~~/server/mail/templates/registration";
+import renderRegistration from "~~/server/mail/generated/registration";
 import fs from "fs";
 
 const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
@@ -135,7 +135,11 @@ export default defineEventHandler(async (event) => {
     await sendMail({
       to: email,
       subject: "Confirmation d'inscription au Hackathon du CSLabs",
-      html: registrationMailTemplate,
+      html: renderRegistration({
+        firstName,
+        lastName,
+        profileUrl: "https://hackathon.cslabs.be/participant/profile",
+      }),
       replyTo: "event@cslabs.be",
     });
   } catch {
