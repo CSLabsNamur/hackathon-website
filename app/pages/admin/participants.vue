@@ -68,14 +68,14 @@ const columns: TableColumn<Participant>[] = [
         size: "sm",
         icon: "i-simple-icons-github",
         external: true,
-        to: `https://github.com/${row.original.githubAccount}`,
+        to: `https://github.com/${row.original.githubAccount.split("/").pop()}`,
       }) : null;
       const linkedIn = row.original.linkedInAccount ? h(UButton, {
         variant: "link",
         size: "sm",
         icon: "i-simple-icons-linkedin",
         external: true,
-        to: `https://github.com/${row.original.linkedInAccount}`,
+        to: `https://linkedin.com/in/${row.original.linkedInAccount.split("/").pop()}`,
       }) : null;
       return h("div", {class: "flex space-x-2"}, [github, linkedIn]);
     },

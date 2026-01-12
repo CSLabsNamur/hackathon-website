@@ -124,7 +124,9 @@ const footerLogos: FooterLogos[] = [{
 
   <UFooter class="mt-4">
     <template #left>
-      <span class="text-muted text-sm">Publié sous
+      <span class="text-muted text-sm">
+        <a href="https://github.com/CSLabsNamur/hackathon-website" target="_blank"
+           class="text-highlighted">Publié</a> sous
         <a href="https://opensource.org/license/bsd-3-clause" target="_blank"
            class="text-highlighted">Licence BSD-3</a>
       </span>

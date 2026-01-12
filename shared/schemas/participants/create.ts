@@ -4,8 +4,8 @@ const schema = v.strictObject({
   firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
   lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-  githubAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
-  linkedInAccount: v.optional(v.pipe(v.string(), v.minLength(3))),
+  githubAccount: v.optional(v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,39}$/iu, "Le nom d'utilisateur GitHub n'est pas valide"))),  // Source : https://github.com/orgs/community/discussions/133913
+  linkedInAccount: v.optional(v.pipe(v.string(), v.regex(/^[a-z0-9-_/]{5,30}$/iu, "Le nom d'utilisateur LinkedIn n'est pas valide"))),  // Source : https://www.linkedin.com/pulse/linkedin-character-limits-vincent-vinnie-savino-mba-cpcc/
   school: v.optional(v.string()),
   diet: v.optional(v.string()),
   needs: v.optional(v.string()),
