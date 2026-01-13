@@ -60,15 +60,15 @@ begin
     -- User has a role, attach it to the claims
     claims := event -> 'claims';
 
-    -- Ensure user_metadata exists
-    if jsonb_typeof(claims -> 'user_metadata') is null then
-        claims := jsonb_set(claims, '{user_metadata}', '{}'::jsonb);
+    -- Ensure app_metadata exists
+    if jsonb_typeof(claims -> 'app_metadata') is null then
+        claims := jsonb_set(claims, '{app_metadata}', '{}'::jsonb);
     end if;
 
-    -- Set role claim under user_metadata
+    -- Set role claim under app_metadata
     claims := jsonb_set(
             claims,
-            '{user_metadata,role}',
+            '{app_metadata,role}',
             to_jsonb(role_value)
               );
 

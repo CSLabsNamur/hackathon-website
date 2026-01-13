@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware(async (_to, _from) => {
   const supabase = useSupabaseClient();
   const {data} = await supabase.auth.getClaims();
 
-  if (!data?.claims || data.claims.user_metadata?.role !== "participant") {
+  if (!data?.claims || data.claims.app_metadata?.role !== "participant") {
     return navigateTo("/");
   }
 });

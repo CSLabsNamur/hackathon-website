@@ -38,13 +38,13 @@ const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
   },
   {
     label: "Panel Admin",
-    condition: user.value?.user_metadata?.role === "admin",
+    condition: user.value?.app_metadata?.role === "admin",
     to: "/admin",
     icon: "i-lucide-shield",
   },
   {
     label: "Panel Participant",
-    condition: user.value?.user_metadata?.role === "participant",
+    condition: user.value?.app_metadata?.role === "participant",
     to: "/participant",
     icon: "i-lucide-user",
   },

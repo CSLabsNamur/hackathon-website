@@ -12,7 +12,7 @@ export const requireAuth = async (event: H3Event, role: number) => {
   if (!user) {
     throw createError({statusCode: 401, statusMessage: "Unauthorized"});
   }
-  const userRole = user.user_metadata?.role as "admin" | "participant";
+  const userRole = user.app_metadata?.role as "admin" | "participant";
   if (
     (role & UserRole.ADMIN && userRole === "admin") ||
     (role & UserRole.USER && userRole === "participant")
