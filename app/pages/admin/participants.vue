@@ -19,12 +19,38 @@ const UButton = resolveComponent("UButton");
 const UCheckbox = resolveComponent("UCheckbox");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 
+const supabase = useSupabaseClient();
+const toast = useToast();
 const dayjs = useDayjs();
 const overlay = useOverlay();
 
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
+
+const downloadCV = async (participant: Participant) => {
+  if (!participant.curriculumVitae) {
+    return;
+  }
+  const blob = await supabase.storage.from("cvs").download(participant.curriculumVitae);
+
+  if (blob.error || !blob.data) {
+    toast.add({
+      title: "Erreur",
+      description: "Impossible de télécharger le CV.",
+      color: "error",
+    });
+    return;
+  }
+
+  const url = URL.createObjectURL(blob.data);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = participant.curriculumVitae.split("/").pop() || "cv.pdf";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 const columns: TableColumn<Participant>[] = [
   {
@@ -90,7 +116,7 @@ const columns: TableColumn<Participant>[] = [
           variant: "link",
           size: "sm",
           icon: "i-lucide-download",
-          to: cvLink,
+          onClick: () => downloadCV(row.original),
         });
       }
     },

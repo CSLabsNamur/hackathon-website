@@ -7,9 +7,34 @@ definePageMeta({
 });
 
 const {status, data: currentParticipant} = await useCurrentParticipant();
+const supabase = useSupabaseClient();
 
+const toast = useToast();
 const overlay = useOverlay();
 const editModal = overlay.create(ParticipantEditModal);
+
+const downloadCV = async () => {
+  if (!currentParticipant.value?.curriculumVitae) {
+    return;
+  }
+  const blob = await supabase.storage.from("cvs").download(currentParticipant.value.curriculumVitae);
+
+  if (blob.error || !blob.data) {
+    toast.add({
+      title: "Erreur",
+      description: "Impossible de télécharger le CV.",
+      color: "error",
+    });
+    return;
+  }
+  const url = URL.createObjectURL(blob.data);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = currentParticipant.value.curriculumVitae.split("/").pop() || "cv.pdf";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 </script>
 
 <template>
@@ -53,8 +78,8 @@ const editModal = overlay.create(ParticipantEditModal);
 
                 <ParticipantProfileLabel label="CV" icon="i-lucide-file-user">
                   <div v-if="currentParticipant!.curriculumVitae">
-                    <UButton size="xs" variant="ghost" :to="currentParticipant!.curriculumVitae"
-                             icon="i-lucide-download">
+                    <UButton size="xs" variant="ghost" icon="i-lucide-download"
+                             @click="downloadCV">
                       Télécharger
                     </UButton>
                   </div>

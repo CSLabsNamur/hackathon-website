@@ -95,28 +95,27 @@ export default defineEventHandler(async (event) => {
     caution: CautionStatus.NOT_PAID,
   };
 
-  // Upload CV to Supabase Storage if provided
-  if (curriculumVitae) {
-    const supabase = serverSupabaseServiceRole(event);
-
-    // TODO: Sanitize filename to avoid issues, use UUIDs
-    const {data, error} = await supabase.storage
-      .from("cvs")
-      .upload(`${firstName + lastName}_${curriculumVitae.originalFilename}`, fs.createReadStream(curriculumVitae.filepath), {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: curriculumVitae.mimetype || undefined,
-      });
-
-    if (error) {
-      throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
-    }
-
-    payload.curriculumVitae = data.fullPath;
-  }
-
   try {
-    await prisma.participant.create({data: payload});
+    const participant = await prisma.participant.create({data: payload});
+
+    // Upload CV to Supabase Storage if provided
+    if (curriculumVitae) {
+      const supabase = serverSupabaseServiceRole(event);
+
+      const {data, error} = await supabase.storage
+        .from("cvs")
+        .upload(`${participant.userId}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: curriculumVitae.mimetype || undefined,
+        });
+
+      if (error) {
+        throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
+      }
+
+      payload.curriculumVitae = data.path;
+    }
   } catch {
     if (curriculumVitae) {
       // Clean up uploaded CV in case of error

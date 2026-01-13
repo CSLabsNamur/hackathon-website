@@ -16,7 +16,6 @@ import {
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event, UserRole.USER);
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
-  const dbUser = await getDbUser(user);
   const participant = await getParticipant(user);
 
   const request = await prisma.submissionRequest.findUnique({where: {id}});
@@ -156,7 +155,7 @@ export default defineEventHandler(async (event) => {
 
       // Deterministic-ish path to avoid collisions and allow upsert
       // TODO: change this to use UUID
-      const storagePath = `${dbUser.id}/${id}/${sha256}_${safeName}`;
+      const storagePath = `${participant.id}/${id}/${sha256}_${safeName}`;
 
       const {data, error} = await supabase.storage
         .from(SUBMISSIONS_BUCKET)
