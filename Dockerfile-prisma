@@ -14,4 +14,6 @@ COPY package.json prisma.config.ts ./
 COPY server/prisma/ ./server/prisma/
 COPY --chmod=0755 docker-entrypoint.sh .
 
+RUN pnpm prisma generate
+
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
