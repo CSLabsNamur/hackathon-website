@@ -1,3 +1,4 @@
+BEGIN;
 -- Assumes that there is an is_admin flag on the profiles table.
 create or replace function public.custom_access_token_hook(event jsonb)
     returns jsonb
@@ -94,3 +95,4 @@ grant select
 
 GRANT USAGE ON SCHEMA "public" TO supabase_auth_admin;
 -- GRANT SELECT ON ALL TABLES IN SCHEMA "public" TO supabase_auth_admin;
+COMMIT;

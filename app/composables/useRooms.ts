@@ -1,7 +1,6 @@
 import type * as v from "valibot";
 import type reorder from "#shared/schemas/rooms/reorder";
 
-
 interface UseRoomsParams {
   lazy?: boolean;
 }
