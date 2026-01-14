@@ -10,6 +10,10 @@ services:
     env_file:
       - .env
     depends_on:
+      prisma_setup:
+        condition: service_completed_successfully
+        required: true
+        restart: false
       clamav:
         condition: service_healthy
         required: true
@@ -20,3 +24,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+  prisma_setup:
+    build:
+      context: .
+      dockerfile: Dockerfile-prisma
+      args:
+        - DATABASE_URL=${DATABASE_URL}
+    restart: no
+    env_file:
+      - .env

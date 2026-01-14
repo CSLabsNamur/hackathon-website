@@ -29,7 +29,6 @@ WORKDIR /app
 
 # Only `.output` folder is needed from the build stage
 COPY --from=build /app/.output ./.output
-COPY --from=build /app/server/prisma ./server/prisma
 
 # Change the port and host
 ENV PORT=80
@@ -37,7 +36,4 @@ ENV HOST=0.0.0.0
 
 EXPOSE 80
 
-COPY --chmod=0755 docker-entrypoint.sh .
-
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "/app/.output/server/index.mjs"]

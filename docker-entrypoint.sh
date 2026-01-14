@@ -29,5 +29,5 @@ else
   exit 1
 fi
 
-log "Entrypoint script completed. Passing control to CMD."
-exec "$@"
+log "Entrypoint script completed."
+exit 0
