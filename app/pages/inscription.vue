@@ -132,9 +132,10 @@ useSeoMeta({
         <UFormField name="codeOfConduct">
           <UCheckbox v-model="state.codeOfConduct" name="codeOfConduct" required>
             <template #label>
-              J'ai lu et j'accepte le
+              J'ai lu et j'accepte les
               <a href="/documents/termes_et_conditions.pdf" target="_blank" class="text-cslabs-600 underline">
-                code de conduite</a>.
+                termes et conditions</a>, et je certifie avoir plus de 18 ans ou de disposer d'une autorisation
+              parentale pour participer à cet évènement.
             </template>
           </UCheckbox>
         </UFormField>
