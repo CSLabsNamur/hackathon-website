@@ -46,9 +46,7 @@
                         Il vous est possible de créer une équipe, si vous le souhaitez, et d'y inviter vos amis.
                     </p>
                     <p>
-                        Une équipe est considérée participante lorsque celle-ci possède au moins un membre confirmé.
-                        <br/>
-                        Une équipe possède au maximum 5 membres.
+                        Une équipe est considérée complète lorsque celle-ci possède <b>4 membres</b> confirmés.
                     </p>
                     <p>
                         Si vous n'avez pas encore d'équipe, pas de panique&nbsp;! Vous pouvez en constituer sur place le
