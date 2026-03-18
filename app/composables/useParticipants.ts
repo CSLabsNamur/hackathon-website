@@ -49,5 +49,20 @@ export const useParticipantsActions = () => {
     });
   };
 
-  return {createParticipant, updateParticipant, updateCaution, removeParticipant};
+  const renderParticipantBadge = async (participant: Participant) => {
+    return $api<Blob>(`/api/participants/${participant.id}/badge`);
+  };
+
+  const renderParticipantsBadges = async () => {
+    return $api<Blob>(`/api/participants/badges`);
+  };
+
+  return {
+    createParticipant,
+    updateParticipant,
+    updateCaution,
+    removeParticipant,
+    renderParticipantBadge,
+    renderParticipantsBadges,
+  };
 };
