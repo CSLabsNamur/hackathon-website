@@ -7,7 +7,10 @@ export default defineEventHandler(async (event) => {
 
   const participant = await prisma.participant.findUnique({
     where: {id},
-    include: {user: true},
+    include: {
+      user: true,
+      team: true,
+    },
   });
   if (!participant) {
     throw createError({statusCode: 404, statusMessage: "Participant not found"});

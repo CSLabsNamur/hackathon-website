@@ -2,7 +2,10 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
 
   const participants = await prisma.participant.findMany({
-    include: {user: true},
+    include: {
+      user: true,
+      team: true,
+    },
   });
   if (!participants) {
     throw createError({statusCode: 404, statusMessage: "Participant not found"});
