@@ -12,6 +12,11 @@ type Participant = Prisma.ParticipantGetPayload<{
   }
 }>
 
+type LayoutCircleOptions = {
+  pos: Coordinates;
+  radius: number;
+};
+
 type Coordinates = [x: number, y: number];
 
 interface TextLine {
@@ -26,9 +31,38 @@ interface MeasuredTextLine extends TextLine {
   fittedFontSize: number;
 }
 
+interface DrawBadgeTextBlockOptions {
+  circle?: LayoutCircleOptions;
+  minimumLeftX?: number;
+  circleSafeMargin?: number;
+  textRightPadding?: number;
+  textVerticalPadding?: number;
+  baseTextGap?: number;
+}
+
+//const rolesColors = {
+//  "Participant": "#227d50",
+//  "Organisateur": "#0000ff",
+//  "Coach": "#ffa500",
+//  "Jury": "#800080",
+//  "Sponsor": "#008000",
+//  "Invité": "#008080",
+//  "Sans équipe": "#ff0000",
+//};
+
 //region Utils
 function cmToPoints(cm: number): number {
   return cm * 28.3465;
+}
+
+function getDefaultBadgeCircle(size: Coordinates): LayoutCircleOptions {
+  const [, pageHeight] = size;
+  const pos: Coordinates = [7.5, 5];
+
+  return {
+    pos,
+    radius: pageHeight / 2.7,
+  };
 }
 
 /**
@@ -197,33 +231,80 @@ function fitMeasuredTextLines(doc: PDFKit.PDFDocument, lines: TextLine[], fromX:
   };
 }
 
+/**
+ * Draws a centered, wrapped and height-fitted block of badge text.
+ *
+ * @param doc The PDFDocument instance to draw on
+ * @param size The size of the page in points
+ * @param lines An array of text lines to draw, each with its own font size and color
+ * @param options Additional options for drawing the text block, such as circle parameters and padding values
+ */
+function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: TextLine[], options: DrawBadgeTextBlockOptions = {}) {
+  // Default options
+  const {
+    circle = getDefaultBadgeCircle(size),
+    minimumLeftX = 0,
+    circleSafeMargin = cmToPoints(1),
+    textRightPadding = cmToPoints(.25),
+    textVerticalPadding = cmToPoints(.12),
+    baseTextGap = cmToPoints(.3),
+  } = options;
+
+  const [pageWidth, pageHeight] = size;
+  const circleSafeRightX = circle.pos[0] + circle.radius + circleSafeMargin;
+  const textFromX = Math.max(circleSafeRightX, minimumLeftX);
+  const textToX = pageWidth - textRightPadding;
+
+  const {
+    fittedLines,
+    textGap,
+  } = fitMeasuredTextLines(doc, lines, textFromX, textToX, pageHeight - (textVerticalPadding * 2), baseTextGap);
+
+  const totalTextHeight = getTotalTextHeight(fittedLines, textGap);
+
+  let currentY = Math.max(textVerticalPadding, (pageHeight - totalTextHeight) / 2);
+  for (const [index, line] of fittedLines.entries()) {
+    doc.fillColor(line.color);
+    centerTextHorizontally(doc, line.fittedFontSize, line.text, currentY, textFromX, textToX);
+
+    const hasGapAfter = index < fittedLines.length - 1 && (line.gapAfter ?? true);
+    currentY += line.height + (hasGapAfter ? textGap : 0);
+  }
+}
+
 //endregion
 
 //region Main functions
-async function createBadgePage(doc: PDFKit.PDFDocument, participant: Participant, size: Coordinates) {
+/**
+ * Creates the common layout for a badge, including the background, the logo circle and the logo itself.
+ *
+ * @param doc The PDFDocument instance to draw on
+ * @param size The size of the page in points
+ * @param circle Optional parameters for the logo circle, including its position and radius. If not provided, default values based on the page size will be used.
+ */
+async function createBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates, circle = getDefaultBadgeCircle(size)) {
   const [pageWidth, pageHeight] = size;
 
   doc.addPage({size, margin: 0});
 
   const primaryColor = "#227d50";
   const bgColor = "#ecfff4";
+
   doc.rect(0, 0, pageWidth, pageHeight).fillColor(bgColor).fill();
 
   doc.fillColor(primaryColor);
 
   //region Logo and circle
-  const circlePos: Coordinates = [7.5, 5];
-  const circleRadius = pageHeight / 2.5 - circlePos[0];
-  doc.circle(circlePos[0], circlePos[1], circleRadius).fill();
+  doc.circle((circle.pos)[0], (circle.pos)[1], circle.radius).fill();
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logo = (doc as any).openImage("./public/images/logo.png");
-  const logoWidth = circleRadius * .9;
+  const logoWidth = circle.radius * .9;
   const logoHeight = logoWidth * (logo.height / logo.width);
   const [logoCenterX, logoCenterY] = visibleCircleCentroid(
     size,
-    circlePos,
-    circleRadius,
+    circle.pos,
+    circle.radius,
   );
   const logoPos: Coordinates = [
     logoCenterX - logoWidth / 2,
@@ -233,6 +314,23 @@ async function createBadgePage(doc: PDFKit.PDFDocument, participant: Participant
     width: logoWidth,
   });
   //endregion
+}
+
+/**
+ * Creates a badge for a participant, including the common layout, the QR code and the participant's information text.
+ *
+ * @param doc The PDFDocument instance to draw on
+ * @param participant The participant for whom to create the badge
+ * @param size The size of the page in points
+ * @returns A boolean indicating whether the participant has a team or not, which can be used for sorting badges with team participants first
+ */
+async function createParticipantBadge(doc: PDFKit.PDFDocument, participant: Participant, size: Coordinates) {
+  const [, pageHeight] = size;
+
+  const primaryColor = "#227d50";
+  const bgColor = "#ecfff4";
+
+  await createBadgeLayout(doc, size);
 
   //region QR Code
   const qrcode = await qr.toBuffer(participant.userId, {margin: 0, color: {light: bgColor}});
@@ -243,17 +341,7 @@ async function createBadgePage(doc: PDFKit.PDFDocument, participant: Participant
   //endregion
 
   //region Text
-  // Contraints and padding for the text block
-  const textRightPadding = cmToPoints(.25);
-  const textVerticalPadding = cmToPoints(.12);
   const qrcodeSafeMargin = cmToPoints(.5);
-
-  const circleRightX = circlePos[0] + circleRadius;
-  const qrcodeRightX = qrcodePos[0] + qrcodeSize + qrcodeSafeMargin;
-  const textFromX = Math.max(circleRightX, qrcodeRightX);
-  const textToX = pageWidth - textRightPadding;
-
-  const baseTextGap = cmToPoints(.3);
 
   // Size constants
   const h1Size = 20;
@@ -276,31 +364,21 @@ async function createBadgePage(doc: PDFKit.PDFDocument, participant: Participant
       : []),
   ];
 
-  // We need to measure the height of each text line to be able to center the whole block vertically
-  const {
-    fittedLines,
-    textGap,
-  } = fitMeasuredTextLines(doc, textLines, textFromX, textToX, pageHeight - (textVerticalPadding * 2), baseTextGap);
-
-  const totalTextHeight = getTotalTextHeight(fittedLines, textGap);
-
-  // Start drawing the text from the vertical center of the page minus 1/2 of the total text height, to center vertically.
-  // We also apply the textVerticalPadding as a minimum distance from the top and bottom edges of the page.
-  let currentY = Math.max(textVerticalPadding, (pageHeight - totalTextHeight) / 2);
-  for (const [index, line] of fittedLines.entries()) {
-    doc.fillColor(line.color);
-    centerTextHorizontally(doc, line.fittedFontSize, line.text, currentY, textFromX, textToX);
-
-    // Add a gap after each line except the last one, and if the line doesn't explicitly disable it
-    const hasGapAfter = index < fittedLines.length - 1 && (line.gapAfter ?? true);
-    currentY += line.height + (hasGapAfter ? textGap : 0);
-  }
+  drawBadgeTextBlock(doc, size, textLines, {
+    minimumLeftX: qrcodePos[0] + qrcodeSize + qrcodeSafeMargin,
+  });
   doc.fillColor(primaryColor);
   //endregion
 
   return !!participant.team;
 }
 
+/**
+ * Renders a PDF document containing badges for a list of participants, with team participants rendered first.
+ *
+ * @param participants An array of participants to render badges for
+ * @returns A PDFDocument instance containing the rendered badges for all participants
+ */
 export async function renderParticipantsBadges(participants: Participant[]): Promise<PDFKit.PDFDocument> {
   const size: Coordinates = [cmToPoints(10), cmToPoints(5)];
 
@@ -321,10 +399,10 @@ export async function renderParticipantsBadges(participants: Participant[]): Pro
   const teamParticipants = participants.filter(p => !!p.team);
 
   for (const participant of teamParticipants) {
-    await createBadgePage(doc, participant, size);
+    await createParticipantBadge(doc, participant, size);
   }
   for (const participant of noTeamParticipants) {
-    await createBadgePage(doc, participant, size);
+    await createParticipantBadge(doc, participant, size);
   }
 
   doc.end();
