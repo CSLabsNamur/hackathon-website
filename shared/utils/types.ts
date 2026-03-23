@@ -1,8 +1,8 @@
-import { CautionStatus, type Prisma } from "~~/server/prisma/generated/prisma/browser";
+import { CautionStatus, GuestType, type Prisma } from "~~/server/prisma/generated/prisma/browser";
 import type { SerializeObject } from "nitropack";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
-export { SubmissionType, CautionStatus } from "../../server/prisma/generated/prisma/browser";
+export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/generated/prisma/browser";
 
 // Custom types, for additional relationships or specific use
 // TODO: Huge problem: These types are not updated automatically when the Prisma schema changes. Need to refactor to use global includes.
@@ -22,6 +22,7 @@ export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
 }>>;
 export type ParticipantWithoutRelations = Omit<Participant, "team" | "submissions">;
 export type Admin = SerializeObject<Prisma.AdminGetPayload<{ include: { user: true } }>>;
+export type Guest = SerializeObject<Prisma.GuestGetPayload<object>>;
 export type Room = SerializeObject<Prisma.RoomGetPayload<{ include: { teams: true } }>>;
 export type Submission = SerializeObject<Prisma.SubmissionGetPayload<{
   include: { participant: true, request: true, files: true }
@@ -42,6 +43,27 @@ export const translateCautionStatus = (status: CautionStatus) => {
       return "Remboursé";
     case CautionStatus.WAIVED:
       return "Exonéré";
+    default:
+      return "Inconnu";
+  }
+};
+
+export const translateGuestType = (type: GuestType) => {
+  switch (type) {
+    case GuestType.SPEAKER:
+      return "Conférencier";
+    case GuestType.SPONSOR:
+      return "Sponsor";
+    case GuestType.JURY:
+      return "Jury";
+    case GuestType.COACH:
+      return "Coach";
+    case GuestType.PHOTOGRAPHER:
+      return "Photographe";
+    case GuestType.GUEST:
+      return "Invité";
+    case GuestType.OTHER:
+      return "Autre";
     default:
       return "Inconnu";
   }

@@ -1,0 +1,160 @@
+<script setup lang="ts">
+import type { TableColumn } from "#ui/components/Table.vue";
+import type { Row } from "@tanstack/vue-table";
+import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import type { Guest } from "#shared/utils/types";
+import { translateGuestType } from "#shared/utils/types";
+import CreateModal from "~/components/admin/guests/CreateModal.vue";
+import EditModal from "~/components/admin/guests/EditModal.vue";
+import RemoveModal from "~/components/admin/guests/RemoveModal.vue";
+
+definePageMeta({
+  layout: "dashboard",
+  middleware: "admin-auth",
+});
+
+const {status, data: guests, refresh} = await useGuests({lazy: true});
+
+const UBadge = resolveComponent("UBadge");
+const UButton = resolveComponent("UButton");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
+
+const dayjs = useDayjs();
+const overlay = useOverlay();
+
+const createModal = overlay.create(CreateModal);
+const editModal = overlay.create(EditModal);
+const removeModal = overlay.create(RemoveModal);
+
+const columns: TableColumn<Guest>[] = [
+  {
+    header: "Nom",
+    accessorKey: "name",
+  },
+  {
+    header: "Type",
+    accessorFn: (row) => translateGuestType(row.type),
+    cell: ({row}) => {
+      return h(UBadge, {
+        class: "capitalize",
+        variant: "subtle",
+        color: "neutral",
+      }, () => translateGuestType(row.original.type));
+    },
+  },
+  {
+    header: "Entreprise",
+    accessorKey: "company",
+    cell: ({row}) => row.original.company || "Aucune",
+  },
+  {
+    header: "Image",
+    accessorKey: "imageUrl",
+    cell: ({row}) => {
+      if (!row.original.imageUrl) {
+        return "Aucune";
+      }
+
+      return h(UButton, {
+        variant: "link",
+        size: "sm",
+        icon: "i-lucide-image",
+        external: true,
+        to: row.original.imageUrl,
+      });
+    },
+  },
+  {
+    id: "actions",
+    cell: ({row}) => {
+      return h(
+          "div",
+          {class: "text-right"},
+          h(
+              UDropdownMenu,
+              {
+                content: {align: "end"},
+                items: getRowItems(row),
+                "aria-label": `Actions pour l'invité ${row.original.name}`,
+              },
+              () => h(UButton, {
+                icon: "i-lucide-ellipsis-vertical",
+                color: "neutral",
+                variant: "ghost",
+                class: "ml-auto",
+                "aria-label": `Ouvrir le menu des actions pour l'invité ${row.original.name}`,
+              }),
+          ),
+      );
+    },
+  },
+];
+
+function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
+  return [
+    {
+      type: "label",
+      label: `Ajouté le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
+      class: "text-muted",
+    },
+    {
+      type: "label",
+      label: "Administration",
+    },
+    {
+      label: "Éditer l'invité",
+      icon: "i-lucide-edit-2",
+      onSelect: async () => {
+        const result = await editModal.open({guest: row.original});
+        if (result) await refresh();
+      },
+    },
+    {
+      label: "Supprimer l'invité",
+      icon: "i-lucide-trash-2",
+      onSelect: async () => {
+        const result = await removeModal.open({guest: row.original});
+        if (result) await refresh();
+      },
+    }];
+}
+
+async function openCreateModal() {
+  const result = await createModal.open();
+  if (result) {
+    await refresh();
+  }
+}
+</script>
+
+<template>
+  <UDashboardPanel>
+    <template #header>
+      <UDashboardNavbar title="Invités">
+        <template #leading>
+          <UDashboardSidebarCollapse/>
+        </template>
+
+        <template #right>
+          <UButton icon="i-lucide-user-plus" @click="openCreateModal">Ajouter</UButton>
+        </template>
+      </UDashboardNavbar>
+    </template>
+
+    <template #body>
+      <UContainer>
+        <div class="flex flex-col gap-4 lg:gap-6">
+          <UTable :columns="columns" :data="guests" sticky :loading="status === 'pending'">
+            <template #empty>
+              <div class="max-w-1/2 mx-auto">
+                <UEmpty title="Aucun invité"
+                        description="Aucun invité n'est encore enregistré pour l'événement."
+                        icon="i-lucide-circle-slash"/>
+              </div>
+            </template>
+          </UTable>
+        </div>
+      </UContainer>
+    </template>
+  </UDashboardPanel>
+</template>
