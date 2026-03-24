@@ -15,6 +15,18 @@ export default defineNuxtConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: [
+        "@nuxt/ui > prosemirror-state",
+        "@nuxt/ui > prosemirror-transform",
+        "@nuxt/ui > prosemirror-model",
+        "@nuxt/ui > prosemirror-view",
+        "@nuxt/ui > prosemirror-gapcursor",
+      ],
+    },
+  },
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui",
@@ -106,7 +118,9 @@ export default defineNuxtConfig({
     "/admin/**": {ssr: false},
     "/participant/**": {ssr: false},
     "/auth/**": {ssr: false},
-    "/api/participants/": {
+    // API routes
+    // Mostly file uploads because of a conflict between Formidable and the XSS validator
+    "/api/participants/**": {
       security: {
         xssValidator: {
           methods: ["GET"],
@@ -120,9 +134,16 @@ export default defineNuxtConfig({
         },
       },
     },
-    "/api/broadcast": {
+    "/api/broadcast/**": {
       security: {
         xssValidator: false,
+      },
+    },
+    "/api/sponsors/**": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
       },
     },
   },
