@@ -32,6 +32,13 @@ const links: NavigationMenuItem[][] = [[{
     open.value = false;
   },
 }, {
+  label: "Sponsors",
+  icon: "i-lucide-handshake",
+  to: "/admin/sponsors",
+  onSelect: () => {
+    open.value = false;
+  },
+}, {
   label: "Équipes",
   icon: "i-lucide-users",
   to: "/admin/teams",

@@ -2,6 +2,7 @@
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 import { type CreateParticipantSchema, default as schema } from "#shared/schemas/participants/create";
+import { acceptedFormatsToHtmlAccept, acceptedFormatsToLabel } from "#shared/utils/fileFormats";
 
 const dayjs = useDayjs();
 const toast = useToast();
@@ -24,6 +25,9 @@ const state: Reactive<CreateParticipantSchema> = reactive({
   imageAgreement: false,
   turnstileToken: "",
 });
+
+const curriculumVitaeAccept = acceptedFormatsToHtmlAccept(["pdf"]);
+const curriculumVitaeDescription = `${acceptedFormatsToLabel(["pdf"])?.toUpperCase() ?? "PDF"}, max 5MB`;
 
 const isSubmitting = ref(false);
 
@@ -137,9 +141,9 @@ useSeoMeta({
         <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae"
                     hint="Pourrait être rendu disponible aux partenaires de l'événement">
           <UFileUpload v-model="state.curriculumVitae"
-                       accept="application/pdf,application/acrobat,application/nappdf,application/x-pdf,image/pdf"
+                       :accept="curriculumVitaeAccept"
                        hint="Déposez votre CV ici"
-                       label="Déposez votre CV ici" description="PDF, max 5MB"
+                       label="Déposez votre CV ici" :description="curriculumVitaeDescription"
                        icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
         </UFormField>
 

@@ -7,10 +7,6 @@ export const guestTypeItems: RadioGroupItem[] = [{
   value: GuestType.SPEAKER,
   icon: "i-lucide-mic-vocal",
 }, {
-  label: translateGuestType(GuestType.SPONSOR),
-  value: GuestType.SPONSOR,
-  icon: "i-lucide-handshake",
-}, {
   label: translateGuestType(GuestType.JURY),
   value: GuestType.JURY,
   icon: "i-lucide-scale",

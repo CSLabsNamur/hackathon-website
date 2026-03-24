@@ -1,9 +1,15 @@
 <script setup lang="ts">
+interface HeroImage {
+  name: string;
+  logo: string;
+  url?: string;
+}
+
 const {title, subtitle, content, images} = defineProps<{
   title: string;
   subtitle?: string;
   content?: string;
-  images?: Partner[];
+  images?: HeroImage[];
 }>();
 </script>
 
@@ -19,7 +25,7 @@ const {title, subtitle, content, images} = defineProps<{
         <p class="text-lg md:text-xl whitespace-pre-line">
           <slot name="content">{{ content }}</slot>
         </p>
-        <div v-if="images" class="flex gap-4 mt-8 overflow-x-auto">
+        <div v-if="images?.length" class="flex gap-4 mt-8 overflow-x-auto">
           <template v-for="image in images" :key="image.name">
             <ImageBubble :image="image.logo" :url="image.url" :name="image.name"/>
           </template>

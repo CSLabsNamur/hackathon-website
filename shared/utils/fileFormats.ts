@@ -5,7 +5,7 @@ export const DEFAULT_ACCEPTED_FORMATS_EXTS = [
   "jpg",
   "png",
   "zip",
-];
+] as const;
 
 export type AcceptedFormatExt = (typeof DEFAULT_ACCEPTED_FORMATS_EXTS)[number];
 
@@ -17,7 +17,7 @@ export type AcceptedFormatExt = (typeof DEFAULT_ACCEPTED_FORMATS_EXTS)[number];
  * - drops invalid tokens
  * - removes duplicates (keeps order)
  */
-export const normalizeAcceptedFormats = (exts?: Array<string | null | undefined> | null): string[] => {
+export const normalizeAcceptedFormats = (exts?: ReadonlyArray<string | null | undefined> | null): string[] => {
   if (!exts) return [];
 
   const cleaned = exts
@@ -33,7 +33,7 @@ export const normalizeAcceptedFormats = (exts?: Array<string | null | undefined>
  * Convert normalized extensions to an HTML input `accept` attribute.
  * Example: ["pdf","png"] -> ".pdf,.png"
  */
-export const acceptedFormatsToHtmlAccept = (exts?: string[] | null): string => {
+export const acceptedFormatsToHtmlAccept = (exts?: ReadonlyArray<string | null | undefined> | null): string => {
   const list = normalizeAcceptedFormats(exts);
   return list.map((e) => `.${e}`).join(",");
 };
@@ -42,9 +42,8 @@ export const acceptedFormatsToHtmlAccept = (exts?: string[] | null): string => {
  * Human label for UI.
  * Example: ["pdf","png"] -> "pdf, png"
  */
-export const acceptedFormatsToLabel = (exts?: string[] | null): string | undefined => {
+export const acceptedFormatsToLabel = (exts?: ReadonlyArray<string | null | undefined> | null): string | undefined => {
   const list = normalizeAcceptedFormats(exts);
   if (!list.length) return undefined;
   return list.join(", ");
 };
-

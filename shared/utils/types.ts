@@ -23,6 +23,7 @@ export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
 export type ParticipantWithoutRelations = Omit<Participant, "team" | "submissions">;
 export type Admin = SerializeObject<Prisma.AdminGetPayload<{ include: { user: true } }>>;
 export type Guest = SerializeObject<Prisma.GuestGetPayload<object>>;
+export type Sponsor = SerializeObject<Prisma.SponsorGetPayload<object>>;
 export type Room = SerializeObject<Prisma.RoomGetPayload<{ include: { teams: true } }>>;
 export type Submission = SerializeObject<Prisma.SubmissionGetPayload<{
   include: { participant: true, request: true, files: true }
@@ -52,8 +53,6 @@ export const translateGuestType = (type: GuestType) => {
   switch (type) {
     case GuestType.SPEAKER:
       return "Conférencier";
-    case GuestType.SPONSOR:
-      return "Sponsor";
     case GuestType.JURY:
       return "Jury";
     case GuestType.COACH:
