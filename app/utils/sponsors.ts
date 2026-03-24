@@ -1,5 +1,8 @@
 import type { StarterKitOptions } from "@tiptap/starter-kit";
+import StarterKit from "@tiptap/starter-kit";
 import type { EditorToolbarItem } from "@nuxt/ui";
+import type { JSONContent } from "@tiptap/core";
+import { generateHTML } from "@tiptap/html";
 
 export const sponsorDescriptionStarterKit: Partial<StarterKitOptions> = {
   blockquote: false,
@@ -15,6 +18,13 @@ export const sponsorDescriptionStarterKit: Partial<StarterKitOptions> = {
 export function sponsorHasDescription(sponsor: Sponsor) {
   return richTextHasContent(normalizeRichTextDocument(sponsor.description));
 }
+
+export function getSponsorHTMLDescription(sponsor: Sponsor) {
+  if (sponsorHasDescription(sponsor)) {
+    return generateHTML(sponsor.description as JSONContent, [StarterKit.configure(sponsorDescriptionStarterKit)]);
+  }
+}
+
 
 export const sponsorDescriptionToolbarItems: EditorToolbarItem[][] = [
   [{

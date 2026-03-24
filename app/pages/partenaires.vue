@@ -1,20 +1,10 @@
 <script setup lang="ts">
-import { generateHTML } from "@tiptap/html";
-import type { JSONContent } from "@tiptap/core";
-import StarterKit from "@tiptap/starter-kit";
-import { sponsorDescriptionStarterKit } from "~/utils/sponsors";
-
 const {data: sponsors} = await useSponsors();
 
 const heroSponsors = computed(() => {
   return sponsors.value?.filter((partner) => partner.logo).map(({name, logo, url}) => ({name, logo, url}));
 });
 
-const getSponsorHTMLDescription = (sponsor: Sponsor) => {
-  if (sponsorHasDescription(sponsor)) {
-    return generateHTML(sponsor.description as JSONContent, [StarterKit.configure(sponsorDescriptionStarterKit)]);
-  }
-};
 
 useSeoMeta({
   title: "Partenaires",
@@ -48,7 +38,7 @@ useSeoMeta({
         </div>
 
         <template v-if="sponsorHasDescription(sponsor)" #description>
-          <article class="prose dark:prose-invert max-w-none" v-html="getSponsorHTMLDescription(sponsor)"/>
+          <article class="max-w-none" v-html="getSponsorHTMLDescription(sponsor)"/>
         </template>
       </UPageCard>
     </div>

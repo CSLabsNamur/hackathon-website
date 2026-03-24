@@ -6,11 +6,20 @@ export const sponsorBodySchema = v.strictObject({
     v.string(),
     v.trim(),
     v.nonEmpty("Le nom ne peut pas être vide."),
-    v.maxLength(50, "Le nom ne peut pas dépasser 50 caractères."),
+    v.maxLength(75, "Le nom ne peut pas dépasser 75 caractères."),
   ),
   description: v.pipe(
-    v.looseObject({
-      type: v.literal("doc"),
+    v.unknown(),
+    v.transform((input) => {
+      if (typeof input !== "string") {
+        return input;
+      }
+
+      try {
+        return JSON.parse(input);
+      } catch {
+        return input;
+      }
     }),
     v.check((input) => isRichTextDocument(input), "La description est invalide."),
     v.transform((input) => input as JSONContent),
