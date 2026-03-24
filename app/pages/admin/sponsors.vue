@@ -16,7 +16,6 @@ const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
-const UPopover = resolveComponent("UPopover");
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -27,34 +26,30 @@ const removeModal = overlay.create(RemoveModal);
 
 const columns: TableColumn<Sponsor>[] = [
   {
-    header: "Nom",
-    accessorKey: "name",
-  },
-  {
-    header: "Description",
-    accessorKey: "description",
+    id: "expand",
     cell: ({row}) => {
       if (!sponsorHasDescription(row.original)) {
-        return "Aucune";
+        return null;
       }
-
-      return h(UPopover, {
-        content: {
-          align: "center",
+      return h(UButton, {
+        color: "neutral",
+        variant: "ghost",
+        icon: "i-lucide-chevron-down",
+        square: true,
+        "aria-label": row.getIsExpanded() ? "Développer la description du sponsor" : "Réduire la description du sponsor",
+        ui: {
+          leadingIcon: [
+            "transition-transform",
+            row.getIsExpanded() ? "duration-200 rotate-180" : "",
+          ],
         },
-      }, {
-        default: () => h(UButton, {
-          label: "Prévisualiser",
-          variant: "subtle",
-          color: "neutral",
-          size: "sm",
-        }),
-        content: () => h("div", {
-          class: "max-w-xs max-h-96 overflow-auto p-4",
-          innerHTML: getSponsorHTMLDescription(row.original),
-        }),
+        onClick: () => row.toggleExpanded(),
       });
     },
+  },
+  {
+    header: "Nom",
+    accessorKey: "name",
   },
   {
     header: "Site web",
@@ -83,24 +78,6 @@ const columns: TableColumn<Sponsor>[] = [
         variant: "subtle",
         color: row.original.hasBadge ? "success" : "neutral",
       }, () => row.original.hasBadge ? "Oui" : "Non");
-    },
-  },
-  {
-    header: "Logo",
-    accessorKey: "logo",
-    cell: ({row}) => {
-      if (!row.original.logo) {
-        return "Aucun";
-      }
-
-      return h(UButton, {
-        variant: "link",
-        size: "sm",
-        icon: "i-lucide-image",
-        to: row.original.logo,
-        target: "_blank",
-        external: true,
-      }, () => "Voir");
     },
   },
   {
@@ -160,6 +137,8 @@ async function openCreateModal() {
     await refresh();
   }
 }
+
+const expanded = ref({});
 </script>
 
 <template>
@@ -175,12 +154,22 @@ async function openCreateModal() {
     <template #body>
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
-          <UTable :columns="columns" :data="sponsors" sticky :loading="status === 'pending'">
+          <UTable v-model:expanded="expanded" :columns="columns" :data="sponsors" sticky
+                  :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
             <template #empty>
               <div class="max-w-1/2 mx-auto">
                 <UEmpty title="Aucun sponsor"
                         description="Aucun sponsor n'est encore enregistré pour l'événement."
                         icon="i-lucide-circle-slash"/>
+              </div>
+            </template>
+            <template #expanded="{row}">
+              <div class="flex flex-col gap-2">
+                <NuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
+                         class="max-h-48 w-fit object-contain self-center"/>
+                <USeparator orientation="horizontal"/>
+                <article class="text-white max-h-96 overflow-auto p-4"
+                         v-html="getSponsorHTMLDescription(row.original)"/>
               </div>
             </template>
           </UTable>
