@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 404, statusMessage: "Participant not found"});
   }
 
-  const doc = await renderParticipantsBadges([participant]);
+  const doc = await renderParticipantBadge(participant);
 
   setHeader(event, "Content-Type", "application/pdf");
   setHeader(event, "Content-Disposition", `inline; filename="badge_${participant.id}.pdf"`);

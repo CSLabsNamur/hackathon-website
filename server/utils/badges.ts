@@ -38,7 +38,15 @@ interface DrawBadgeTextBlockOptions {
   textRightPadding?: number;
   textVerticalPadding?: number;
   baseTextGap?: number;
+  origin?: Coordinates;
 }
+
+const BADGE_SIZE: Coordinates = [cmToPoints(10), cmToPoints(5)] as const;
+const A4_SIZE: Coordinates = [cmToPoints(21), cmToPoints(29.7)] as const;
+const A4_BADGE_GRID = {
+  columns: 2,
+  rows: 5,
+} as const;
 
 //const rolesColors = {
 //  "Participant": "#227d50",
@@ -63,6 +71,42 @@ function getDefaultBadgeCircle(size: Coordinates): LayoutCircleOptions {
     pos,
     radius: pageHeight / 2.7,
   };
+}
+
+function createBadgesDocument(size: Coordinates, title: string): PDFKit.PDFDocument {
+  return new PDFDocument({
+    size,
+    margin: 0,
+    autoFirstPage: false,
+    pdfVersion: "1.7",
+    info: {
+      Title: title,
+      Author: "CSLabs",
+      Subject: `Hackathon ${new Date().getFullYear()}`,
+    },
+    displayTitle: true,
+  });
+}
+
+function getBadgeGridOrigin(slotIndex: number, pageSize: Coordinates = A4_SIZE, badgeSize: Coordinates = BADGE_SIZE): Coordinates {
+  const [pageWidth, pageHeight] = pageSize;
+  const [badgeWidth, badgeHeight] = badgeSize;
+
+  // We calculate the horizontal and vertical gaps between badges to evenly distribute them on the page
+  const horizontalGap = (pageWidth - (badgeWidth * A4_BADGE_GRID.columns)) / (A4_BADGE_GRID.columns + 1);
+  const verticalGap = (pageHeight - (badgeHeight * A4_BADGE_GRID.rows)) / (A4_BADGE_GRID.rows + 1);
+
+  const column = slotIndex % A4_BADGE_GRID.columns;
+  const row = Math.floor(slotIndex / A4_BADGE_GRID.columns);
+
+  return [
+    horizontalGap + (column * (badgeWidth + horizontalGap)),
+    verticalGap + (row * (badgeHeight + verticalGap)),
+  ];
+}
+
+function addCoordinates(a: Coordinates, b: Coordinates): Coordinates {
+  return [a[0] + b[0], a[1] + b[1]];
 }
 
 /**
@@ -248,12 +292,14 @@ function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: T
     textRightPadding = cmToPoints(.25),
     textVerticalPadding = cmToPoints(.12),
     baseTextGap = cmToPoints(.3),
+    origin = [0, 0],
   } = options;
 
   const [pageWidth, pageHeight] = size;
-  const circleSafeRightX = circle.pos[0] + circle.radius + circleSafeMargin;
-  const textFromX = Math.max(circleSafeRightX, minimumLeftX);
-  const textToX = pageWidth - textRightPadding;
+  const [originX, originY] = origin;
+  const circleSafeRightX = originX + circle.pos[0] + circle.radius + circleSafeMargin;
+  const textFromX = Math.max(circleSafeRightX, originX + minimumLeftX);
+  const textToX = originX + pageWidth - textRightPadding;
 
   const {
     fittedLines,
@@ -262,7 +308,7 @@ function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: T
 
   const totalTextHeight = getTotalTextHeight(fittedLines, textGap);
 
-  let currentY = Math.max(textVerticalPadding, (pageHeight - totalTextHeight) / 2);
+  let currentY = originY + Math.max(textVerticalPadding, (pageHeight - totalTextHeight) / 2);
   for (const [index, line] of fittedLines.entries()) {
     doc.fillColor(line.color);
     centerTextHorizontally(doc, line.fittedFontSize, line.text, currentY, textFromX, textToX);
@@ -275,6 +321,18 @@ function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: T
 //endregion
 
 //region Main functions
+function drawBadgeCutGuide(doc: PDFKit.PDFDocument, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0]) {
+  const [pageWidth, pageHeight] = size;
+  const [originX, originY] = origin;
+
+  doc.save();
+  doc.lineWidth(.75);
+  doc.dash(cmToPoints(.12), {space: cmToPoints(.08)});
+  doc.strokeColor("#7c9a8a");
+  doc.rect(originX, originY, pageWidth, pageHeight).stroke();
+  doc.restore();
+}
+
 /**
  * Creates the common layout for a badge, including the background, the logo circle and the logo itself.
  *
@@ -282,20 +340,20 @@ function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: T
  * @param size The size of the page in points
  * @param circle Optional parameters for the logo circle, including its position and radius. If not provided, default values based on the page size will be used.
  */
-async function createBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates, circle = getDefaultBadgeCircle(size)) {
+async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADGE_SIZE, circle = getDefaultBadgeCircle(size), origin: Coordinates = [0, 0]) {
   const [pageWidth, pageHeight] = size;
-
-  doc.addPage({size, margin: 0});
+  const [originX, originY] = origin;
 
   const primaryColor = "#227d50";
   const bgColor = "#ecfff4";
 
-  doc.rect(0, 0, pageWidth, pageHeight).fillColor(bgColor).fill();
+  doc.rect(originX, originY, pageWidth, pageHeight).fillColor(bgColor).fill();
 
   doc.fillColor(primaryColor);
 
   //region Logo and circle
-  doc.circle((circle.pos)[0], (circle.pos)[1], circle.radius).fill();
+  const circleCenter = addCoordinates(origin, circle.pos);
+  doc.circle(circleCenter[0], circleCenter[1], circle.radius).fill();
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logo = (doc as any).openImage("./public/images/logo.png");
@@ -310,7 +368,8 @@ async function createBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates, cir
     logoCenterX - logoWidth / 2,
     logoCenterY - logoHeight / 2,
   ];
-  doc.image(logo, logoPos[0], logoPos[1], {
+  const absoluteLogoPos = addCoordinates(origin, logoPos);
+  doc.image(logo, absoluteLogoPos[0], absoluteLogoPos[1], {
     width: logoWidth,
   });
   //endregion
@@ -322,22 +381,30 @@ async function createBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates, cir
  * @param doc The PDFDocument instance to draw on
  * @param participant The participant for whom to create the badge
  * @param size The size of the page in points
- * @returns A boolean indicating whether the participant has a team or not, which can be used for sorting badges with team participants first
  */
-async function createParticipantBadge(doc: PDFKit.PDFDocument, participant: Participant, size: Coordinates) {
-  const [, pageHeight] = size;
+async function drawParticipantBadge(doc: PDFKit.PDFDocument, participant: Participant, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0], drawCutGuide = false) {
+  const [pageWidth, pageHeight] = size;
+  const [originX, originY] = origin;
 
   const primaryColor = "#227d50";
   const bgColor = "#ecfff4";
 
-  await createBadgeLayout(doc, size);
+  doc.save();
+  doc.rect(originX, originY, pageWidth, pageHeight).clip();
+
+  await drawBadgeLayout(doc, size, getDefaultBadgeCircle(size), origin);
 
   //region QR Code
   const qrcode = await qr.toBuffer(participant.userId, {margin: 0, color: {light: bgColor}});
   const qrcodeSize = pageHeight * .4;
   const qrcodeMargin = cmToPoints(.25);
   const qrcodePos: Coordinates = [qrcodeMargin, pageHeight - qrcodeSize - qrcodeMargin];
-  doc.image(qrcode, qrcodePos[0], qrcodePos[1], {width: qrcodeSize, height: qrcodeSize, align: "center"});
+  const absoluteQrCodePos = addCoordinates(origin, qrcodePos);
+  doc.image(qrcode, absoluteQrCodePos[0], absoluteQrCodePos[1], {
+    width: qrcodeSize,
+    height: qrcodeSize,
+    align: "center",
+  });
   //endregion
 
   //region Text
@@ -366,43 +433,50 @@ async function createParticipantBadge(doc: PDFKit.PDFDocument, participant: Part
 
   drawBadgeTextBlock(doc, size, textLines, {
     minimumLeftX: qrcodePos[0] + qrcodeSize + qrcodeSafeMargin,
+    origin,
   });
   doc.fillColor(primaryColor);
+  doc.restore();
   //endregion
 
-  return !!participant.team;
+  if (drawCutGuide) {
+    drawBadgeCutGuide(doc, size, origin);
+  }
+}
+
+export async function renderParticipantBadge(participant: Participant): Promise<PDFKit.PDFDocument> {
+  const doc = createBadgesDocument(BADGE_SIZE, "Badge du participant");
+
+  doc.addPage({size: BADGE_SIZE, margin: 0});
+  await drawParticipantBadge(doc, participant, BADGE_SIZE);
+
+  doc.end();
+
+  return doc;
 }
 
 /**
- * Renders a PDF document containing badges for a list of participants, with team participants rendered first.
+ * Renders a PDF document containing participant badges arranged on A4 sheets, with team participants rendered first.
  *
  * @param participants An array of participants to render badges for
  * @returns A PDFDocument instance containing the rendered badges for all participants
  */
 export async function renderParticipantsBadges(participants: Participant[]): Promise<PDFKit.PDFDocument> {
-  const size: Coordinates = [cmToPoints(10), cmToPoints(5)];
+  const doc = createBadgesDocument(A4_SIZE, "Badges des participants");
+  const participantsPerPage = A4_BADGE_GRID.columns * A4_BADGE_GRID.rows;
 
-  const doc = new PDFDocument({
-    size,
-    margin: 0,
-    autoFirstPage: false,
-    pdfVersion: "1.7",
-    info: {
-      Title: "Badges des participants",
-      Author: "CSLabs",
-      Subject: `Hackathon ${new Date().getFullYear()}`,
-    },
-    displayTitle: true,
-  });
+  const noTeamParticipants = participants.filter(participant => !participant.team);
+  const teamParticipants = participants.filter(participant => !!participant.team);
+  const orderedParticipants = [...teamParticipants, ...noTeamParticipants];
 
-  const noTeamParticipants = participants.filter(p => !p.team);
-  const teamParticipants = participants.filter(p => !!p.team);
+  for (const [index, participant] of orderedParticipants.entries()) {
+    const slotIndex = index % participantsPerPage;
 
-  for (const participant of teamParticipants) {
-    await createParticipantBadge(doc, participant, size);
-  }
-  for (const participant of noTeamParticipants) {
-    await createParticipantBadge(doc, participant, size);
+    if (slotIndex === 0) {
+      doc.addPage({size: A4_SIZE, margin: 0});
+    }
+
+    await drawParticipantBadge(doc, participant, BADGE_SIZE, getBadgeGridOrigin(slotIndex), true);
   }
 
   doc.end();

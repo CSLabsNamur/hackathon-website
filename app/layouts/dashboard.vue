@@ -25,6 +25,13 @@ const links: NavigationMenuItem[][] = [[{
     open.value = false;
   },
 }, {
+  label: "Équipes",
+  icon: "i-lucide-users",
+  to: "/admin/teams",
+  onSelect: () => {
+    open.value = false;
+  },
+}, {
   label: "Invités",
   icon: "i-lucide-id-card",
   to: "/admin/guests",
@@ -39,9 +46,9 @@ const links: NavigationMenuItem[][] = [[{
     open.value = false;
   },
 }, {
-  label: "Équipes",
-  icon: "i-lucide-users",
-  to: "/admin/teams",
+  label: "Impressions",
+  icon: "i-lucide-printer",
+  to: "/admin/impressions",
   onSelect: () => {
     open.value = false;
   },

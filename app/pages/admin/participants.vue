@@ -59,7 +59,8 @@ const openBadgePreview = () => {
     return;
   }
 
-  window.open(`/api/participants/${previewParticipant.value.id}/badge`, "badge-preview");
+  //window.open(`/api/participants/${previewParticipant.value.id}/badge`, "badge-preview");
+  window.open(`/api/participants/badges`, "badge-preview");
 };
 
 const columns: TableColumn<Participant>[] = [
@@ -291,13 +292,8 @@ async function getAllBadges() {
         </template>
         <template #right>
           <div class="flex items-center gap-2">
-            <UButton
-              :disabled="status !== 'success' || !previewParticipant"
-              icon="i-lucide-eye"
-              color="neutral"
-              variant="soft"
-              @click="openBadgePreview"
-            >
+            <UButton :disabled="status !== 'success' || !previewParticipant" icon="i-lucide-eye" color="neutral"
+                     variant="soft" @click="openBadgePreview">
               Aperçu badge
             </UButton>
             <UButton :disabled="status !== 'success'" icon="i-lucide-download" @click="getAllBadges">Badges</UButton>
