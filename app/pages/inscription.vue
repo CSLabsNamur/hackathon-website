@@ -2,7 +2,6 @@
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 import { type CreateParticipantSchema, default as schema } from "#shared/schemas/participants/create";
-import { acceptedFormatsToHtmlAccept, acceptedFormatsToLabel } from "#shared/utils/fileFormats";
 
 const dayjs = useDayjs();
 const toast = useToast();

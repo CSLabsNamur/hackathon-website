@@ -145,3 +145,32 @@ CREATE POLICY "Admin can delete sponsor images"
     ((bucket_id = 'sponsors'::text) AND (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
     );
 -- endregion
+
+-- region -- guests --
+-- Everyone can list guest images
+CREATE POLICY "Everyone can list guest images"
+    ON "storage"."objects"
+    FOR SELECT
+    TO public
+    USING (
+    ((bucket_id = 'guests'::text))
+    );
+
+-- Admin can upload guest images
+CREATE POLICY "Admin can upload guest images"
+    ON "storage"."objects"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+    ((bucket_id = 'guests'::text) AND (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+    );
+
+-- Admin can delete guest images
+CREATE POLICY "Admin can delete guest images"
+    ON "storage"."objects"
+    FOR DELETE
+    TO authenticated
+    USING (
+    ((bucket_id = 'guests'::text) AND (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+    );
+-- endregion

@@ -146,6 +146,13 @@ export default defineNuxtConfig({
         },
       },
     },
+    "/api/guests/**": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
   },
 
   security: {

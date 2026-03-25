@@ -44,7 +44,7 @@ export const useParticipantsActions = () => {
 
   const removeParticipant = async (id: string) => {
     return $api(`/api/participants/${id}`, {
-      method: "DELETE",
+      method: "DELETE" as never,
     });
   };
 

@@ -14,23 +14,38 @@ export const useGuests = async (params?: UseGuestsParams) => {
 export const useGuestsActions = () => {
   const {$api} = useNuxtApp();
 
+  const toGuestFormData = (data: CreateGuestSchema | EditGuestSchema) => {
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("type", data.type);
+    formData.append("quantity", String(data.quantity ?? ""));
+    formData.append("company", data.company ?? "");
+
+    if (data.imageFile) {
+      formData.append("imageFile", data.imageFile);
+    }
+
+    return formData;
+  };
+
   const createGuest = async (data: CreateGuestSchema) => {
     return $api("/api/guests", {
       method: "POST",
-      body: data,
+      body: toGuestFormData(data),
     });
   };
 
   const updateGuest = async (id: string, data: EditGuestSchema) => {
     return $api(`/api/guests/${id}`, {
       method: "PUT",
-      body: data,
+      body: toGuestFormData(data),
     });
   };
 
   const removeGuest = async (id: string) => {
     return $api(`/api/guests/${id}`, {
-      method: "DELETE",
+      method: "DELETE" as never,
     });
   };
 

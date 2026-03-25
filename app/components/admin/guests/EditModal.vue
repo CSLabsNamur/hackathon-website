@@ -2,9 +2,7 @@
 import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
-import type { Guest } from "#shared/utils/types";
 import schema from "#shared/schemas/guests/edit";
-import { guestTypeItems } from "./constants";
 
 const props = defineProps<{ guest: Guest }>();
 const emit = defineEmits<{ close: [boolean] }>();
@@ -14,24 +12,32 @@ const {updateGuest} = useGuestsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
+const guestImageAccept = acceptedFormatsToHtmlAccept(ACCEPTED_GUEST_IMAGE_EXTS);
+const guestImageFormatsLabel = acceptedFormatsToLabel(ACCEPTED_GUEST_IMAGE_EXTS)!.toUpperCase();
+const guestImageDescription = `${guestImageFormatsLabel}, max 5MB`;
+
 const state: Reactive<Schema> = reactive({
-  name: props.guest.name,
+  name: props.guest.quantity > 1 ? "" : props.guest.name,
   type: props.guest.type,
+  quantity: props.guest.quantity > 1 ? props.guest.quantity : undefined,
   company: props.guest.company || undefined,
-  imageUrl: props.guest.imageUrl || undefined,
+  imageFile: undefined,
 });
 
+const hasExplicitName = computed(() => !!state.name.trim());
 const isSubmitting = ref(false);
+
+watch(toRef(state.name), (name) => {
+  if (name.trim()) {
+    state.quantity = undefined;
+  }
+});
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await updateGuest(props.guest.id, {
-      ...event.data,
-      company: event.data.company,
-      imageUrl: event.data.imageUrl,
-    });
+    await updateGuest(props.guest.id, event.data);
 
     toast.add({
       title: "Invité modifié",
@@ -64,11 +70,16 @@ async function onError(event: FormErrorEvent) {
         <UForm id="guest-edit-form" :schema :state :disabled="isSubmitting"
                class="grid grid-cols-1 md:grid-cols-2 gap-6"
                @submit="onSubmit" @error="onError">
-          <UFormField label="Nom" name="name" required>
+          <UFormField label="Nom" name="name" description="Laissez vide pour utiliser le type d'invité.">
             <UInput v-model="state.name" icon="i-lucide-user" class="w-full"/>
           </UFormField>
 
-          <UFormField label="Structure" name="company">
+          <UFormField v-if="!hasExplicitName" label="Nombre de badges" name="quantity"
+                      description="Pour créer plusieurs badges anonymes du même type">
+            <UInputNumber v-model="state.quantity" :min="1" variant="soft" class="w-full"/>
+          </UFormField>
+
+          <UFormField label="Entreprise" name="company">
             <UInput v-model="state.company" icon="i-lucide-building-2" class="w-full"
                     placeholder="Entreprise / Organisation"/>
           </UFormField>
@@ -84,10 +95,19 @@ async function onError(event: FormErrorEvent) {
             </URadioGroup>
           </UFormField>
 
-          <UFormField label="Image / Logo" name="imageUrl" class="md:col-span-2"
-                      description="URL facultative de la photo ou du logo utilisé pour l'identification.">
-            <UInput v-model="state.imageUrl" type="url" icon="i-lucide-image" class="w-full"
-                    placeholder="https://..."/>
+          <UFormField label="Image / Logo" name="imageFile" class="md:col-span-2"
+                      description="Laissez vide pour conserver l'image actuelle.">
+            <UFileUpload v-model="state.imageFile" :accept="guestImageAccept" hint="Déposez une nouvelle image ici"
+                         label="Déposez une nouvelle image ici" :description="guestImageDescription"
+                         icon="i-lucide-image-up" size="sm" position="inside" layout="list"/>
+
+            <div v-if="guest.imageUrl" class="mt-4 flex items-center gap-4">
+              <img :src="guest.imageUrl" :alt="`Image de ${guest.name}`"
+                   class="max-h-20 max-w-32 rounded object-contain bg-default p-2">
+              <UButton :to="guest.imageUrl" target="_blank" external variant="link" icon="i-lucide-image">
+                Voir l'image actuelle
+              </UButton>
+            </div>
           </UFormField>
         </UForm>
       </UContainer>
