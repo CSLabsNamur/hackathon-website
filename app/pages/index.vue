@@ -2,6 +2,12 @@
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
 import { formatDateRange } from "~/utils/datetime";
 
+interface Organizer {
+  name: string;
+  logo: string;
+  url?: string;
+}
+
 const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = useRuntimeConfig().public;
 const siteConfig = useSiteConfig();
 
@@ -17,7 +23,7 @@ useSeoMeta({
   description,
 });
 
-const organizers: Partner[] = [
+const organizers: Organizer[] = [
   {
     name: "CSLabs",
     logo: "/images/logo-cslabs.png",

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { FormErrorEvent } from "#ui/types";
 import { createUploadSchema, type UploadSchema } from "#shared/schemas/submissions/upload";
-import { acceptedFormatsToHtmlAccept, acceptedFormatsToLabel } from "#shared/utils/fileFormats";
 
 const props = defineProps<{
   // TODO: Use Submission instead of Participant

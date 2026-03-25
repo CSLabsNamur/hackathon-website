@@ -3,7 +3,6 @@ import type * as v from "valibot";
 import type { Reactive } from "vue";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import { createSubmissionRequestSchema } from "#shared/schemas/submissions/requests/create";
-import { DEFAULT_ACCEPTED_FORMATS_EXTS, normalizeAcceptedFormats } from "#shared/utils/fileFormats";
 
 const emit = defineEmits<{ close: [boolean] }>();
 

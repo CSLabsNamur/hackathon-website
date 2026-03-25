@@ -25,6 +25,9 @@ const state: Reactive<CreateParticipantSchema> = reactive({
   turnstileToken: "",
 });
 
+const curriculumVitaeAccept = acceptedFormatsToHtmlAccept(["pdf"]);
+const curriculumVitaeDescription = `${acceptedFormatsToLabel(["pdf"])?.toUpperCase() ?? "PDF"}, max 5MB`;
+
 const isSubmitting = ref(false);
 
 async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
@@ -137,9 +140,9 @@ useSeoMeta({
         <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae"
                     hint="Pourrait être rendu disponible aux partenaires de l'événement">
           <UFileUpload v-model="state.curriculumVitae"
-                       accept="application/pdf,application/acrobat,application/nappdf,application/x-pdf,image/pdf"
+                       :accept="curriculumVitaeAccept"
                        hint="Déposez votre CV ici"
-                       label="Déposez votre CV ici" description="PDF, max 5MB"
+                       label="Déposez votre CV ici" :description="curriculumVitaeDescription"
                        icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
         </UFormField>
 
