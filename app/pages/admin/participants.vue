@@ -13,7 +13,7 @@ definePageMeta({
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
-const {renderParticipantBadge, renderParticipantsBadges} = useParticipantsActions();
+const {renderParticipantBadge} = useParticipantsActions();
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -28,7 +28,6 @@ const overlay = useOverlay();
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
-const previewParticipant = computed(() => participants.value?.[0] ?? null);
 
 const downloadCV = async (participant: Participant) => {
   if (!participant.curriculumVitae) {
@@ -52,15 +51,6 @@ const downloadCV = async (participant: Participant) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-};
-
-const openBadgePreview = () => {
-  if (!previewParticipant.value) {
-    return;
-  }
-
-  //window.open(`/api/participants/${previewParticipant.value.id}/badge`, "badge-preview");
-  window.open(`/api/participants/badges`, "badge-preview");
 };
 
 const columns: TableColumn<Participant>[] = [
@@ -267,20 +257,6 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     },
   ];
 }
-
-async function getAllBadges() {
-  if (!participants.value) return;
-  try {
-    const badges = await renderParticipantsBadges();
-    downloadBlob(badges, `badges.pdf`);
-  } catch {
-    toast.add({
-      title: "Erreur",
-      description: "Impossible de générer les badges.",
-      color: "error",
-    });
-  }
-}
 </script>
 
 <template>
@@ -289,15 +265,6 @@ async function getAllBadges() {
       <UDashboardNavbar title="Utilisateurs">
         <template #leading>
           <UDashboardSidebarCollapse/>
-        </template>
-        <template #right>
-          <div class="flex items-center gap-2">
-            <UButton :disabled="status !== 'success' || !previewParticipant" icon="i-lucide-eye" color="neutral"
-                     variant="soft" @click="openBadgePreview">
-              Aperçu badge
-            </UButton>
-            <UButton :disabled="status !== 'success'" icon="i-lucide-download" @click="getAllBadges">Badges</UButton>
-          </div>
         </template>
       </UDashboardNavbar>
     </template>

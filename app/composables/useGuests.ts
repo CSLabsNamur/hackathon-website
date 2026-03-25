@@ -46,9 +46,19 @@ export const useGuestsActions = () => {
     });
   };
 
+  const renderGuestBadge = async (guest: Guest) => {
+    return $api<Blob>(`/api/guests/${guest.id}/badge`);
+  };
+
+  const renderGuestsBadges = async () => {
+    return $api<Blob>("/api/guests/badges");
+  };
+
   return {
     createGuest,
     updateGuest,
     removeGuest,
+    renderGuestBadge,
+    renderGuestsBadges,
   };
 };

@@ -5,20 +5,19 @@ export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
-  const participant = await prisma.participant.findUnique({
-    where: {id},
-    include: {
-      user: true,
-      team: true,
+  const sponsor = await prisma.sponsor.findUnique({
+    where: {
+      id,
+      hasBadge: true,
     },
   });
-  if (!participant) {
-    throw createError({statusCode: 404, statusMessage: "Participant not found"});
+  if (!sponsor) {
+    throw createError({statusCode: 404, statusMessage: "Sponsor not found"});
   }
 
-  const doc = await renderParticipantBadge(participant);
+  const doc = await renderSponsorBadge(sponsor);
 
-  const filename = sanitizeFilename(`badge_${participant.user.firstName}_${participant.user.lastName}.pdf`);
+  const filename = sanitizeFilename(`sponsor_${sponsor.name}.pdf`);
 
   setHeader(event, "Content-Type", "application/pdf");
   setHeader(event, "Content-Disposition", `inline; filename="${filename}"`);

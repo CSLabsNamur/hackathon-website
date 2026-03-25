@@ -12,6 +12,7 @@ definePageMeta({
 });
 
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
+const {renderSponsorBadge} = useSponsorsActions();
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -19,6 +20,7 @@ const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
+const toast = useToast();
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
@@ -127,6 +129,22 @@ function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
     onSelect: async () => {
       const result = await removeModal.open({sponsor: row.original});
       if (result) await refresh();
+    },
+  }, {
+    label: "Générer le badge",
+    icon: "i-lucide-id-card",
+    disabled: !row.original.hasBadge,
+    onSelect: async () => {
+      try {
+        const badge = await renderSponsorBadge(row.original);
+        downloadBlob(badge, `badge-${row.original.name}.pdf`);
+      } catch {
+        toast.add({
+          title: "Erreur",
+          description: "Impossible de générer le badge.",
+          color: "error",
+        });
+      }
     },
   }];
 }

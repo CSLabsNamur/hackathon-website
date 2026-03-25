@@ -49,9 +49,19 @@ export const useSponsorsActions = () => {
     });
   };
 
+  const renderSponsorBadge = async (sponsor: Sponsor) => {
+    return $api<Blob>(`/api/sponsors/${sponsor.id}/badge`);
+  };
+
+  const renderSponsorsBadges = async () => {
+    return $api<Blob>("/api/sponsors/badges");
+  };
+
   return {
     createSponsor,
     updateSponsor,
     removeSponsor,
+    renderSponsorBadge,
+    renderSponsorsBadges,
   };
 };

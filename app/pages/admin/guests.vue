@@ -12,6 +12,7 @@ definePageMeta({
 });
 
 const {status, data: guests, refresh} = await useGuests({lazy: true});
+const {renderGuestBadge} = useGuestsActions();
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -19,6 +20,7 @@ const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
+const toast = useToast();
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
@@ -126,6 +128,22 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
       onSelect: async () => {
         const result = await removeModal.open({guest: row.original});
         if (result) await refresh();
+      },
+    },
+    {
+      label: "Générer le badge",
+      icon: "i-lucide-id-card",
+      onSelect: async () => {
+        try {
+          const badge = await renderGuestBadge(row.original);
+          downloadBlob(badge, `badge-${row.original.name}.pdf`);
+        } catch {
+          toast.add({
+            title: "Erreur",
+            description: "Impossible de générer le badge.",
+            color: "error",
+          });
+        }
       },
     }];
 }
