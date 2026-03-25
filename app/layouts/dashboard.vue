@@ -10,77 +10,88 @@ provide(THEME_KEY, theme);
 
 const open = ref(false);
 
-const links: NavigationMenuItem[][] = [[{
-  label: "Accueil",
-  icon: "i-lucide-house",
-  to: "/admin",
-  onSelect: () => {
-    open.value = false;
+const topLinks: NavigationMenuItem[][] = [
+  [{
+    label: "Accueil",
+    icon: "i-lucide-house",
+    to: "/admin",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Participants",
+    icon: "i-lucide-user-check",
+    to: "/admin/participants",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Équipes",
+    icon: "i-lucide-users",
+    to: "/admin/teams",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Invités",
+    icon: "i-lucide-id-card",
+    to: "/admin/guests",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Sponsors",
+    icon: "i-lucide-handshake",
+    to: "/admin/sponsors",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Diffusions",
+    icon: "i-lucide-send",
+    to: "/admin/broadcast",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Soumissions",
+    icon: "i-lucide-file-text",
+    to: "/admin/submissions-requests",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Salles",
+    icon: "i-lucide-door-open",
+    to: "/admin/rooms",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Impressions",
+    icon: "i-lucide-printer",
+    to: "/admin/prints",
+    onSelect: () => {
+      open.value = false;
+    },
+  }, {
+    label: "Administrateurs",
+    icon: "i-lucide-shield-plus",
+    to: "/admin/admins",
+    onSelect: () => {
+      open.value = false;
+    },
+  }],
+];
+const bottomLinks: NavigationMenuItem[] = [
+  {
+    label: "Retour au site",
+    icon: "i-lucide-arrow-left-circle",
+    to: "/",
+    onSelect: () => {
+      open.value = false;
+    },
   },
-}, {
-  label: "Participants",
-  icon: "i-lucide-user-check",
-  to: "/admin/participants",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Invités",
-  icon: "i-lucide-id-card",
-  to: "/admin/guests",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Sponsors",
-  icon: "i-lucide-handshake",
-  to: "/admin/sponsors",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Équipes",
-  icon: "i-lucide-users",
-  to: "/admin/teams",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Diffusions",
-  icon: "i-lucide-send",
-  to: "/admin/broadcast",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Soumissions",
-  icon: "i-lucide-file-text",
-  to: "/admin/submissions-requests",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Salles",
-  icon: "i-lucide-door-open",
-  to: "/admin/rooms",
-  onSelect: () => {
-    open.value = false;
-  },
-}, {
-  label: "Administrateurs",
-  icon: "i-lucide-shield-plus",
-  to: "/admin/admins",
-  onSelect: () => {
-    open.value = false;
-  },
-}], [{
-  label: "Retour au site",
-  icon: "i-lucide-arrow-left-circle",
-  to: "/",
-  onSelect: () => {
-    open.value = false;
-  },
-},
 //{
 //  label: "Aide & Support",
 //  icon: "i-lucide-life-buoy",
@@ -89,12 +100,12 @@ const links: NavigationMenuItem[][] = [[{
 //    open.value = false;
 //  },
 //}
-]];
+];
 
 const groups = [{
   id: "links",
   label: "Aller vers",
-  items: links.flat(),
+  items: topLinks.flat(),
 }];
 </script>
 
@@ -112,8 +123,8 @@ const groups = [{
       <template #default="{collapsed}">
         <UDashboardSearchButton :collapsed class="bg-transparent ring-default"/>
 
-        <UNavigationMenu :collapsed :items="links[0]" orientation="vertical" tooltip popover/>
-        <UNavigationMenu :collapsed :items="links[1]" orientation="vertical" tooltip class="mt-auto"/>
+        <UNavigationMenu :collapsed :items="topLinks" orientation="vertical" tooltip popover/>
+        <UNavigationMenu :collapsed :items="bottomLinks" orientation="vertical" tooltip class="mt-auto"/>
       </template>
 
       <template #footer="{collapsed}">

@@ -13,6 +13,7 @@ definePageMeta({
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
+const {renderParticipantBadge} = useParticipantsActions();
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -236,6 +237,22 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
       onSelect: async () => {
         const result = await removeModal.open({participant: row.original});
         if (result) await refresh();
+      },
+    },
+    {
+      label: "Générer le badge",
+      icon: "i-lucide-id-card",
+      onSelect: async () => {
+        try {
+          const badge = await renderParticipantBadge(row.original);
+          downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);
+        } catch {
+          toast.add({
+            title: "Erreur",
+            description: "Impossible de générer le badge.",
+            color: "error",
+          });
+        }
       },
     },
   ];
