@@ -7,6 +7,7 @@ import { fileTypeFromFile } from "file-type";
 import fs from "node:fs";
 import { randomUUID } from "node:crypto";
 import { serverSupabaseServiceRole } from "#supabase/server";
+import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
@@ -21,32 +22,32 @@ export default defineEventHandler(async (event) => {
     multiples: false,
   }).parse(event.node.req);
 
-  const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
-    if (Array.isArray(value)) return [key, value[0]];
-    return [key, value];
-  }));
-
-  const data = v.parse(guestBodySchema, bodyFlat);
-  const guest = await prisma.guest.findUnique({where: {id}});
-
-  if (!guest) {
-    throw createError({statusCode: 404, statusMessage: "Invité introuvable."});
-  }
-
   const imageFile = files.imageFile?.[0];
-  const supabase = serverSupabaseServiceRole(event);
-
-  const payload: GuestUpdateInput = {
-    name: resolveGuestName(data.name, data.type),
-    type: data.type,
-    quantity: data.quantity,
-    company: data.company || null,
-    imageUrl: guest.imageUrl,
-  };
-
-  let uploadedPath: string | undefined;
 
   try {
+    const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
+      if (Array.isArray(value)) return [key, value[0]];
+      return [key, value];
+    }));
+
+    const data = v.parse(guestBodySchema, bodyFlat);
+    const guest = await prisma.guest.findUnique({where: {id}});
+
+    if (!guest) {
+      throw createError({statusCode: 404, statusMessage: "Invité introuvable."});
+    }
+
+    const supabase = serverSupabaseServiceRole(event);
+    let uploadedPath: string | undefined;
+
+    const payload: GuestUpdateInput = {
+      name: resolveGuestName(data.name, data.type),
+      type: data.type,
+      quantity: resolveGuestQuantity(data.name, data.quantity),
+      company: data.company || null,
+      imageUrl: guest.imageUrl,
+    };
+
     if (imageFile) {
       const detected = await fileTypeFromFile(imageFile.filepath);
       if (!detected || !ACCEPTED_GUEST_IMAGE_EXTS.includes(detected.ext as typeof ACCEPTED_GUEST_IMAGE_EXTS[number])) {
@@ -80,21 +81,23 @@ export default defineEventHandler(async (event) => {
       payload.imageUrl = uploadData.path;
     }
 
-    const updatedGuest = await prisma.guest.update({where: {id}, data: payload});
+    try {
+      const updatedGuest = await prisma.guest.update({where: {id}, data: payload});
 
-    if (uploadedPath && guest.imageUrl) {
-      const {error} = await supabase.storage.from(GUESTS_BUCKET).remove([guest.imageUrl]);
-      if (error) {
-        console.error("Erreur lors de la suppression de l'ancienne image invité :", error);
+      if (uploadedPath && guest.imageUrl) {
+        const {error} = await supabase.storage.from(GUESTS_BUCKET).remove([guest.imageUrl]);
+        if (error) {
+          console.error("Erreur lors de la suppression de l'ancienne image invité :", error);
+        }
       }
-    }
 
-    return updatedGuest;
-  } catch (error) {
-    if (uploadedPath) {
-      await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+      return updatedGuest;
+    } catch (error) {
+      if (uploadedPath) {
+        await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+      }
+      throw error;
     }
-    throw error;
   } finally {
     if (imageFile) {
       try {

@@ -6,6 +6,7 @@ import { fileTypeFromFile } from "file-type";
 import fs from "node:fs";
 import { randomUUID } from "node:crypto";
 import { serverSupabaseServiceRole } from "#supabase/server";
+import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
@@ -18,26 +19,26 @@ export default defineEventHandler(async (event) => {
     multiples: false,
   }).parse(event.node.req);
 
-  const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
-    if (Array.isArray(value)) return [key, value[0]];
-    return [key, value];
-  }));
-
-  const data = v.parse(guestBodySchema, bodyFlat);
   const imageFile = files.imageFile?.[0];
-  const supabase = serverSupabaseServiceRole(event);
-
-  let uploadedPath: string | undefined;
-
-  const payload: GuestCreateInput = {
-    name: resolveGuestName(data.name, data.type),
-    type: data.type,
-    quantity: data.quantity,
-    company: data.company || undefined,
-    imageUrl: undefined,
-  };
 
   try {
+    const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
+      if (Array.isArray(value)) return [key, value[0]];
+      return [key, value];
+    }));
+
+    const data = v.parse(guestBodySchema, bodyFlat);
+    const supabase = serverSupabaseServiceRole(event);
+    let uploadedPath: string | undefined;
+
+    const payload: GuestCreateInput = {
+      name: resolveGuestName(data.name, data.type),
+      type: data.type,
+      quantity: resolveGuestQuantity(data.name, data.quantity),
+      company: data.company || undefined,
+      imageUrl: undefined,
+    };
+
     if (imageFile) {
       const detected = await fileTypeFromFile(imageFile.filepath);
       if (!detected || !ACCEPTED_GUEST_IMAGE_EXTS.includes(detected.ext as typeof ACCEPTED_GUEST_IMAGE_EXTS[number])) {
@@ -71,12 +72,14 @@ export default defineEventHandler(async (event) => {
       payload.imageUrl = uploadData.path;
     }
 
-    return prisma.guest.create({data: payload});
-  } catch (error) {
-    if (uploadedPath) {
-      await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+    try {
+      return prisma.guest.create({data: payload});
+    } catch (error) {
+      if (uploadedPath) {
+        await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+      }
+      throw error;
     }
-    throw error;
   } finally {
     if (imageFile) {
       try {

@@ -56,3 +56,19 @@ export const resolveGuestName = (name: string | null | undefined, type: GuestTyp
   const normalizedName = name?.trim();
   return normalizedName || guestInfoByType[type].displayName;
 };
+
+/**
+ * Determines the quantity of badges to assign to a guest based on the provided name and quantity.
+ * Mainly just to ensure validation server-side, so that if a name is provided, it always assigns only 1 badge.
+ *
+ * @param name The guest's name, which may be null or undefined. If it's empty or only whitespace, it will be ignored
+ * @param quantity The quantity of badges specified for the guest, which may be null or undefined. If the name is valid, this will be ignored and 1 will be returned. Otherwise, if this is null or undefined, it will default to 1
+ * @return The quantity of badges to assign to the guest
+ */
+export const resolveGuestQuantity = (name: string | null | undefined, quantity: number | null | undefined) => {
+  if (name?.trim()) {
+    return 1;
+  }
+
+  return quantity ?? 1;
+};

@@ -28,7 +28,7 @@ const isSubmitting = ref(false);
 
 watch(toRef(state.name), (name) => {
   if (name.trim()) {
-    state.quantity = undefined;
+    state.quantity = 1;
   }
 });
 

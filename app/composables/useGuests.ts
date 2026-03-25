@@ -19,12 +19,9 @@ export const useGuestsActions = () => {
 
     formData.append("name", data.name);
     formData.append("type", data.type);
-    formData.append("quantity", String(data.quantity ?? ""));
-    formData.append("company", data.company ?? "");
-
-    if (data.imageFile) {
-      formData.append("imageFile", data.imageFile);
-    }
+    if (data.quantity) formData.append("quantity", String(data.quantity));
+    if (data.company) formData.append("company", data.company);
+    if (data.imageFile) formData.append("imageFile", data.imageFile);
 
     return formData;
   };

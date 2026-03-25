@@ -21,32 +21,32 @@ export default defineEventHandler(async (event) => {
     multiples: false,
   }).parse(event.node.req);
 
-  const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
-    if (Array.isArray(value)) return [key, value[0]];
-    return [key, value];
-  }));
-
-  const data = v.parse(sponsorBodySchema, bodyFlat);
-  const sponsor = await prisma.sponsor.findUnique({where: {id}});
-
-  if (!sponsor) {
-    throw createError({statusCode: 404, statusMessage: "Sponsor introuvable."});
-  }
-
   const logoFile = files.logoFile?.[0];
 
-  const payload: SponsorUpdateInput = {
-    name: data.name,
-    description: data.description as SponsorUpdateInput["description"],
-    logo: sponsor.logo,
-    url: data.url,
-    hasBadge: data.hasBadge,
-  };
-
-  const supabase = serverSupabaseServiceRole(event);
-  let uploadedPath: string | undefined;
-
   try {
+    const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
+      if (Array.isArray(value)) return [key, value[0]];
+      return [key, value];
+    }));
+
+    const data = v.parse(sponsorBodySchema, bodyFlat);
+    const sponsor = await prisma.sponsor.findUnique({where: {id}});
+
+    if (!sponsor) {
+      throw createError({statusCode: 404, statusMessage: "Sponsor introuvable."});
+    }
+
+    const payload: SponsorUpdateInput = {
+      name: data.name,
+      description: data.description as SponsorUpdateInput["description"],
+      logo: sponsor.logo,
+      url: data.url,
+      hasBadge: data.hasBadge,
+    };
+
+    const supabase = serverSupabaseServiceRole(event);
+    let uploadedPath: string | undefined;
+
     if (logoFile) {
       const detected = await fileTypeFromFile(logoFile.filepath);
       if (!detected || !ACCEPTED_SPONSOR_LOGO_EXTS.includes(detected.ext as typeof ACCEPTED_SPONSOR_LOGO_EXTS[number])) {
@@ -80,21 +80,23 @@ export default defineEventHandler(async (event) => {
       payload.logo = uploadData.path;
     }
 
-    const updatedSponsor = await prisma.sponsor.update({where: {id}, data: payload});
+    try {
+      const updatedSponsor = await prisma.sponsor.update({where: {id}, data: payload});
 
-    if (uploadedPath) {
-      const {error} = await supabase.storage.from(SPONSORS_BUCKET).remove([sponsor.logo]);
-      if (error) {
-        console.error("Erreur lors de la suppression de l'ancien logo sponsor :", error);
+      if (uploadedPath) {
+        const {error} = await supabase.storage.from(SPONSORS_BUCKET).remove([sponsor.logo]);
+        if (error) {
+          console.error("Erreur lors de la suppression de l'ancien logo sponsor :", error);
+        }
       }
-    }
 
-    return updatedSponsor;
-  } catch (error) {
-    if (uploadedPath) {
-      await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+      return updatedSponsor;
+    } catch (error) {
+      if (uploadedPath) {
+        await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+      }
+      throw error;
     }
-    throw error;
   } finally {
     if (logoFile) {
       try {
