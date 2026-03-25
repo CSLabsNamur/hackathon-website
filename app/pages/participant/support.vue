@@ -54,8 +54,7 @@ async function onError(event: FormErrorEvent) {
     </template>
     <template #body>
       <UContainer class="pb-6 md:pb-8">
-        <UCard :ui="{body: 'p-6 md:p-8'}"
-               class="mx-auto max-w-4xl rounded-xl bg-white/70 dark:bg-gray-900/30 shadow-xl">
+        <ContentCard>
           <UForm id="support-form" :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit"
                  @error="onError">
             <UFormField label="Description du problème" name="description" required>
@@ -75,7 +74,7 @@ async function onError(event: FormErrorEvent) {
               </UButton>
             </div>
           </template>
-        </UCard>
+        </ContentCard>
       </UContainer>
     </template>
   </UDashboardPanel>

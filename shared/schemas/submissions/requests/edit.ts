@@ -1,6 +1,5 @@
 import * as v from "valibot";
 import dayjs from "~~/server/utils/dayjs";
-import { normalizeAcceptedFormats } from "#shared/utils/fileFormats";
 
 // We cannot call Nuxt composables (useDayjs, useRuntimeConfig) at module top level here
 // because this file is used in both client and server contexts and is not a Nuxt setup/plugin.

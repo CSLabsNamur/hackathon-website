@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { partners } from "~/utils/partners";
+const {data: sponsors} = await useSponsors();
+
+const heroSponsors = computed(() => {
+  return sponsors.value?.filter((partner) => partner.logo).map(({name, logo, url}) => ({name, logo, url}));
+});
+
 
 useSeoMeta({
   title: "Partenaires",
@@ -9,7 +14,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Nos partenaires" subtitle="Sans eux, rien ne serait possible !" :images="partners"/>
+    <PageHero title="Nos partenaires" subtitle="Sans eux, rien ne serait possible !" :images="heroSponsors"/>
   </UPageHero>
 
   <UContainer class="max-w-[80vw]">
@@ -20,19 +25,20 @@ useSeoMeta({
     </div>
 
     <div class="gap-2 lg:columns-2 px-8">
-      <UPageCard v-for="(partner, index) in partners" :key="`partner-${index}`"
-                 class="break-inside-avoid mb-2 inline-block w-full p-2" :title="partner.name" draggable="false"
-                 orientation="horizontal" :to="partner.url" target="_blank" variant="outline"
-                 :reverse="partners.indexOf(partner) % 2 === 1" :ui="{title: 'text-xl'}">
+      <UPageCard v-for="(sponsor, index) in sponsors" :key="sponsor.name"
+                 class="break-inside-avoid mb-2 inline-block w-full p-2" :title="sponsor.name" draggable="false"
+                 orientation="horizontal" :to="sponsor.url || undefined" :target="sponsor.url ? '_blank' : undefined"
+                 variant="outline" :reverse="index % 2 === 1" :ui="{title: 'text-xl'}">
         <div class="flex justify-center">
-          <Suspense>
-            <NuxtImg :src="partner.logo" :alt="`Logo de ${partner.name}`" sizes="240px" fit="contain" :placeholder="30"
-                     quality="80" class="max-h-48"/>
-          </Suspense>
+          <img v-if="sponsor.logo" :src="sponsor.logo" :alt="`Logo de ${sponsor.name}`"
+               class="max-h-48 object-contain" loading="lazy">
+          <div v-else class="flex size-32 items-center justify-center rounded-2xl bg-muted">
+            <Icon name="i-lucide-image-off" class="size-8 text-muted"/>
+          </div>
         </div>
 
-        <template v-if="partner.description" #description>
-          <MDC :value="partner.description"/>
+        <template v-if="sponsorHasDescription(sponsor)" #description>
+          <article class="max-w-none" v-html="getSponsorHTMLDescription(sponsor)"/>
         </template>
       </UPageCard>
     </div>

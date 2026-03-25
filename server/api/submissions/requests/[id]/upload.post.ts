@@ -5,13 +5,6 @@ import formidable from "formidable";
 import { fileTypeFromFile } from "file-type";
 import fs from "node:fs";
 import { serverSupabaseServiceRole } from "#supabase/server";
-import {
-  isAllowedExt,
-  MAX_SUBMISSION_FILE_SIZE,
-  sanitizeFilename,
-  sha256File,
-  SUBMISSIONS_BUCKET,
-} from "~~/server/utils/submissionsFiles";
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event, UserRole.USER);

@@ -3,8 +3,17 @@ import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 import { type CreateParticipantSchema, default as schema } from "#shared/schemas/participants/create";
 
+const dayjs = useDayjs();
 const toast = useToast();
 const actions = useParticipantsActions();
+const {registrationsDateOpen, registrationsDateClose} = useRuntimeConfig().public;
+
+const now = dayjs();
+const isBeforeRegistrations = computed(() => now.isBefore(dayjs(registrationsDateOpen)));
+const registrationsOpen = computed(() => {
+  return now.isAfter(dayjs(registrationsDateOpen)) && now.isBefore(dayjs(registrationsDateClose));
+});
+const isAfterRegistrations = computed(() => now.isAfter(dayjs(registrationsDateClose)));
 
 const state: Reactive<CreateParticipantSchema> = reactive({
   firstName: "",
@@ -15,6 +24,9 @@ const state: Reactive<CreateParticipantSchema> = reactive({
   imageAgreement: false,
   turnstileToken: "",
 });
+
+const curriculumVitaeAccept = acceptedFormatsToHtmlAccept(["pdf"]);
+const curriculumVitaeDescription = `${acceptedFormatsToLabel(["pdf"])?.toUpperCase() ?? "PDF"}, max 5MB`;
 
 const isSubmitting = ref(false);
 
@@ -56,8 +68,19 @@ useSeoMeta({
   </UPageHero>
 
   <UContainer class="pb-6 md:pb-8">
-    <UCard :ui="{body: 'p-6 md:p-8'}"
-           class="mx-auto max-w-4xl rounded-xl bg-white/70 dark:bg-gray-900/30 shadow-xl">
+    <ContentCard v-if="isBeforeRegistrations">
+      <template #header>
+        <h2 class="text-xl md:text-2xl font-semibold">Inscriptions bientôt ouvertes</h2>
+      </template>
+
+      <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
+        Les inscriptions pour le hackathon ouvriront le
+        <NuxtTime :datetime="registrationsDateOpen" format="long" locale="fr-FR"/>
+        .
+        Revenez à ce moment‑là pour vous inscrire et rejoindre l'aventure !
+      </p>
+    </ContentCard>
+    <ContentCard v-else-if="registrationsOpen">
       <template #header>
         <h2 class="text-xl md:text-2xl font-semibold">Vos informations</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -117,9 +140,9 @@ useSeoMeta({
         <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae"
                     hint="Pourrait être rendu disponible aux partenaires de l'événement">
           <UFileUpload v-model="state.curriculumVitae"
-                       accept="application/pdf,application/acrobat,application/nappdf,application/x-pdf,image/pdf"
+                       :accept="curriculumVitaeAccept"
                        hint="Déposez votre CV ici"
-                       label="Déposez votre CV ici" description="PDF, max 5MB"
+                       label="Déposez votre CV ici" :description="curriculumVitaeDescription"
                        icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
         </UFormField>
 
@@ -166,6 +189,16 @@ useSeoMeta({
           </UButton>
         </div>
       </template>
-    </UCard>
+    </ContentCard>
+    <ContentCard v-else-if="isAfterRegistrations">
+      <template #header>
+        <h2 class="text-xl md:text-2xl font-semibold">Inscriptions fermées</h2>
+      </template>
+
+      <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
+        Les inscriptions pour le hackathon sont désormais fermées. Restez à l'affût de nos annonces pour les
+        prochains événements !
+      </p>
+    </ContentCard>
   </UContainer>
 </template>
