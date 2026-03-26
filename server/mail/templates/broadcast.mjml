@@ -12,12 +12,15 @@
                 <mj-image width="100px" src="https://cslabs.be/wp-content/uploads/2024/01/logo-CSLabs.png"/>
 
                 <mj-text>
-                    <h1 align="center" style="font-size: 24px">
+                    <h1 align="center" style="font-size: 24px; margin: 0">
                         {{title}}
                     </h1>
-                    <p>
+                </mj-text>
+
+                <mj-text>
+                    <div style="line-height: 1.6;">
                         {{body}}
-                    </p>
+                    </div>
                 </mj-text>
 
                 <mj-divider border-width="1px" border-color="lightgray"/>

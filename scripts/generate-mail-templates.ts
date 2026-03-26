@@ -1,3 +1,4 @@
+/* This file is 80% AI generated */
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import * as path from "node:path";
