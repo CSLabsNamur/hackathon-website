@@ -4,6 +4,15 @@ import renderBroadcast from "~~/server/mail/generated/broadcast";
 import formidable from "formidable";
 import fs from "node:fs";
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 export default defineEventHandler(async (event) => {
   await requireAuth(event, UserRole.ADMIN);
 
@@ -77,7 +86,7 @@ export default defineEventHandler(async (event) => {
         content: fs.readFileSync(f.filepath),
       })),
       html: renderBroadcast({
-        title: data.title,
+        title: escapeHtml(data.title),
         body: data.message,
       }),
       replyTo: "event@cslabs.be",

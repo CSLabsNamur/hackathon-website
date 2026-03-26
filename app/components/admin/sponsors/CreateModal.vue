@@ -88,7 +88,10 @@ async function onError(event: FormErrorEvent) {
                      :placeholder="{ placeholder: 'Description du sponsor...', showOnlyWhenEditable: true }"
                      class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
               <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"
-                              :items="$device.isDesktopOrTablet ? sponsorDescriptionToolbarItems : sponsorDescriptionToolbarItemsMobile"/>
+                              :items="sponsorDescriptionToolbarItems"/>
+              <UEditorToolbar v-else :editor class="sm:px-8 overflow-x-auto"
+                              :items="sponsorDescriptionToolbarItemsMobile"/>
+              <UEditorDragHandle :editor/>
             </UEditor>
           </UFormField>
         </UForm>

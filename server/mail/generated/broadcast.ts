@@ -136,12 +136,23 @@ const templateSource = `<!doctype html>
                   
       <div
          style="font-family:'Helveticaa Neue', 'Arial Nova', 'Nimbus Sans', sans-serif;font-size:14px;line-height:1;text-align:left;color:#000000;"
-      ><h1 align="center" style="font-size: 24px">
+      ><h1 align="center" style="font-size: 24px; margin: 0">
                         {{title}}
-                    </h1>
-                    <p>
+                    </h1></div>
+    
+                </td>
+              </tr>
+            
+              <tr>
+                <td
+                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
+                >
+                  
+      <div
+         style="font-family:'Helveticaa Neue', 'Arial Nova', 'Nimbus Sans', sans-serif;font-size:14px;line-height:1;text-align:left;color:#000000;"
+      ><div style="line-height: 1.6;">
                         {{body}}
-                    </p></div>
+                    </div></div>
     
                 </td>
               </tr>
