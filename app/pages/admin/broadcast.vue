@@ -5,6 +5,7 @@ import type { Reactive } from "vue";
 import schema from "#shared/schemas/broadcasts/create";
 import type { StarterKitOptions } from "@tiptap/starter-kit";
 import { Emoji, gitHubEmojis } from "@tiptap/extension-emoji";
+import { CharacterCount } from "@tiptap/extension-character-count";
 import type { DropdownMenuItem, EditorToolbarItem } from "@nuxt/ui";
 import { upperFirst } from "scule";
 import { mapEditorItems } from "@nuxt/ui/utils/editor";
@@ -39,6 +40,10 @@ const recipientsItems = [{
   value: "Formations",
   icon: "i-lucide-book-open",
 }, {
+  label: "Cautions non payées",
+  value: "Cautions",
+  icon: "i-lucide-alert-triangle",
+}, {
   label: "Tous",
   value: "Tous",
   icon: "i-lucide-globe",
@@ -47,6 +52,8 @@ const recipientsItems = [{
 const isSubmitting = ref(false);
 
 //region Editor
+const editor = useTemplateRef("editor");
+
 const starterKit: Partial<StarterKitOptions> = {
   link: {
     defaultProtocol: "https",
@@ -188,6 +195,8 @@ const toolbarItemsMobile: EditorToolbarItem[][] = [
     tooltip: {text: "Lien"},
   }],
 ];
+
+//const characterCount = computed(() => editor.value.editor.storage.characterCount.characters());
 
 // SSR-safe function to append menus to body (avoids z-index issues in docs)
 const appendToBody = import.meta.client ? () => document.body : undefined;
@@ -357,9 +366,9 @@ async function onError(event: FormErrorEvent) {
             </UFormField>
 
             <UFormField label="Message" name="message" required>
-              <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html"
-                       :editable="!isSubmitting"
-                       :starter-kit="starterKit" :extensions="[Emoji]"
+              <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html" ref="editor"
+                       :editable="!isSubmitting" :starter-kit="starterKit"
+                       :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
                        :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"
                        class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
                 <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"

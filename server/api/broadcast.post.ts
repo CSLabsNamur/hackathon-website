@@ -68,6 +68,14 @@ export default defineEventHandler(async (event) => {
       recipients.push(...formations.map(f => f.user.email));
       break;
     }
+    case "Cautions": {
+      const cautions = await prisma.participant.findMany({
+        where: {caution: "NOT_PAID"},
+        select: {user: {select: {email: true}}},
+      });
+      recipients.push(...cautions.map(c => c.user.email));
+      break;
+    }
     case "Tous": {
       const users = await prisma.user.findMany({select: {email: true}});
       recipients.push(...users.map(u => u.email));
