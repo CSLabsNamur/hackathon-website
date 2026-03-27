@@ -62,6 +62,7 @@ const BADGE_PRIMARY_COLOR = "#227d50";
 const BADGE_BACKGROUND_COLOR = "#ecfff4";
 
 const remoteImageCache = new Map<string, Promise<Buffer | null>>();
+const localImageCache = new Map<string, Promise<Buffer | null>>();
 
 //const rolesColors = {
 //  "Participant": "#227d50",
@@ -171,6 +172,28 @@ async function loadStorageImage(path: string, bucket: string): Promise<Buffer | 
   })();
 
   remoteImageCache.set(publicUrl, request);
+  return request;
+}
+
+// TODO: 100% AI generated, refactor this
+async function loadPublicImage(path: string): Promise<Buffer | null> {
+  const cached = localImageCache.get(path);
+  if (cached) return cached;
+
+  const request = (async () => {
+    try {
+      const image = await useStorage("root:public").getItemRaw(path);
+      if (!image) return null;
+      if (Buffer.isBuffer(image)) return image;
+      if (image instanceof Uint8Array || typeof image === "string") return Buffer.from(image);
+      if (image instanceof ArrayBuffer) return Buffer.from(image);
+      return null;
+    } catch {
+      return null;
+    }
+  })();
+
+  localImageCache.set(path, request);
   return request;
 }
 
@@ -520,8 +543,13 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
   const circleCenter = addCoordinates(origin, circle.pos);
   doc.circle(circleCenter[0], circleCenter[1], circle.radius).fill();
 
+  const logoSource = await loadPublicImage("images/logo.png");
+  if (!logoSource) {
+    return;
+  }
+
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const logo = (doc as any).openImage("./public/images/logo.png");
+  const logo = (doc as any).openImage(logoSource);
   const logoWidth = circle.radius * .9;
   const logoHeight = logoWidth * (logo.height / logo.width);
   const [logoCenterX, logoCenterY] = visibleCircleCentroid(
