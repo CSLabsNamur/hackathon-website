@@ -8,16 +8,17 @@ export default defineEventHandler(async (event) => {
     participants: includeParticipants = true,
     guests: includeGuests = true,
     sponsors: includeSponsors = true,
+    admins: includeAdmins = true,
   } = await getValidatedQuery(event, v.parser(renderBadgesQuerySchema));
 
-  if (!includeParticipants && !includeGuests && !includeSponsors) {
+  if (!includeParticipants && !includeGuests && !includeSponsors && !includeAdmins) {
     throw createError({
       statusCode: 400,
       statusMessage: "Aucun type de badge sélectionné.",
     });
   }
 
-  const [participants, guests, sponsors] = await Promise.all([
+  const [participants, guests, sponsors, admins] = await Promise.all([
     includeParticipants
       ? prisma.participant.findMany({
         include: {
@@ -43,12 +44,20 @@ export default defineEventHandler(async (event) => {
         },
       })
       : [],
+    includeAdmins
+      ? prisma.admin.findMany({
+        include: {
+          user: true,
+        },
+      })
+      : [],
   ]);
 
   const doc = await renderAllBadges(
     includeParticipants ? participants : [],
     includeGuests ? guests : [],
     includeSponsors ? sponsors : [],
+    includeAdmins ? admins : [],
   );
 
   setHeader(event, "Content-Type", "application/pdf");

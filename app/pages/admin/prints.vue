@@ -11,14 +11,16 @@ const [
   {status: participantsStatus, data: participants},
   {status: guestsStatus, data: guests},
   {status: sponsorsStatus, data: sponsors},
+  {status: adminsStatus, data: admins},
 ] = await Promise.all([
   useParticipants({lazy: true}),
   useGuests({lazy: true}),
   useSponsors({lazy: true}),
+  useAdmins({lazy: true}),
 ]);
 
 const isLoading = computed(() => {
-  return [participantsStatus.value, guestsStatus.value, sponsorsStatus.value].some((status) => status === "pending");
+  return [participantsStatus.value, guestsStatus.value, sponsorsStatus.value, adminsStatus.value].some((status) => status === "pending");
 });
 
 const [isGeneratingBadges, toggleGeneratingBadges] = useToggle(false);
@@ -27,6 +29,7 @@ const badgeFilters = reactive({
   participants: true,
   guests: true,
   sponsors: true,
+  admins: true,
 });
 
 const badgeCounts = computed(() => {
@@ -34,13 +37,15 @@ const badgeCounts = computed(() => {
     participants: participants.value?.length ?? 0,
     guests: guests.value?.reduce((total, guest) => total + guest.quantity, 0) ?? 0,
     sponsors: sponsors.value?.reduce((total, sponsor) => total + Number(sponsor.hasBadge), 0) ?? 0,
+    admins: admins.value?.length ?? 0,
   };
 });
 
 const selectedBadgeCount = computed(() => {
   return (badgeFilters.participants ? badgeCounts.value.participants : 0)
       + (badgeFilters.guests ? badgeCounts.value.guests : 0)
-      + (badgeFilters.sponsors ? badgeCounts.value.sponsors : 0);
+      + (badgeFilters.sponsors ? badgeCounts.value.sponsors : 0)
+      + (badgeFilters.admins ? badgeCounts.value.admins : 0);
 });
 
 async function downloadAllBadges() {
@@ -54,6 +59,7 @@ async function downloadAllBadges() {
       participants: badgeFilters.participants,
       guests: badgeFilters.guests,
       sponsors: badgeFilters.sponsors,
+      admins: badgeFilters.admins,
     });
     downloadBlob(pdf, "badges.pdf");
   } catch {
@@ -89,7 +95,7 @@ async function downloadAllBadges() {
                 </h2>
               </div>
 
-              <div class="grid gap-3 sm:grid-cols-3">
+              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-lg border border-default bg-elevated/30 p-4">
                   <UCheckbox v-model="badgeFilters.participants" :label="`Participants (${badgeCounts.participants})`"/>
                 </div>
@@ -98,6 +104,9 @@ async function downloadAllBadges() {
                 </div>
                 <div class="rounded-lg border border-default bg-elevated/30 p-4">
                   <UCheckbox v-model="badgeFilters.sponsors" :label="`Sponsors avec badge (${badgeCounts.sponsors})`"/>
+                </div>
+                <div class="rounded-lg border border-default bg-elevated/30 p-4">
+                  <UCheckbox v-model="badgeFilters.admins" :label="`Staff (${badgeCounts.admins})`"/>
                 </div>
               </div>
             </div>

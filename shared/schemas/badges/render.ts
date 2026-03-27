@@ -13,6 +13,7 @@ const schema = v.strictObject({
   participants: booleanQueryParamSchema,
   guests: booleanQueryParamSchema,
   sponsors: booleanQueryParamSchema,
+  admins: booleanQueryParamSchema,
 });
 
 export default schema;

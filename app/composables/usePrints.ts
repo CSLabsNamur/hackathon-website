@@ -5,6 +5,7 @@ export const usePrintsActions = () => {
     participants?: boolean;
     guests?: boolean;
     sponsors?: boolean;
+    admins?: boolean;
   }) => {
     return $api<Blob>("/api/badges", {
       query: filters,

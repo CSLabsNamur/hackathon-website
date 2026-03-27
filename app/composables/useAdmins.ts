@@ -21,7 +21,12 @@ export const useAdminsActions = () => {
     });
   };
 
+  const renderAdminBadge = async (admin: Admin) => {
+    return $api<Blob>(`/api/admins/${admin.id}/badge`);
+  };
+
   return {
     inviteAdmin,
+    renderAdminBadge,
   };
 };

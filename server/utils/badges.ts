@@ -11,6 +11,11 @@ type Participant = Prisma.ParticipantGetPayload<{
     team: true,
   }
 }>
+type Admin = Prisma.AdminGetPayload<{
+  include: {
+    user: true,
+  }
+}>
 type Guest = Prisma.GuestGetPayload<object>;
 type Sponsor = Prisma.SponsorGetPayload<object>;
 type BadgeGridEntry = (doc: PDFKit.PDFDocument, origin: Coordinates) => Promise<void>;
@@ -581,6 +586,21 @@ async function drawParticipantBadge(doc: PDFKit.PDFDocument, participant: Partic
   }, size, origin, drawCutGuide);
 }
 
+async function drawAdminBadge(doc: PDFKit.PDFDocument, admin: Admin, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0], drawCutGuide = false) {
+  await drawBadgeFrame(doc, async () => {
+    drawBadgeTextBlock(doc, size, [
+      {
+        text: `${admin.user.firstName} ${admin.user.lastName}`.trim(),
+        fontSize: 20,
+        color: BADGE_PRIMARY_COLOR,
+        gapAfter: false,
+      },
+      {text: "Staff", fontSize: 16, color: BADGE_PRIMARY_COLOR},
+    ], {origin});
+    doc.fillColor(BADGE_PRIMARY_COLOR);
+  }, size, origin, drawCutGuide);
+}
+
 async function drawSponsorBadge(doc: PDFKit.PDFDocument, sponsor: Sponsor, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0], drawCutGuide = false) {
   const sponsorLogoCircle = getSponsorLogoCircle(size);
   const sponsorLogo = await loadStorageImage(sponsor.logo, SPONSORS_BUCKET);
@@ -636,6 +656,10 @@ export async function renderParticipantBadge(participant: Participant): Promise<
   return renderSingleBadge(`Badge de ${participant.user.firstName} ${participant.user.lastName}`, async (doc) => drawParticipantBadge(doc, participant, BADGE_SIZE));
 }
 
+export async function renderAdminBadge(admin: Admin): Promise<PDFKit.PDFDocument> {
+  return renderSingleBadge(`Badge de ${admin.user.firstName} ${admin.user.lastName}`, async (doc) => drawAdminBadge(doc, admin, BADGE_SIZE));
+}
+
 /**
  * Renders a PDF document containing participant badges arranged on A4 sheets, with team participants rendered first.
  *
@@ -675,7 +699,7 @@ export async function renderGuestsBadges(guests: Guest[]): Promise<PDFKit.PDFDoc
   );
 }
 
-export async function renderAllBadges(participants: Participant[], guests: Guest[], sponsors: Sponsor[]): Promise<PDFKit.PDFDocument> {
+export async function renderAllBadges(participants: Participant[], guests: Guest[], sponsors: Sponsor[], admins: Admin[]): Promise<PDFKit.PDFDocument> {
   const orderedParticipants = getOrderedParticipants(participants);
   const expandedGuests = getExpandedGuests(guests);
   const sponsorsWithBadge = sponsors.filter((sponsor) => sponsor.hasBadge);
@@ -684,6 +708,7 @@ export async function renderAllBadges(participants: Participant[], guests: Guest
     ...toBadgeGridEntries(orderedParticipants, async (doc, participant, origin) => drawParticipantBadge(doc, participant, BADGE_SIZE, origin, true)),
     ...toBadgeGridEntries(expandedGuests, async (doc, guest, origin) => drawGuestBadge(doc, guest, BADGE_SIZE, origin, true)),
     ...toBadgeGridEntries(sponsorsWithBadge, async (doc, sponsor, origin) => drawSponsorBadge(doc, sponsor, BADGE_SIZE, origin, true)),
+    ...toBadgeGridEntries(admins, async (doc, admin, origin) => drawAdminBadge(doc, admin, BADGE_SIZE, origin, true)),
   ], "Tous les badges");
 }
 

@@ -8,9 +8,12 @@ definePageMeta({
 });
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
+const {renderAdminBadge} = useAdminsActions();
 
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
+const toast = useToast();
+const UButton = resolveComponent("UButton");
 
 const columns: TableColumn<Admin>[] = [
   {
@@ -27,6 +30,28 @@ const columns: TableColumn<Admin>[] = [
     header: "Nom",
     accessorFn: (row: Admin) => row.user.lastName,
     cell: ({row}) => row.original.user.lastName,
+  },
+  {
+    id: "badge",
+    header: "Badge",
+    cell: ({row}) => h(UButton, {
+      icon: "i-lucide-id-card",
+      color: "neutral",
+      variant: "ghost",
+      "aria-label": `Générer le badge pour ${row.original.user.firstName} ${row.original.user.lastName}`,
+      onClick: async () => {
+        try {
+          const badge = await renderAdminBadge(row.original);
+          downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);
+        } catch {
+          toast.add({
+            title: "Erreur",
+            description: "Impossible de générer le badge.",
+            color: "error",
+          });
+        }
+      },
+    }, () => "Générer"),
   },
 ];
 
