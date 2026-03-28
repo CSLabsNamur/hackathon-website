@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
+import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from "@nuxt/ui";
 
 const {data: adminUser} = await useCurrentAdmin();
 
@@ -102,10 +102,10 @@ const bottomLinks: NavigationMenuItem[] = [
 //}
 ];
 
-const groups = [{
+const groups: CommandPaletteGroup<CommandPaletteItem>[] = [{
   id: "links",
   label: "Aller vers",
-  items: topLinks.flat(),
+  items: topLinks.flat() as CommandPaletteItem[],
 }];
 </script>
 
