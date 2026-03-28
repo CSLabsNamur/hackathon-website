@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as v from "valibot";
-import type { AuthFormField, FormSubmitEvent } from "@nuxt/ui";
+import type { AuthFormField, FormError, FormSubmitEvent } from "@nuxt/ui";
 
 const emit = defineEmits<{ close: [boolean] }>();
 
@@ -48,9 +48,23 @@ const providers = [{
 const schema = v.object({
   email: v.pipe(v.string("L'adresse email est obligatoire"), v.email("Adresse email invalide")),
 });
+//eslint-disable-next-line @typescript-eslint/no-unused-vars
 const codeSchema = v.object({
   code: v.pipe(v.array(v.number(undefined)), v.length(6, "Le code doit contenir 6 caractères")),
 });
+
+const validateCode = ({code}: CodeSchema): FormError[] => {
+  console.log("Validating code", code);
+  if ((code.filter(c => c !== undefined)).length !== 6) return [{
+    name: "code",
+    message: "Le code doit contenir 6 caractères",
+  }];
+  if (code.some(c => isNaN(c) && c !== undefined)) return [{
+    name: "code",
+    message: "Le code doit être composé de chiffres uniquement",
+  }];
+  return [];
+};
 
 type Schema = v.InferOutput<typeof schema>
 type CodeSchema = v.InferOutput<typeof codeSchema>
@@ -110,9 +124,9 @@ async function onCodeSubmit(payload: FormSubmitEvent<CodeSchema>) {
           @submit="onSubmit"/>
       <UAuthForm
           v-else
-          :schema="codeSchema"
           title="Vérifiez votre email"
           description="Un lien de connexion a été envoyé à votre adresse email. Cliquez sur le lien pour vous connecter, ou entrez le code ci-dessous."
+          :validate="validateCode"
           icon="i-lucide-mail"
           :fields="codeFields"
           loading-auto
