@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BadgeProps } from "#ui/components/Badge.vue";
-import type { Row, VisibilityState } from "@tanstack/vue-table";
+import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import { UBadge, UButton, UDropdownMenu } from "#components";
 import EditModal from "~/components/admin/teams/EditModal.vue";
@@ -115,7 +115,7 @@ const columns: NamedTableColumn<Team>[] = [
   //}
 ];
 
-const columnVisibility = ref<VisibilityState>({});
+const columnVisibility = usePersistentColumnVisibility("admin-teams-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {

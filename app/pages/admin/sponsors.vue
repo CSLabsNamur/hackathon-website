@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Row, VisibilityState } from "@tanstack/vue-table";
+import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import { UBadge, UButton, UDropdownMenu } from "#components";
 import CreateModal from "~/components/admin/sponsors/CreateModal.vue";
@@ -164,7 +164,7 @@ async function openCreateModal() {
 }
 
 const expanded = ref({});
-const columnVisibility = ref<VisibilityState>({});
+const columnVisibility = usePersistentColumnVisibility("admin-sponsors-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 </script>
 

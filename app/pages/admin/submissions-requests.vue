@@ -4,7 +4,7 @@ import EditSubmissionRequestModal from "~/components/admin/submission-request/Ed
 import RemoveSubmissionRequestModal from "~/components/admin/submission-request/RemoveModal.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import type { Row, VisibilityState } from "@tanstack/vue-table";
+import type { Row } from "@tanstack/vue-table";
 import { UBadge, UButton, UDropdownMenu } from "#components";
 import { submissionTypeTranslateMap } from "#shared/utils/types";
 
@@ -122,7 +122,7 @@ const columns: NamedTableColumn<SubmissionRequest>[] = [
   },
 ];
 
-const columnVisibility = ref<VisibilityState>({});
+const columnVisibility = usePersistentColumnVisibility("admin-submission-requests-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 const openCreateModal = async () => {

@@ -126,6 +126,12 @@ export function getRowExpandButton<T>(row: Row<T>, expandedAriaLabel: string, co
   });
 }
 
+export function usePersistentColumnVisibility(storageKey: string, defaults: VisibilityState = {}) {
+  return useLocalStorage<VisibilityState>(storageKey, defaults, {
+    mergeDefaults: true,
+  });
+}
+
 export function useColumnVisibilityDropdownItems<T>(columns: NamedTableColumn<T>[], columnVisibility: Ref<VisibilityState>) {
   return computed<DropdownMenuItem[]>(() => {
     const dropdownItems: DropdownMenuItem[] = columns
@@ -134,6 +140,9 @@ export function useColumnVisibilityDropdownItems<T>(columns: NamedTableColumn<T>
         label: column.name || column.id,
         type: "checkbox",
         checked: columnVisibility.value[column.id] !== false,
+        onSelect: (event: Event) => {
+          event.preventDefault();
+        },
         onUpdateChecked: (checked: boolean) => {
           columnVisibility.value = {
             ...columnVisibility.value,

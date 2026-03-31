@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { BadgeProps } from "#ui/components/Badge.vue";
-import type { Row, VisibilityState } from "@tanstack/vue-table";
+import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 // TODO: uniformize import paths throughout modals
 import {
@@ -21,7 +21,6 @@ definePageMeta({
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
 const {renderParticipantBadge} = useParticipantsActions();
-
 
 const supabase = useSupabaseClient();
 const toast = useToast();
@@ -222,7 +221,8 @@ const columns: NamedTableColumn<Participant>[] = [
   //}
 ];
 
-const columnVisibility = ref<VisibilityState>({
+const columnVisibility = usePersistentColumnVisibility("admin-participants-table-column-visibility", {
+  caution: false,
   agreements: false,
 });
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);

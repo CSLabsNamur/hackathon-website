@@ -57,7 +57,7 @@
     "@tiptap/extension-emoji": "^3.20.5",
     "@tiptap/html": "^3.20.4",
     "@unhead/vue": "^2.1.2",
-    "@vueuse/nuxt": "14.1.0",
+    "@vueuse/nuxt": "14.2.1",
     "better-sqlite3": "^12.6.2",
     "clamscan": "^2.4.0",
     "dayjs-nuxt": "2.1.11",
