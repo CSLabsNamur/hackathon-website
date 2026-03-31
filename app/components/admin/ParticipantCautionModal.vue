@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { translateCautionStatus } from "#shared/utils/types";
+import { cautionStatusTranslateMap } from "#shared/utils/types";
 
 const props = defineProps<{ participant: Participant }>();
 const emit = defineEmits<{ close: [boolean] }>();
@@ -12,7 +12,7 @@ const isSubmitting = ref(false);
 const {cloned: newCaution, isModified} = useCloned(props.participant.caution);
 
 const cautionStatus = [CautionStatus.PAID, CautionStatus.NOT_PAID, CautionStatus.REFUNDED, CautionStatus.WAIVED].map((status) => ({
-  label: translateCautionStatus(status),
+  label: cautionStatusTranslateMap[status],
   value: status,
 }));
 

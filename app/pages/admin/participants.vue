@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 // TODO: uniformize import paths throughout modals
-import { AdminParticipantCautionModal, AdminParticipantsRemoveModal, ParticipantEditModal } from "#components";
-import { CautionStatus, translateCautionStatus } from "#shared/utils/types";
+import {
+  AdminParticipantCautionModal,
+  AdminParticipantsRemoveModal,
+  ParticipantEditModal,
+  UBadge,
+  UButton,
+  UCheckbox,
+  UDropdownMenu,
+} from "#components";
+import { CautionStatus } from "#shared/utils/types";
 
 definePageMeta({
   layout: "dashboard",
@@ -14,11 +21,6 @@ definePageMeta({
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
 const {renderParticipantBadge} = useParticipantsActions();
-
-const UBadge = resolveComponent("UBadge");
-const UButton = resolveComponent("UButton");
-const UCheckbox = resolveComponent("UCheckbox");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const supabase = useSupabaseClient();
 const toast = useToast();
@@ -44,28 +46,35 @@ const downloadCV = async (participant: Participant) => {
     return;
   }
 
-  const url = URL.createObjectURL(blob.data);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = participant.curriculumVitae.split("/").pop() || "cv.pdf";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
 };
 
-const columns: TableColumn<Participant>[] = [
+const globalFilter = ref("");
+const cautionItems = Object.values(CautionStatus).map((status) => ({
+  label: cautionStatusTranslateMap[status],
+  value: status,
+}));
+
+const columns: NamedTableColumn<Participant>[] = [
   {
     id: "name",
-    header: "Nom",
+    name: "Nom",
+    header: ({column}) => getStrSortedHeader(column, "Nom"),
     accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
   },
   {
+    id: "email",
+    name: "Email",
     header: "Email",
     accessorFn: (row) => row.user.email,
   },
   {
-    header: "Caution",
+    id: "caution",
+    name: "Caution",
+    header: ({column}) => getSingleSelectFilterHeader(column, "Caution", cautionItems),
     accessorKey: "caution",
+    filterFn: "equalsString",
+    enableGlobalFilter: false,
     cell: ({row}) => {
       const val = row.getValue("caution") as CautionStatus;
       let color: BadgeProps["color"] = "neutral";
@@ -76,19 +85,24 @@ const columns: TableColumn<Participant>[] = [
       else if (val === CautionStatus.WAIVED) color = "warning";
 
       return h(UBadge, {
-            class: "capitalize",
             variant: "subtle",
             color,
-          }, () => translateCautionStatus(val),
+          }, () => cautionStatusTranslateMap[val],
       );
     },
   },
   {
-    header: "Équipe",
+    id: "team",
+    name: "Équipe",
+    header: ({column}) => getStrSortedHeader(column, "Équipe"),
     accessorFn: (row) => row.team?.name,
+    meta: getWrappingColumnMeta(),
   },
   {
+    id: "networks",
+    name: "Réseaux",
     header: "Réseaux",
+    enableGlobalFilter: false,
     cell: ({row}) => {
       const github = row.original.githubAccount ? h(UButton, {
         variant: "link",
@@ -108,8 +122,11 @@ const columns: TableColumn<Participant>[] = [
     },
   },
   {
+    id: "curriculumVitae",
+    name: "CV",
     header: "CV",
     accessorKey: "curriculumVitae",
+    enableGlobalFilter: false,
     cell: ({row}) => {
       const cvLink = row.getValue("curriculumVitae") as string | null;
       if (cvLink) {
@@ -123,19 +140,30 @@ const columns: TableColumn<Participant>[] = [
     },
   },
   {
+    id: "school",
+    name: "École",
     header: "École",
     accessorKey: "school",
+    meta: getWrappingColumnMeta(),
   },
   {
+    id: "diet",
+    name: "Régime alimentaire",
     header: "Régime alimentaire",
     accessorKey: "diet",
   },
   {
+    id: "needs",
+    name: "Besoins spéciaux",
     header: "Besoins spéciaux",
     accessorKey: "needs",
+    meta: getWrappingColumnMeta(),
   },
   {
+    id: "agreements",
+    name: "Accords",
     header: "Accords",
+    enableGlobalFilter: false,
     cell: ({row}) => {
       const newsletter = h(UCheckbox, {
         label: "Newsletter",
@@ -158,6 +186,9 @@ const columns: TableColumn<Participant>[] = [
   },
   {
     id: "actions",
+    name: "Actions",
+    enableHiding: false,
+    enableGlobalFilter: false,
     cell: ({row}) => {
       return h(
           "div",
@@ -189,6 +220,12 @@ const columns: TableColumn<Participant>[] = [
   //  },
   //}
 ];
+
+const columnVisibility = usePersistentColumnVisibility("admin-participants-table-column-visibility", {
+  caution: false,
+  agreements: false,
+});
+const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
   return [
@@ -262,25 +299,31 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Utilisateurs">
-        <template #leading>
-          <UDashboardSidebarCollapse/>
-        </template>
-      </UDashboardNavbar>
+      <DashboardNavbar title="Utilisateurs"/>
     </template>
     <template #body>
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
           <AdminParticipantStats/>
-          <UTable :columns="columns" :data="participants" sticky :loading="status === 'pending'">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucun participant"
-                        description="Aucun participant ne s'est encore inscrit à l'événement... Mais ça va arriver !"
-                        icon="i-lucide-circle-slash"/>
-              </div>
-            </template>
-          </UTable>
+          <div class="flex flex-col gap-1 lg:gap-2">
+            <div v-if="status === 'success'" class="flex justify-between">
+              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+              <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                             aria-label="Afficher ou masquer les colonnes">
+                <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+              </UDropdownMenu>
+            </div>
+            <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
+                    :data="participants" sticky :loading="status === 'pending'">
+              <template #empty>
+                <div class="max-w-1/2 mx-auto">
+                  <UEmpty title="Aucun participant"
+                          description="Aucun participant ne s'est encore inscrit à l'événement... Mais ça va arriver !"
+                          icon="i-lucide-circle-slash"/>
+                </div>
+              </template>
+            </UTable>
+          </div>
         </div>
       </UContainer>
     </template>

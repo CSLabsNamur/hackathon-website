@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
+import { UButton } from "#components";
 import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
 
 definePageMeta({
@@ -13,27 +13,29 @@ const {renderAdminBadge} = useAdminsActions();
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
 const toast = useToast();
-const UButton = resolveComponent("UButton");
 
-const columns: TableColumn<Admin>[] = [
+const globalFilter = ref("");
+
+const columns: NamedTableColumn<Admin>[] = [
   {
+    id: "name",
+    name: "Nom",
+    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    accessorFn: (row: Admin) => `${row.user.firstName} ${row.user.lastName}`,
+    cell: ({row}) => `${row.original.user.firstName} ${row.original.user.lastName}`,
+  },
+  {
+    id: "email",
+    name: "Email",
     header: "Email",
     accessorFn: (row: Admin) => row.user.email,
     cell: ({row}) => row.original.user.email,
   },
   {
-    header: "Prénom",
-    accessorFn: (row: Admin) => row.user.firstName,
-    cell: ({row}) => row.original.user.firstName,
-  },
-  {
-    header: "Nom",
-    accessorFn: (row: Admin) => row.user.lastName,
-    cell: ({row}) => row.original.user.lastName,
-  },
-  {
     id: "badge",
+    name: "Badge",
     header: "Badge",
+    enableGlobalFilter: false,
     cell: ({row}) => h(UButton, {
       icon: "i-lucide-id-card",
       color: "neutral",
@@ -79,8 +81,12 @@ async function openInviteModal() {
 
     <template #body>
       <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <UTable :columns="columns" :data="admins" sticky :loading="status === 'pending'">
+        <div class="flex flex-col gap-1 lg:gap-2">
+          <div v-if="status === 'success'" class="flex justify-between">
+            <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          </div>
+          <UTable v-model:global-filter="globalFilter" :columns="columns" :data="admins" sticky
+                  :loading="status === 'pending'">
             <template #empty>
               <div class="max-w-1/2 mx-auto">
                 <UEmpty title="Aucun admin" description="Aucun administrateur n'est encore enregistré."

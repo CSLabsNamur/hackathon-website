@@ -1,4 +1,4 @@
-import { CautionStatus, GuestType, type Prisma } from "~~/server/prisma/generated/prisma/browser";
+import { CautionStatus, GuestType, type Prisma, SubmissionType } from "~~/server/prisma/generated/prisma/browser";
 import type { SerializeObject } from "nitropack";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
@@ -6,7 +6,9 @@ export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/ge
 
 // Custom types, for additional relationships or specific use
 // TODO: Huge problem: These types are not updated automatically when the Prisma schema changes. Need to refactor to use global includes.
-export type Team = SerializeObject<Prisma.TeamGetPayload<{ include: { members: true, room: true } }>>;
+export type Team = SerializeObject<Prisma.TeamGetPayload<{
+  include: { members: { include: { user: true } }, room: true }
+}>>;
 export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
   include: {
     team: {
@@ -20,6 +22,7 @@ export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
     user: true
   }
 }>>;
+export type ParticipantWithUser = Prisma.ParticipantGetPayload<{ include: { user: true } }>
 export type ParticipantWithoutRelations = Omit<Participant, "team" | "submissions">;
 export type Admin = SerializeObject<Prisma.AdminGetPayload<{ include: { user: true } }>>;
 export type Guest = SerializeObject<Prisma.GuestGetPayload<object>>;
@@ -34,19 +37,16 @@ export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPaylo
 export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];
 
-export const translateCautionStatus = (status: CautionStatus) => {
-  switch (status) {
-    case CautionStatus.NOT_PAID:
-      return "Non Payé";
-    case CautionStatus.PAID:
-      return "Payé";
-    case CautionStatus.REFUNDED:
-      return "Remboursé";
-    case CautionStatus.WAIVED:
-      return "Exonéré";
-    default:
-      return "Inconnu";
-  }
+export const cautionStatusTranslateMap: Record<CautionStatus, string> = {
+  [CautionStatus.NOT_PAID]: "Non payé",
+  [CautionStatus.PAID]: "Payé",
+  [CautionStatus.REFUNDED]: "Remboursé",
+  [CautionStatus.WAIVED]: "Exonéré",
+};
+
+export const submissionTypeTranslateMap: Record<SubmissionType, string> = {
+  [SubmissionType.TEXT]: "Texte",
+  [SubmissionType.FILE]: "Fichier",
 };
 
 export const translateGuestType = (type: GuestType) => {

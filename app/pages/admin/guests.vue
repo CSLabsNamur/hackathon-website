@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import { UBadge, UButton, UDropdownMenu } from "#components";
 import CreateModal from "~/components/admin/guests/CreateModal.vue";
 import EditModal from "~/components/admin/guests/EditModal.vue";
 import RemoveModal from "~/components/admin/guests/RemoveModal.vue";
@@ -14,10 +14,6 @@ definePageMeta({
 const {status, data: guests, refresh} = await useGuests({lazy: true});
 const {renderGuestBadge} = useGuestsActions();
 
-const UBadge = resolveComponent("UBadge");
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
-
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
@@ -26,37 +22,50 @@ const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 
-const columns: TableColumn<Guest>[] = [
+const globalFilter = ref("");
+
+const guestTypeItems = Object.values(GuestType).map((type) => ({
+  label: translateGuestType(type),
+  value: translateGuestType(type),
+}));
+const companyItems = computed(() => {
+  return [...new Set((guests.value ?? []).map((guest) => guest.company || "Aucune"))]
+      .sort((a, b) => a.localeCompare(b, "fr"))
+      .map((company) => ({
+        label: company,
+        value: company,
+      }));
+});
+
+const columns: NamedTableColumn<Guest>[] = [
   {
     id: "expand",
+    enableHiding: false,
+    enableGlobalFilter: false,
     cell: ({row}) => {
       if (!row.original.imageUrl) {
         return null;
       }
 
-      return h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        icon: "i-lucide-chevron-down",
-        square: true,
-        "aria-label": row.getIsExpanded() ? "Réduire l'image de l'invité" : "Développer l'image de l'invité",
-        ui: {
-          leadingIcon: [
-            "transition-transform",
-            row.getIsExpanded() ? "duration-200 rotate-180" : "",
-          ],
-        },
-        onClick: () => row.toggleExpanded(),
-      });
+      return getRowExpandButton(
+        row,
+        "Réduire l'image de l'invité",
+        "Développer l'image de l'invité",
+      );
     },
   },
   {
-    header: "Nom",
+    id: "name",
+    name: "Nom",
+    header: ({column}) => getStrSortedHeader(column, "Nom"),
     accessorKey: "name",
   },
   {
-    header: "Type",
+    id: "type",
+    name: "Type",
+    header: ({column}) => getSingleSelectFilterHeader(column, "Type", guestTypeItems),
     accessorFn: (row) => translateGuestType(row.type),
+    filterFn: "equalsString",
     cell: ({row}) => {
       return h(UBadge, {
         class: "capitalize",
@@ -66,19 +75,28 @@ const columns: TableColumn<Guest>[] = [
     },
   },
   {
-    header: "Entreprise",
-    accessorKey: "company",
+    id: "company",
+    name: "Entreprise",
+    header: ({column}) => getSingleSelectFilterHeader(column, "Entreprise", companyItems.value),
+    accessorFn: (row) => row.company || "Aucune",
+    filterFn: "equalsString",
     cell: ({row}) => row.original.company || "Aucune",
   },
   {
-    header: "Badges",
+    id: "quantity",
+    name: "Badges",
+    header: ({column}) => getStrSortedHeader(column, "Badges"),
     accessorFn: (row) => row.quantity,
+    enableGlobalFilter: false,
     cell: ({row}) => h("span", {
       class: row.original.quantity > 1 ? "text-highlighted" : undefined,
     }, row.original.quantity),
   },
   {
     id: "actions",
+    name: "Actions",
+    enableHiding: false,
+    enableGlobalFilter: false,
     cell: ({row}) => {
       return h(
           "div",
@@ -156,6 +174,8 @@ async function openCreateModal() {
 }
 
 const expanded = ref({});
+const columnVisibility = usePersistentColumnVisibility("admin-guests-table-column-visibility");
+const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 </script>
 
 <template>
@@ -175,22 +195,32 @@ const expanded = ref({});
     <template #body>
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
-          <UTable v-model:expanded="expanded" :columns="columns" :data="guests" sticky
-                  :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucun invité"
-                        description="Aucun invité n'est encore enregistré pour l'événement."
-                        icon="i-lucide-circle-slash"/>
-              </div>
-            </template>
-            <template #expanded="{row}">
-              <div v-if="row.original.imageUrl" class="flex justify-center p-4">
-                <NuxtImg :src="row.original.imageUrl" :alt="`Image de ${row.original.name}`"
-                         class="max-h-80 w-fit object-contain rounded-lg"/>
-              </div>
-            </template>
-          </UTable>
+          <div class="flex flex-col gap-1 lg:gap-2">
+            <div v-if="status === 'success'" class="flex justify-between">
+              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+              <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                             aria-label="Afficher ou masquer les colonnes">
+                <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+              </UDropdownMenu>
+            </div>
+            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                    v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" sticky
+                    :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
+              <template #empty>
+                <div class="max-w-1/2 mx-auto">
+                  <UEmpty title="Aucun invité"
+                          description="Aucun invité n'est encore enregistré pour l'événement."
+                          icon="i-lucide-circle-slash"/>
+                </div>
+              </template>
+              <template #expanded="{row}">
+                <div v-if="row.original.imageUrl" class="flex justify-center p-4">
+                  <NuxtImg :src="row.original.imageUrl" :alt="`Image de ${row.original.name}`"
+                           class="max-h-80 w-fit object-contain rounded-lg"/>
+                </div>
+              </template>
+            </UTable>
+          </div>
         </div>
       </UContainer>
     </template>
