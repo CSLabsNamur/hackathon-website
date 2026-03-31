@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
-import type { Row } from "@tanstack/vue-table";
+import type { Row, VisibilityState } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import { UBadge, UButton, UDropdownMenu } from "#components";
 import CreateModal from "~/components/admin/sponsors/CreateModal.vue";
 import EditModal from "~/components/admin/sponsors/EditModal.vue";
 import RemoveModal from "~/components/admin/sponsors/RemoveModal.vue";
@@ -14,10 +14,6 @@ definePageMeta({
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
 const {renderSponsorBadge} = useSponsorsActions();
 
-const UBadge = resolveComponent("UBadge");
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
-
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
@@ -26,9 +22,17 @@ const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 
-const columns: TableColumn<Sponsor>[] = [
+const globalFilter = ref("");
+const badgeItems = [
+  {label: "Oui", value: "Oui"},
+  {label: "Non", value: "Non"},
+] as const;
+
+const columns: NamedTableColumn<Sponsor>[] = [
   {
     id: "expand",
+    enableHiding: false,
+    enableGlobalFilter: false,
     cell: ({row}) => {
       if (!sponsorHasDescription(row.original)) {
         return null;
@@ -50,12 +54,17 @@ const columns: TableColumn<Sponsor>[] = [
     },
   },
   {
-    header: "Nom",
+    id: "name",
+    name: "Nom",
+    header: ({column}) => getStrSortedHeader(column, "Nom"),
     accessorKey: "name",
   },
   {
+    id: "url",
+    name: "Site web",
     header: "Site web",
     accessorKey: "url",
+    enableGlobalFilter: false,
     cell: ({row}) => {
       if (!row.original.url) {
         return "Aucun";
@@ -72,8 +81,11 @@ const columns: TableColumn<Sponsor>[] = [
     },
   },
   {
-    header: "Badge",
-    accessorKey: "hasBadge",
+    id: "hasBadge",
+    name: "Badge",
+    header: ({column}) => getSingleSelectFilterHeader(column, "Badge", [...badgeItems]),
+    accessorFn: (row) => row.hasBadge ? "Oui" : "Non",
+    filterFn: "equalsString",
     cell: ({row}) => {
       return h(UBadge, {
         class: "capitalize",
@@ -84,6 +96,9 @@ const columns: TableColumn<Sponsor>[] = [
   },
   {
     id: "actions",
+    name: "Actions",
+    enableHiding: false,
+    enableGlobalFilter: false,
     cell: ({row}) => {
       return h(
           "div",
@@ -157,6 +172,8 @@ async function openCreateModal() {
 }
 
 const expanded = ref({});
+const columnVisibility = ref<VisibilityState>({});
+const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 </script>
 
 <template>
@@ -172,25 +189,35 @@ const expanded = ref({});
     <template #body>
       <UContainer>
         <div class="flex flex-col gap-4 lg:gap-6">
-          <UTable v-model:expanded="expanded" :columns="columns" :data="sponsors" sticky
-                  :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucun sponsor"
-                        description="Aucun sponsor n'est encore enregistré pour l'événement."
-                        icon="i-lucide-circle-slash"/>
-              </div>
-            </template>
-            <template #expanded="{row}">
-              <div class="flex flex-col gap-2">
-                <NuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
-                         class="max-h-48 w-fit object-contain self-center"/>
-                <USeparator orientation="horizontal"/>
-                <article class="text-white max-h-96 overflow-auto p-4"
-                         v-html="getSponsorHTMLDescription(row.original)"/>
-              </div>
-            </template>
-          </UTable>
+          <div class="flex flex-col gap-1 lg:gap-2">
+            <div v-if="status === 'success'" class="flex justify-between">
+              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+              <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                             aria-label="Afficher ou masquer les colonnes">
+                <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+              </UDropdownMenu>
+            </div>
+            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                    v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" sticky
+                    :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
+              <template #empty>
+                <div class="max-w-1/2 mx-auto">
+                  <UEmpty title="Aucun sponsor"
+                          description="Aucun sponsor n'est encore enregistré pour l'événement."
+                          icon="i-lucide-circle-slash"/>
+                </div>
+              </template>
+              <template #expanded="{row}">
+                <div class="flex flex-col gap-2">
+                  <NuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
+                           class="max-h-48 w-fit object-contain self-center"/>
+                  <USeparator orientation="horizontal"/>
+                  <article class="text-white max-h-96 overflow-auto p-4"
+                           v-html="getSponsorHTMLDescription(row.original)"/>
+                </div>
+              </template>
+            </UTable>
+          </div>
         </div>
       </UContainer>
     </template>
