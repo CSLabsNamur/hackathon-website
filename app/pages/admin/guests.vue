@@ -47,20 +47,11 @@ const columns: NamedTableColumn<Guest>[] = [
         return null;
       }
 
-      return h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        icon: "i-lucide-chevron-down",
-        square: true,
-        "aria-label": row.getIsExpanded() ? "Réduire l'image de l'invité" : "Développer l'image de l'invité",
-        ui: {
-          leadingIcon: [
-            "transition-transform",
-            row.getIsExpanded() ? "duration-200 rotate-180" : "",
-          ],
-        },
-        onClick: () => row.toggleExpanded(),
-      });
+      return getRowExpandButton(
+        row,
+        "Réduire l'image de l'invité",
+        "Développer l'image de l'invité",
+      );
     },
   },
   {

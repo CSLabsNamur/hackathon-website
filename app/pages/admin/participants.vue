@@ -219,7 +219,9 @@ const columns: NamedTableColumn<Participant>[] = [
   //}
 ];
 
-const columnVisibility = ref<VisibilityState>({});
+const columnVisibility = ref<VisibilityState>({
+  agreements: false,
+});
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {

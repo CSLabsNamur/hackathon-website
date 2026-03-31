@@ -1,4 +1,4 @@
-import { CautionStatus, GuestType, SubmissionType, type Prisma } from "~~/server/prisma/generated/prisma/browser";
+import { CautionStatus, GuestType, type Prisma, SubmissionType } from "~~/server/prisma/generated/prisma/browser";
 import type { SerializeObject } from "nitropack";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
@@ -6,7 +6,9 @@ export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/ge
 
 // Custom types, for additional relationships or specific use
 // TODO: Huge problem: These types are not updated automatically when the Prisma schema changes. Need to refactor to use global includes.
-export type Team = SerializeObject<Prisma.TeamGetPayload<{ include: { members: true, room: true } }>>;
+export type Team = SerializeObject<Prisma.TeamGetPayload<{
+  include: { members: { include: { user: true } }, room: true }
+}>>;
 export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
   include: {
     team: {

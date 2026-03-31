@@ -1,5 +1,5 @@
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import type { Column, VisibilityState } from "@tanstack/vue-table";
+import type { Column, Row, VisibilityState } from "@tanstack/vue-table";
 import type { Ref } from "vue";
 import { UButton, UDropdownMenu } from "#components";
 import type { TableColumn } from "@nuxt/ui";
@@ -99,6 +99,23 @@ export function getSingleSelectFilterHeader<T, TValue extends string>(column: Co
         "aria-label": `Filtrer par ${label.toLowerCase()}, actuellement ${selectedItem?.label || "aucun filtre"}`,
       }),
   );
+}
+
+export function getRowExpandButton<T>(row: Row<T>, expandedAriaLabel: string, collapsedAriaLabel: string) {
+  return h(UButton, {
+    color: "neutral",
+    variant: "ghost",
+    icon: "i-lucide-chevron-down",
+    square: true,
+    "aria-label": row.getIsExpanded() ? expandedAriaLabel : collapsedAriaLabel,
+    ui: {
+      leadingIcon: [
+        "transition-transform",
+        row.getIsExpanded() ? "duration-200 rotate-180" : "",
+      ],
+    },
+    onClick: () => row.toggleExpanded(),
+  });
 }
 
 export function useColumnVisibilityDropdownItems<T>(columns: NamedTableColumn<T>[], columnVisibility: Ref<VisibilityState>) {

@@ -37,20 +37,12 @@ const columns: NamedTableColumn<Sponsor>[] = [
       if (!sponsorHasDescription(row.original)) {
         return null;
       }
-      return h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        icon: "i-lucide-chevron-down",
-        square: true,
-        "aria-label": row.getIsExpanded() ? "Développer la description du sponsor" : "Réduire la description du sponsor",
-        ui: {
-          leadingIcon: [
-            "transition-transform",
-            row.getIsExpanded() ? "duration-200 rotate-180" : "",
-          ],
-        },
-        onClick: () => row.toggleExpanded(),
-      });
+
+      return getRowExpandButton(
+        row,
+        "Réduire la description du sponsor",
+        "Développer la description du sponsor",
+      );
     },
   },
   {
