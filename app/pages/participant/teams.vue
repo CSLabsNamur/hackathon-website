@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { TableColumn } from "#ui/components/Table.vue";
-import { UButton } from "#components";
 
 definePageMeta({
   layout: "user-dashboard",
@@ -22,9 +21,9 @@ const columns: TableColumn<Team>[] = [
       }
 
       return getRowExpandButton(
-        row,
-        "Réduire la liste des membres",
-        "Développer la liste des membres",
+          row,
+          "Réduire la liste des membres",
+          "Développer la liste des membres",
       );
     },
   },
