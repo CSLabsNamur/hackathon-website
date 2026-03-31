@@ -97,6 +97,7 @@ const columns: NamedTableColumn<Participant>[] = [
     name: "Équipe",
     header: ({column}) => getStrSortedHeader(column, "Équipe"),
     accessorFn: (row) => row.team?.name,
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "networks",
@@ -144,6 +145,7 @@ const columns: NamedTableColumn<Participant>[] = [
     name: "École",
     header: "École",
     accessorKey: "school",
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "diet",
@@ -156,6 +158,7 @@ const columns: NamedTableColumn<Participant>[] = [
     name: "Besoins spéciaux",
     header: "Besoins spéciaux",
     accessorKey: "needs",
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "agreements",

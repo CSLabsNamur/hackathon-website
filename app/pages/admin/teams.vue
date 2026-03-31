@@ -47,12 +47,14 @@ const columns: NamedTableColumn<Team>[] = [
     name: "Description",
     header: "Description",
     accessorKey: "description",
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "idea",
     name: "Idée",
     header: "Idée",
     accessorKey: "idea",
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "valid",

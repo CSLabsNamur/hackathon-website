@@ -52,10 +52,7 @@ const columns: NamedTableColumn<SubmissionRequest>[] = [
     name: "Description",
     header: "Description",
     accessorKey: "description",
-    cell: ({row}) => h("div", {
-      class: "truncate max-w-[40rem]",
-      title: row.original.description,
-    }, row.original.description!),
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "type",

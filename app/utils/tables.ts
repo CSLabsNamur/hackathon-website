@@ -13,6 +13,14 @@ type FilterHeaderItem<TValue extends string> = {
   value: TValue;
 };
 
+export function getWrappingColumnMeta() {
+  return {
+    class: {
+      td: "whitespace-normal [overflow-wrap:anywhere]",
+    },
+  };
+}
+
 export function getStrSortedHeader<T>(column: Column<T>, label: string) {
   const isSorted = column.getIsSorted();
 

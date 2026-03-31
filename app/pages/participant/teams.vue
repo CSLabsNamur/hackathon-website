@@ -36,10 +36,12 @@ const columns: TableColumn<Team>[] = [
   {
     header: "Description",
     accessorKey: "description",
+    meta: getWrappingColumnMeta(),
   },
   {
     header: "Idée",
     accessorKey: "idea",
+    meta: getWrappingColumnMeta(),
   },
 ];
 </script>
