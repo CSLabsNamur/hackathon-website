@@ -9,6 +9,7 @@ export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/ge
 export type Team = SerializeObject<Prisma.TeamGetPayload<{
   include: { members: { include: { user: true } }, room: true }
 }>>;
+export type TeamWithoutRelations = Omit<Team, "members" | "room">;
 export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
   include: {
     team: {
