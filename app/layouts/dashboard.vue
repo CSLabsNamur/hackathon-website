@@ -102,11 +102,12 @@ const bottomLinks: NavigationMenuItem[] = [
 //}
 ];
 
-const groups: CommandPaletteGroup<CommandPaletteItem>[] = [{
+const navigationGroups: CommandPaletteGroup<CommandPaletteItem>[] = [{
   id: "links",
   label: "Aller vers",
   items: topLinks.flat() as CommandPaletteItem[],
 }];
+const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 </script>
 
 <template>
@@ -134,7 +135,7 @@ const groups: CommandPaletteGroup<CommandPaletteItem>[] = [{
       </template>
     </UDashboardSidebar>
 
-    <UDashboardSearch :groups/>
+    <UDashboardSearch v-model:search-term="searchTerm" :groups :loading/>
 
     <slot/>
   </UDashboardGroup>

@@ -15,7 +15,8 @@ const teamsModel = computed({
 </script>
 
 <template>
-  <UPageCard :ui="{body: 'p-6 md:p-8 w-full'}" class="w-72 min-h-72 self-start">
+  <UPageCard :id="room.id === 'unassigned' ? undefined : `room-${room.id}`"
+             :ui="{body: 'p-6 md:p-8 w-full'}" class="w-72 min-h-72 self-start">
     <template #header>
       <div class="flex min-w-0 items-center justify-center gap-2.5 text-center">
         <UIcon v-if="isModifying && !hideHandle" name="i-lucide-grip-vertical" class="handle"/>

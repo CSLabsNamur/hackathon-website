@@ -22,7 +22,7 @@ const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
 const badgeItems = [
   {label: "Oui", value: "Oui"},
   {label: "Non", value: "Non"},

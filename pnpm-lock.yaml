@@ -98,6 +98,9 @@ importers:
       formidable:
         specifier: ^3.5.4
         version: 3.5.4
+      fuse.js:
+        specifier: ^7.1.0
+        version: 7.1.0
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8

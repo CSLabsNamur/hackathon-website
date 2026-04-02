@@ -26,7 +26,7 @@ const createModal = overlay.create(CreateSubmissionRequestModal);
 const editModal = overlay.create(EditSubmissionRequestModal);
 const removeModal = overlay.create(RemoveSubmissionRequestModal);
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
 const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
   label: submissionTypeTranslateMap[type],
   value: type,
