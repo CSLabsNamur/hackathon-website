@@ -41,6 +41,7 @@ const columns: NamedTableColumn<Admin>[] = [
       color: "neutral",
       variant: "ghost",
       "aria-label": `Générer le badge pour ${row.original.user.firstName} ${row.original.user.lastName}`,
+      loadingAuto: true,
       onClick: async () => {
         try {
           const badge = await renderAdminBadge(row.original);
