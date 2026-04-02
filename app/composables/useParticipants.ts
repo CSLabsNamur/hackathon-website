@@ -18,8 +18,10 @@ export const useParticipantsActions = () => {
 
   const createParticipant = async (data: CreateParticipantSchema) => {
     const formData = new FormData();
-    for (const item in data) {
-      formData.append(item, data[item as keyof CreateParticipantSchema] as string | File);
+    for (const [key, value] of Object.entries(data)) {
+      if (value === undefined || value === null) continue;
+
+      formData.append(key, value instanceof File ? value : String(value));
     }
 
     await $api("/api/participants", {

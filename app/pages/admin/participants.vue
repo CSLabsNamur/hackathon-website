@@ -104,6 +104,11 @@ const columns: NamedTableColumn<Participant>[] = [
     name: "Réseaux",
     header: "Réseaux",
     enableGlobalFilter: false,
+    meta: {
+      class: {
+        td: "text-center",
+      },
+    },
     cell: ({row}) => {
       const github = row.original.githubAccount ? h(UButton, {
         variant: "link",
@@ -119,7 +124,7 @@ const columns: NamedTableColumn<Participant>[] = [
         external: true,
         to: `https://linkedin.com/in/${row.original.linkedInAccount.split("/").pop()}`,
       }) : null;
-      return h("div", {class: "flex space-x-2"}, [github, linkedIn]);
+      return h("div", {}, [github, linkedIn]);
     },
   },
   {
