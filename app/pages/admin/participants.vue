@@ -49,7 +49,7 @@ const downloadCV = async (participant: Participant) => {
   downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
 };
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
 const cautionItems = Object.values(CautionStatus).map((status) => ({
   label: cautionStatusTranslateMap[status],
   value: status,

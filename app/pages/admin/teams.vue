@@ -21,7 +21,7 @@ const {copy} = useClipboard();
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
 const validityItems = [
   {label: "Valide", value: "Valide"},
   {label: "Invalide", value: "Invalide"},

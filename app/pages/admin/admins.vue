@@ -14,7 +14,7 @@ const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
 const toast = useToast();
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
 
 const columns: NamedTableColumn<Admin>[] = [
   {
