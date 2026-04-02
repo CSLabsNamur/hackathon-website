@@ -86,7 +86,7 @@ async function onError(event: FormErrorEvent) {
             <UEditor v-slot="{ editor }" v-model="state.description" content-type="json" :editable="!isSubmitting"
                      :starter-kit="sponsorDescriptionStarterKit"
                      :placeholder="{ placeholder: 'Description du sponsor...', showOnlyWhenEditable: true }"
-                     class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
+                     class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4 border border-muted rounded-md p-2 focus-within:ring-2 focus-within:ring-primary">
               <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"
                               :items="sponsorDescriptionToolbarItems"/>
               <UEditorToolbar v-else :editor class="sm:px-8 overflow-x-auto"

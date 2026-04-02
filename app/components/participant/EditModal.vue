@@ -61,7 +61,7 @@ async function onError(event: FormErrorEvent) {
   <UModal :title="adminEdit ? 'Modifier le participant' : 'Modifier mon profil'"
           :description="adminEdit ? `Modifier les informations de ${participant.user.firstName} ${participant.user.lastName}` : 'Modifiez les informations de votre profil'"
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
-          :ui="{content: 'max-w-2xl'}">
+          :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>
       <!-- TODO: Put form in a separate component and use it in registration as well -->
       <UForm id="participant-edit-form" :schema="schema" :state class="grid grid-cols-1 md:grid-cols-2 gap-6"
@@ -135,10 +135,8 @@ async function onError(event: FormErrorEvent) {
       </UForm>
     </template>
     <template #footer="{close}">
-      <div class="flex justify-end gap-3">
-        <UButton type="submit" form="participant-edit-form" :loading="isSubmitting">Enregistrer</UButton>
-        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
-      </div>
+      <UButton type="submit" form="participant-edit-form" :loading="isSubmitting">Enregistrer</UButton>
+      <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>
 </template>

@@ -104,10 +104,8 @@ async function onError(event: FormErrorEvent) {
       </UForm>
     </template>
     <template #footer="{close}">
-      <div class="flex justify-end space-x-2">
-        <UButton type="submit" form="edit-submission-form" :loading="isSubmitting">Enregistrer</UButton>
-        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
-      </div>
+      <UButton type="submit" form="edit-submission-form" :loading="isSubmitting">Enregistrer</UButton>
+      <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>
 </template>

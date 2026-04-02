@@ -17,7 +17,7 @@ const cautionStatus = [CautionStatus.PAID, CautionStatus.NOT_PAID, CautionStatus
 }));
 
 const save = async () => {
-  if (isModified) {
+  if (isModified.value) {
     try {
       isSubmitting.value = true;
 
@@ -47,10 +47,8 @@ const save = async () => {
       </div>
     </template>
     <template #footer="{close}">
-      <div class="flex justify-end space-x-2">
-        <UButton :loading="isSubmitting" @click="save">Enregistrer</UButton>
-        <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
-      </div>
+      <UButton :loading="isSubmitting" :disabled="!isModified" @click="save">Enregistrer</UButton>
+      <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>
 </template>
