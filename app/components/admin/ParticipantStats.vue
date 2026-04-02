@@ -32,7 +32,7 @@ const stats = computed(() => {
     condition: dayjs().isBefore(dayjs(eventDateEnd)),
   }, {
     title: "Cautions remboursées",
-    value: `${participants.value.filter(participant => participant.caution === CautionStatus.REFUNDED).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.WAIVED).length}`,
+    value: `${participants.value.filter(participant => participant.caution === CautionStatus.REFUNDED).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.WAIVED && participant.caution !== CautionStatus.NOT_PAID).length}`,
     icon: "i-lucide-euro",
     condition: dayjs().isAfter(dayjs(eventDateEnd)),
   }];

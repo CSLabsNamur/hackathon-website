@@ -39,7 +39,7 @@ const stats = computed(() => {
     title: "Teams remboursées",
     value: `${teams.value.filter(team => team.members.every(member => {
       const caution = participants.value!.find(participant => participant.id === member.id)?.caution;
-      return caution === CautionStatus.REFUNDED || caution === CautionStatus.WAIVED;
+      return caution !== CautionStatus.PAID;
     })).length} / ${teams.value.length}`,
     icon: "i-lucide-euro",
     condition: dayjs().isAfter(dayjs(eventDateEnd)),

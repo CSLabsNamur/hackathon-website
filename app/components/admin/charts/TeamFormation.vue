@@ -11,7 +11,7 @@ const participantWithTeamCount = computed(() => participants.value?.filter(parti
 
 const teamFormationData = computed<TeamFormationData[]>(() => ([
   {name: "En équipe", color: "#0e8d62", value: participantWithTeamCount.value},
-  {name: "Solo", color: "#ea6f1c", value: participants.value?.length ?? 0 - participantWithTeamCount.value},
+  {name: "Solo", color: "#ea6f1c", value: (participants.value?.length ?? 0) - participantWithTeamCount.value},
 ]));
 
 const options = computed<ECOption>(() => ({

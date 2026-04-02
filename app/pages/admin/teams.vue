@@ -31,7 +31,7 @@ const validityItems = [
 const getTeamValidity = (team: Team) => {
   return team.members.every((member) => {
     const caution = member.caution;
-    return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
+    return caution !== CautionStatus.NOT_PAID;
   }) ? "Valide" : "Invalide";
 };
 
