@@ -23,4 +23,6 @@ logs
 .env.*
 !.env.example
 
+.codex
+
 /server/prisma/generated

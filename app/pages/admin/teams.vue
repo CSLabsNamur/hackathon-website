@@ -174,11 +174,7 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Équipes">
-        <template #leading>
-          <UDashboardSidebarCollapse/>
-        </template>
-      </UDashboardNavbar>
+      <DashboardNavbar title="Équipes"/>
     </template>
     <template #body>
       <UContainer>
@@ -187,10 +183,14 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
           <div class="flex flex-col gap-1 lg:gap-2">
             <div v-if="status === 'success'" class="flex justify-between">
               <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                             aria-label="Afficher ou masquer les colonnes">
-                <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-              </UDropdownMenu>
+              <TourHelperPopover title="Astuce : colonnes personnalisables"
+                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                                 status-key="admin-table-column-visibility" placement="top">
+                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                               aria-label="Afficher ou masquer les colonnes">
+                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+                </UDropdownMenu>
+              </TourHelperPopover>
             </div>
             <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
                     :columns="columns" :data="teams" sticky :loading="status === 'pending'">

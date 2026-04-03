@@ -69,15 +69,11 @@ async function openInviteModal() {
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar title="Administrateurs">
-        <template #leading>
-          <UDashboardSidebarCollapse/>
-        </template>
-
+      <DashboardNavbar title="Administrateurs">
         <template #right>
           <UButton icon="i-lucide-user-plus" @click="openInviteModal">Ajouter</UButton>
         </template>
-      </UDashboardNavbar>
+      </DashboardNavbar>
     </template>
 
     <template #body>
