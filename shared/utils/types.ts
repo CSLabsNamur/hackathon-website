@@ -37,6 +37,15 @@ export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPaylo
 }>>;
 export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];
+type RoleTemp = SerializeObject<Prisma.RoleGetPayload<{
+  include: {
+    permissions: { include: { permission: true } },
+    _count: { select: { assignments: true, }, }
+  }
+}>>;
+type RolePermission = RoleTemp["permissions"][number]["permission"];
+export type Role = Omit<RoleTemp, "permissions"> & { permissions: RolePermission[] }; // Flatten permissions for easier use
+export type PermissionDb = SerializeObject<Prisma.PermissionGetPayload<object>>; // "Permission" is already used for the typescript catalog, so we rename it here to avoid confusion
 
 export const cautionStatusTranslateMap: Record<CautionStatus, string> = {
   [CautionStatus.NOT_PAID]: "Non payé",

@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider            = "prisma-client"
   output              = "./generated/prisma"
@@ -16,14 +13,15 @@ datasource db {
 
 // ==== Users and Teams ====
 model User {
-  id          String       @id @default(cuid(2))
-  email       String       @unique
-  firstName   String
-  lastName    String
-  admin       Admin?
-  participant Participant?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id              String               @id @default(cuid(2))
+  email           String               @unique
+  firstName       String
+  lastName        String
+  admin           Admin?
+  participant     Participant?
+  roleAssignments UserRoleAssignment[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 }
 
 model Admin {
@@ -182,4 +180,52 @@ model Room {
   teams     Team[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ==== Roles and Permissions (RBAC) ====
+model Role {
+  id          String               @id @default(cuid(2))
+  key         String               @unique // e.g., participant, super_admin, broadcaster, cooks, ...
+  name        String
+  description String?
+  system      Boolean              @default(false) // true for system-defined roles that cannot be deleted
+  permissions RolePermission[]
+  assignments UserRoleAssignment[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model Permission {
+  id          String           @id @default(cuid(2))
+  key         String           @unique // e.g., participant.read, participant.read.sensitive, teams.edit, ...
+  group       String // e.g., participant, teams, sponsors, ... Just for better organization in the UI
+  name        String
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RolePermission {
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model UserRoleAssignment {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, roleId])
+  @@index([roleId])
 }

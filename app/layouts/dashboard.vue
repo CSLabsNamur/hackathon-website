@@ -81,6 +81,13 @@ const topLinks: NavigationMenuItem[][] = [
     onSelect: () => {
       open.value = false;
     },
+  }, {
+    label: "Rôles",
+    icon: "i-lucide-shield-user",
+    to: "/admin/roles",
+    onSelect: () => {
+      open.value = false;
+    },
   }],
 ];
 const bottomLinks: NavigationMenuItem[] = [
