@@ -3,7 +3,7 @@ import * as v from "valibot";
 import renderAdminInvite from "~~/server/mail/generated/admin-invite";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "admins.create");
 
   const data = await readValidatedBody(event, v.parser(schema));
 

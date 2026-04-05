@@ -3,7 +3,7 @@ import idSchema from "#shared/schemas/id";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "admins.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idSchema));
 

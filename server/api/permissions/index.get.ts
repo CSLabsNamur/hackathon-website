@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "roles.read");
 
   return prisma.permission.findMany({
     orderBy: [
