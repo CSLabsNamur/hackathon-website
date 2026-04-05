@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from "@nuxt/ui";
+import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
+import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
 const {data: currentParticipant, status} = await useCurrentParticipant();
 
 const open = ref(false);
 
-const links: NavigationMenuItem[][] = [[{
+const links: RestrictedNavigationItem[][] = [[{
   label: "Accueil",
   icon: "i-lucide-house",
   to: "/participant",
@@ -16,6 +17,7 @@ const links: NavigationMenuItem[][] = [[{
   label: "Mon équipe",
   icon: "i-lucide-user-check",
   to: "/participant/team",
+  requiredPermissions: ["teams.read.own"],
   onSelect: () => {
     open.value = false;
   },
@@ -24,6 +26,7 @@ const links: NavigationMenuItem[][] = [[{
       label: "Autres équipes",
       icon: "i-lucide-users",
       to: "/participant/teams",
+      requiredPermissions: ["teams.read"],
       onSelect: () => {
         open.value = false;
       },
@@ -33,6 +36,7 @@ const links: NavigationMenuItem[][] = [[{
   label: "Mon profil",
   icon: "i-lucide-user-circle",
   to: "/participant/profile",
+  requiredPermissions: ["participants.read.own"],
   onSelect: () => {
     open.value = false;
   },
@@ -40,6 +44,7 @@ const links: NavigationMenuItem[][] = [[{
   label: "Dépôt",
   icon: "i-lucide-send",
   to: "/participant/submit",
+  requiredPermissions: ["submissionRequests.read", "submissions.read.own"],
   onSelect: () => {
     open.value = false;
   },
@@ -61,11 +66,11 @@ const links: NavigationMenuItem[][] = [[{
 //}
 ]];
 
-const groups: CommandPaletteGroup<CommandPaletteItem>[] = [{
+const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
   items: links.flat() as CommandPaletteItem[],
-}];
+}]);
 </script>
 
 <template>
@@ -82,8 +87,10 @@ const groups: CommandPaletteGroup<CommandPaletteItem>[] = [{
       <template #default="{collapsed}">
         <UDashboardSearchButton :collapsed class="bg-transparent ring-default"/>
 
-        <UNavigationMenu :collapsed :items="links[0]" orientation="vertical" tooltip popover/>
-        <UNavigationMenu :collapsed :items="links[1]" orientation="vertical" tooltip class="mt-auto"/>
+        <RestrictedNavigationMenu :collapsed :items="links[0]" orientation="vertical" tooltip popover
+                                  :user="currentParticipant"/>
+        <RestrictedNavigationMenu :collapsed :items="links[1]" orientation="vertical" tooltip :user="currentParticipant"
+                                  class="mt-auto"/>
       </template>
 
       <template #footer="{collapsed}">
