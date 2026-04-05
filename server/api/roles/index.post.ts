@@ -25,10 +25,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  const { permissionKeys, ...roleData } = data;
+
   try {
     return await prisma.role.create({
       data: {
-        ...data,
+        ...roleData,
         permissions: {
           createMany: {
             data: permissions.map((permission) => ({
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
         },
       },
     });
-  } catch {
+  } catch (e) {
     throw createError({
       statusCode: 400,
       statusMessage: "Impossible de créer ce rôle (clé déjà utilisée ?).",

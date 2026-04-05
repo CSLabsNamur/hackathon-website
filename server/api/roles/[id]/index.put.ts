@@ -47,6 +47,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  const {permissionKeys, ...roleData} = data;
+
   try {
     return await prisma.$transaction(async (tx) => {
       await tx.rolePermission.deleteMany({
@@ -60,7 +62,7 @@ export default defineEventHandler(async (event) => {
           id,
         },
         data: {
-          ...data,
+          ...roleData,
           permissions: {
             createMany: {
               data: permissions.map((permission) => ({
