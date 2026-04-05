@@ -4,7 +4,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { SUBMISSIONS_BUCKET } from "~~/server/utils/submissionsFiles";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {user} = await requirePermission(event, "submissions.delete.own");
   const {id: requestId, fileId} = await getValidatedRouterParams(event, v.parser(deleteSubmissionFileParamsSchema));
 
   const participant = await getParticipant(user);

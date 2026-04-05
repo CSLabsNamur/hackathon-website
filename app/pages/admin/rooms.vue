@@ -4,6 +4,7 @@ import { vDraggable } from "vue-draggable-plus";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["rooms.read", "teams.read"],
 });
 
 const toast = useToast();

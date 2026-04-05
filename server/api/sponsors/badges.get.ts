@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "badges.print");
 
   const sponsors = await prisma.sponsor.findMany({
     where: {

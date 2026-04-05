@@ -1,7 +1,7 @@
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "guests.read");
 
   const supabase = serverSupabaseServiceRole(event);
   const guests = await prisma.guest.findMany({

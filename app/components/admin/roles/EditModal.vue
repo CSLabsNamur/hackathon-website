@@ -2,6 +2,7 @@
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type * as v from "valibot";
 import schema from "#shared/schemas/roles/edit";
+import type { Permission as PermissionKey } from "#shared/utils/authorization";
 
 const props = defineProps<{
   role: Role;
@@ -19,7 +20,7 @@ const state = reactive<Schema>({
   key: props.role.key,
   name: props.role.name,
   description: props.role.description ?? "",
-  permissionKeys: props.role.permissions.map((permission) => permission.key),
+  permissionKeys: props.role.permissions.map((permission) => permission.key as PermissionKey),
 });
 
 const isSubmitting = ref(false);

@@ -5,9 +5,7 @@ import schema from "#shared/schemas/teams/join";
  * Join a team as the current user.
  */
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
-
-  const dbUser = await getDbUser(user);
+  const {dbUser} = await requirePermission(event, "teams.join");
 
   const data = await readValidatedBody(event, v.parser(schema));
 

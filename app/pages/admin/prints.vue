@@ -2,6 +2,7 @@
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["badges.print", "participants.read", "guests.read", "admins.read"],
 });
 
 const toast = useToast();

@@ -9,6 +9,7 @@ import RemoveModal from "~/components/admin/guests/RemoveModal.vue";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["guests.read"],
 });
 
 const {status, data: guests, refresh} = await useGuests({lazy: true});

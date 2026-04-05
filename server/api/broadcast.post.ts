@@ -14,7 +14,7 @@ function escapeHtml(value: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "broadcasts.send");
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,

@@ -6,9 +6,7 @@ import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
  * Create a new team and associate the current user as a member.
  */
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
-
-  const dbUser = await getDbUser(user);
+  const {dbUser} = await requirePermission(event, "teams.create.own");
 
   const data = await readValidatedBody(event, v.parser(schema));
 

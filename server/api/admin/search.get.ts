@@ -2,7 +2,7 @@ import * as v from "valibot";
 import adminSearchQuerySchema from "#shared/schemas/admin/search";
 
 export default defineEventHandler(async (event): Promise<AdminSearchResponse> => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requireOrganizerAccess(event);
 
   const {query, limit} = await getValidatedQuery(event, v.parser(adminSearchQuerySchema));
 

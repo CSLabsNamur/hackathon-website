@@ -9,7 +9,7 @@ import { randomUUID } from "node:crypto";
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "sponsors.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 

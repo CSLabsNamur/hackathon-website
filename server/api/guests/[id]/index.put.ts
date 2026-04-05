@@ -10,7 +10,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "guests.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 

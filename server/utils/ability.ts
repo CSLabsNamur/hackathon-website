@@ -3,35 +3,13 @@ import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
 import type { Permission as PermissionKey } from "#shared/utils/authorization";
-import type { Prisma } from "../prisma/generated/prisma/client";
 import type { AppAction, AppPrismaQuery, AppSubject } from "./casl";
 import { createPrismaAbility } from "./casl";
-
-type UserWithAuthorization = Prisma.UserGetPayload<{
-  include: {
-    admin: true;
-    participant: true;
-    roleAssignments: {
-      include: {
-        role: {
-          include: {
-            permissions: {
-              include: {
-                permission: true;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-}>;
 
 export type AppAbility = PureAbility<[AppAction, AppSubject], AppPrismaQuery>;
 
 type PermissionContext = {
   can: AbilityBuilder<AppAbility>["can"];
-  cannot: AbilityBuilder<AppAbility>["cannot"];
 };
 type PermissionDefinition = {
   action: AppAction;
@@ -40,6 +18,16 @@ type PermissionDefinition = {
 };
 
 const PERMISSION_DEFINITIONS: Record<PermissionKey, PermissionDefinition> = {
+  "participants.read.own": {
+    action: "readOwn",
+    subject: "Participant",
+    apply: ({can}) => can("readOwn", "Participant"),
+  },
+  "participants.update.own": {
+    action: "updateOwn",
+    subject: "Participant",
+    apply: ({can}) => can("updateOwn", "Participant"),
+  },
   "participants.read": {
     action: "read",
     subject: "Participant",
@@ -80,6 +68,26 @@ const PERMISSION_DEFINITIONS: Record<PermissionKey, PermissionDefinition> = {
     subject: "Participant",
     apply: ({can}) => can("exportSensitive", "Participant"),
   },
+  "teams.read.own": {
+    action: "readOwn",
+    subject: "Team",
+    apply: ({can}) => can("readOwn", "Team"),
+  },
+  "teams.create.own": {
+    action: "createOwn",
+    subject: "Team",
+    apply: ({can}) => can("createOwn", "Team"),
+  },
+  "teams.update.own": {
+    action: "updateOwn",
+    subject: "Team",
+    apply: ({can}) => can("updateOwn", "Team"),
+  },
+  "teams.join": {
+    action: "join",
+    subject: "Team",
+    apply: ({can}) => can("join", "Team"),
+  },
   "teams.read": {
     action: "read",
     subject: "Team",
@@ -99,6 +107,21 @@ const PERMISSION_DEFINITIONS: Record<PermissionKey, PermissionDefinition> = {
     action: "export",
     subject: "Team",
     apply: ({can}) => can("export", "Team"),
+  },
+  "submissions.read.own": {
+    action: "readOwn",
+    subject: "Submission",
+    apply: ({can}) => can("readOwn", "Submission"),
+  },
+  "submissions.update.own": {
+    action: "updateOwn",
+    subject: "Submission",
+    apply: ({can}) => can("updateOwn", "Submission"),
+  },
+  "submissions.delete.own": {
+    action: "deleteOwn",
+    subject: "Submission",
+    apply: ({can}) => can("deleteOwn", "Submission"),
   },
   "guests.read": {
     action: "read",
@@ -210,6 +233,21 @@ const PERMISSION_DEFINITIONS: Record<PermissionKey, PermissionDefinition> = {
     subject: "Room",
     apply: ({can}) => can("export", "Room"),
   },
+  "schedule.create": {
+    action: "create",
+    subject: "ScheduleItem",
+    apply: ({can}) => can("create", "ScheduleItem"),
+  },
+  "schedule.update": {
+    action: "update",
+    subject: "ScheduleItem",
+    apply: ({can}) => can("update", "ScheduleItem"),
+  },
+  "schedule.delete": {
+    action: "delete",
+    subject: "ScheduleItem",
+    apply: ({can}) => can("delete", "ScheduleItem"),
+  },
   "badges.print": {
     action: "print",
     subject: "Badge",
@@ -314,7 +352,7 @@ export async function getUserWithAuthorization(user: JwtPayload): Promise<UserWi
 }
 
 export function createAbilityForUser(user: UserWithAuthorization): AppAbility {
-  const {can, cannot, build} = new AbilityBuilder<AppAbility>(createPrismaAbility);
+  const {can, build} = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
   const permissionKeys = new Set<PermissionKey>();
 

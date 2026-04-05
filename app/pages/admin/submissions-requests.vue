@@ -11,6 +11,7 @@ import { submissionTypeTranslateMap } from "#shared/utils/types";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["submissionRequests.read", "participants.read"],
 });
 
 const {

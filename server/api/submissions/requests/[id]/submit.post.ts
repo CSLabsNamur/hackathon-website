@@ -3,10 +3,20 @@ import submitTextSchema from "#shared/schemas/submissions/submitText";
 import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {dbUser} = await requirePermission(event, "submissions.update.own");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
+  const participant = await prisma.participant.findUnique({
+    where: {
+      userId: dbUser.id,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-  const dbUser = await getDbUser(user);
+  if (!participant) {
+    throw createError({statusCode: 404, statusMessage: "Participant not found"});
+  }
 
   const request = await prisma.submissionRequest.findUnique({where: {id}});
   if (!request) {
@@ -41,7 +51,7 @@ export default defineEventHandler(async (event) => {
     where: {
       requestId_participantId: {
         requestId: id,
-        participantId: dbUser.id,
+        participantId: participant.id,
       },
     },
     create: payload,

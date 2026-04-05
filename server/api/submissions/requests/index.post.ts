@@ -3,7 +3,7 @@ import * as v from "valibot";
 import type { SubmissionRequestCreateInput } from "~~/server/prisma/generated/prisma/models/SubmissionRequest";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "submissionRequests.create");
 
   const schema = createSubmissionRequestSchema(
     useRuntimeConfig(event).public.eventDateStart,

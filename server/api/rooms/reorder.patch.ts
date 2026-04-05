@@ -2,7 +2,7 @@ import schema from "#shared/schemas/rooms/reorder";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "rooms.assign.team");
 
   const data = await readValidatedBody(event, v.parser(schema));
 

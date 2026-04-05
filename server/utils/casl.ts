@@ -17,16 +17,21 @@ export type WhereInput<TModelName extends Prisma.ModelName> = WhereInputOf<Prism
 // Catalog types for CASL, to update when adding new permissions or DB models.
 export type AppAction =
   | "read"
+  | "readOwn"
   | "readSensitive"
   | "checkIn"
   | "create"
+  | "createOwn"
   | "update"
+  | "updateOwn"
   | "updateSensitive"
   | "delete"
+  | "deleteOwn"
   | "export"
   | "exportSensitive"
   | "send"
   | "assign"
+  | "join"
   | "print";
 
 export type AppSubject =
@@ -43,6 +48,7 @@ export type AppSubject =
   SubmissionRequest: P.SubmissionRequest;
   Submission: P.Submission;
   SubmissionFile: P.SubmissionFile;
+  ScheduleItem: P.ScheduleItem;
   Room: P.Room;
   Role: P.Role;
   Permission: P.Permission;

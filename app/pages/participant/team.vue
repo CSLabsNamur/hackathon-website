@@ -7,6 +7,7 @@ import { AdminTeamsEditModal } from "#components";
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["teams.read.own"],
 });
 
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();

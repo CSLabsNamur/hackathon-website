@@ -2,6 +2,7 @@
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["submissionRequests.read", "submissions.read.own"],
 });
 
 const {data: submissionsRequests} = await useSubmissionsRequests({lazy: false});

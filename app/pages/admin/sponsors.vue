@@ -9,6 +9,7 @@ import RemoveModal from "~/components/admin/sponsors/RemoveModal.vue";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["sponsors.read"],
 });
 
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});

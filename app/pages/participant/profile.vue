@@ -4,6 +4,7 @@ import { ParticipantEditModal } from "#components";
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["participants.read.own"],
 });
 
 const {status, data: currentParticipant} = await useCurrentParticipant();

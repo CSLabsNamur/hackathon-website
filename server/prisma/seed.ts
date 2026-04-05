@@ -2,6 +2,7 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { AdminCreateManyInput, RoomCreateInput, ScheduleItemCreateInput } from "./generated/prisma/models";
 import "dotenv/config";
+import { PERMISSION_CATALOG } from "../../shared/utils/authorization";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -264,6 +265,20 @@ const rooms: RoomCreateInput[] = [
 ];
 
 async function main() {
+  //region Permissions
+  await prisma.$transaction(PERMISSION_CATALOG.map((permission) => prisma.permission.upsert({
+    where: {
+      key: permission.key,
+    },
+    create: permission,
+    update: {
+      group: permission.group,
+      name: permission.name,
+      description: null,
+    },
+  })));
+  //endregion
+
   //region Teams
   //await prisma.team.createMany({data: teams, skipDuplicates: true});
   //

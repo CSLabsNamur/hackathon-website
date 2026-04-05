@@ -8,6 +8,7 @@ import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["admins.read", "roles.read"],
 });
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});

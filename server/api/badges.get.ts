@@ -2,7 +2,7 @@ import * as v from "valibot";
 import renderBadgesQuerySchema from "#shared/schemas/badges/render";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "badges.print");
 
   const {
     participants: includeParticipants = true,

@@ -1,26 +1,4 @@
-import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
-import type { H3Event } from "h3";
-
-export enum UserRole {
-  ADMIN = 1 << 0,
-  USER = 1 << 1,
-}
-
-export const requireAuth = async (event: H3Event, role: number) => {
-  const user = await serverSupabaseUser(event);
-  if (!user) {
-    throw createError({statusCode: 401, statusMessage: "Unauthorized"});
-  }
-  const userRole = user.app_metadata?.role as "admin" | "participant";
-  if (
-    (role & UserRole.ADMIN && userRole === "admin") ||
-    (role & UserRole.USER && userRole === "participant")
-  ) {
-    return user;
-  }
-  throw createError({statusCode: 403, statusMessage: "Forbidden"});
-};
 
 export const getParticipant = async (user: JwtPayload) => {
   const dbUser = await getDbUser(user);

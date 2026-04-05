@@ -4,7 +4,7 @@ import type { ParticipantUpdateInput } from "~~/server/prisma/generated/prisma/m
 import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "participants.update.sensitive");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 

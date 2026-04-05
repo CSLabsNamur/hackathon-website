@@ -2,7 +2,7 @@ import schema from "#shared/schemas/teams/edit";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {user} = await requirePermission(event, "teams.update.own");
 
   const participant = await getParticipant(user);
   const team = participant.team;

@@ -1,7 +1,5 @@
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
-
-  const dbUser = await getDbUser(user);
+  const {dbUser} = await requirePermission(event, "submissions.read.own");
 
   return prisma.participant.findUnique({
     where: {userId: dbUser.id},

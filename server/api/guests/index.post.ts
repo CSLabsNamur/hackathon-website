@@ -9,7 +9,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "guests.create");
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,

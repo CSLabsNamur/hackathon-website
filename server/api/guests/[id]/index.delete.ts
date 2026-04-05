@@ -3,7 +3,7 @@ import idParamSchema from "#shared/schemas/id";
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "guests.delete");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
   const guest = await prisma.guest.findUnique({where: {id}});

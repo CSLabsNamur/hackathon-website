@@ -9,6 +9,7 @@ import RemoveModal from "~/components/admin/roles/RemoveModal.vue";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["roles.read"],
 });
 
 const {status, data: roles, refresh} = await useRoles({lazy: true});

@@ -1,9 +1,7 @@
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {dbUser} = await requirePermission(event, "participants.read.own");
 
-  const dbUser = await getDbUser(user);
-
-  return prisma.participant.findUnique({
+  const participant = await prisma.participant.findUnique({
     where: {userId: dbUser.id},
     include: {
       team: {
@@ -24,4 +22,16 @@ export default defineEventHandler(async (event) => {
       user: true,
     },
   });
+
+  if (!participant) {
+    throw createError({statusCode: 404, statusMessage: "Participant not found"});
+  }
+
+  return {
+    ...participant,
+    authorization: {
+      roleKeys: getGrantedRoleKeys(dbUser),
+      permissionKeys: getGrantedPermissionKeys(dbUser),
+    },
+  };
 });

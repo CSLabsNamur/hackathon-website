@@ -14,6 +14,7 @@ import type { Editor, JSONContent } from "@tiptap/vue-3";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["broadcasts.send"],
 });
 
 const actions = useBroadcastsActions();

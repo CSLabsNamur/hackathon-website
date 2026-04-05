@@ -17,6 +17,7 @@ import { CautionStatus } from "#shared/utils/types";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["participants.read"],
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});

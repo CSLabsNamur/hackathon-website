@@ -7,7 +7,7 @@ import fs from "node:fs";
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {user} = await requirePermission(event, "submissions.update.own");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
   const participant = await getParticipant(user);
 
