@@ -1,10 +1,16 @@
-export default defineNuxtRouteMiddleware(async (_to, _from) => {
-  //const user = useSupabaseUser()
-  // TODO: Change when fixed https://github.com/nuxt-modules/supabase/issues/565
-  const supabase = useSupabaseClient();
-  const {data} = await supabase.auth.getClaims();
+export default defineNuxtRouteMiddleware(async (to) => {
+  try {
+    const admin = await $fetch<CurrentAdmin>("/api/admins/me", {
+      credentials: "same-origin",
+      headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
+    });
 
-  if (!data?.claims || data.claims.app_metadata?.role !== "admin") {
+    const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
+
+    if (requiredPermissions.length > 0 && !requiredPermissions.every((permission) => admin.authorization.permissionKeys.includes(permission))) {
+      return navigateTo("/admin");
+    }
+  } catch {
     return navigateTo("/");
   }
 });

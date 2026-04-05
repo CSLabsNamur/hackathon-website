@@ -301,7 +301,7 @@ function getPermissionDefinition(permission: PermissionKey): PermissionDefinitio
   if (!definition) {
     throw createError({
       statusCode: 500,
-      statusMessage: `Permission non implémentée dans l'évaluateur CASL: ${permission}`,
+      statusMessage: `Permission non implémentée : ${permission}`,
     });
   }
 
@@ -313,10 +313,6 @@ export async function requireSignedInUser(event: H3Event) {
 
   if (!user) {
     throw createError({statusCode: 401, statusMessage: "Unauthorized"});
-  }
-
-  if (!user.email) {
-    throw createError({statusCode: 401, statusMessage: "Authenticated user has no email."});
   }
 
   return user;
@@ -351,9 +347,7 @@ export async function getUserWithAuthorization(user: JwtPayload): Promise<UserWi
   }
 }
 
-export function createAbilityForUser(user: UserWithAuthorization): AppAbility {
-  const {can, build} = new AbilityBuilder<AppAbility>(createPrismaAbility);
-
+export function getGrantedPermissionKeys(user: UserWithAuthorization): PermissionKey[] {
   const permissionKeys = new Set<PermissionKey>();
 
   for (const assignment of user.roleAssignments) {
@@ -362,13 +356,28 @@ export function createAbilityForUser(user: UserWithAuthorization): AppAbility {
     }
   }
 
-  for (const permission of permissionKeys) {
-    getPermissionDefinition(permission).apply({can, cannot});
+  return [...permissionKeys];
+}
+
+export function getGrantedRoleKeys(user: UserWithAuthorization): string[] {
+  return [...new Set(user.roleAssignments.map((assignment) => assignment.role.key))];
+}
+
+export function hasOrganizerAccess(user: UserWithAuthorization): boolean {
+  return getGrantedRoleKeys(user).some((roleKey) => roleKey !== "participant");
+}
+
+export function createAbilityForUser(user: UserWithAuthorization): AppAbility {
+  const {can, build} = new AbilityBuilder<AppAbility>(createPrismaAbility);
+
+  for (const permission of getGrantedPermissionKeys(user)) {
+    getPermissionDefinition(permission).apply({can});
   }
 
   return build();
 }
 
+// TODO: caching
 export async function createAbilityForRequest(event: H3Event) {
   const user = await requireSignedInUser(event);
   const dbUser = await getUserWithAuthorization(user);
@@ -389,6 +398,16 @@ export async function requirePermission(event: H3Event, permission: PermissionKe
   const context = await createAbilityForRequest(event);
 
   if (!canUsePermission(context.ability, permission)) {
+    throw createError({statusCode: 403, statusMessage: "Forbidden"});
+  }
+
+  return context;
+}
+
+export async function requireOrganizerAccess(event: H3Event) {
+  const context = await createAbilityForRequest(event);
+
+  if (!hasOrganizerAccess(context.dbUser)) {
     throw createError({statusCode: 403, statusMessage: "Forbidden"});
   }
 
