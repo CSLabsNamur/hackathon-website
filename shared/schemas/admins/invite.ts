@@ -10,6 +10,14 @@ const schema = v.strictObject({
     v.transform((email) => email.trim().toLowerCase()),
     v.endsWith("@cslabs.be", "L'email doit se terminer par @cslabs.be"),
   ),
+  roleIds: v.pipe(
+    v.array(v.pipe(v.string(), v.nonEmpty("Un identifiant de rôle est invalide."))),
+    v.minLength(1, "Au moins un rôle est requis."),
+    v.check(
+      (roleIds) => new Set(roleIds).size === roleIds.length,
+      "Un rôle ne peut pas être sélectionné plusieurs fois.",
+    ),
+  ),
 });
 
 export default schema;

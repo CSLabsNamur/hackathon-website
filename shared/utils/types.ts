@@ -25,7 +25,19 @@ export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
 }>>;
 export type ParticipantWithUser = Prisma.ParticipantGetPayload<{ include: { user: true } }>
 export type ParticipantWithoutRelations = Omit<Participant, "team" | "submissions">;
-export type Admin = SerializeObject<Prisma.AdminGetPayload<{ include: { user: true } }>>;
+export type Admin = SerializeObject<Prisma.AdminGetPayload<{
+  include: {
+    user: {
+      include: {
+        roleAssignments: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    },
+  },
+}>>;
 export type Guest = SerializeObject<Prisma.GuestGetPayload<object>>;
 export type Sponsor = SerializeObject<Prisma.SponsorGetPayload<object>>;
 export type Room = SerializeObject<Prisma.RoomGetPayload<{ include: { teams: true } }>>;

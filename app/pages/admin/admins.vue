@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { UButton } from "#components";
+import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
+import type { Row } from "@tanstack/vue-table";
+import { UBadge, UButton, UDropdownMenu } from "#components";
+import EditRolesModal from "~/components/admin/admins/EditRolesModal.vue";
 import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
 
 definePageMeta({
@@ -8,10 +11,12 @@ definePageMeta({
 });
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
+const {data: roles} = await useRoles();
 const {renderAdminBadge} = useAdminsActions();
 
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
+const editRolesModal = overlay.create(EditRolesModal);
 const toast = useToast();
 
 const globalFilter = useSearchQuery();
@@ -30,6 +35,26 @@ const columns: NamedTableColumn<Admin>[] = [
     header: "Email",
     accessorFn: (row: Admin) => row.user.email,
     cell: ({row}) => row.original.user.email,
+  },
+  {
+    id: "roles",
+    name: "Rôles",
+    header: "Rôles",
+    accessorFn: (row: Admin) => row.user.roleAssignments.map((assignment) => assignment.role.name).join(" "),
+    meta: getWrappingColumnMeta(),
+    cell: ({row}) => {
+      const organizerRoles = row.original.user.roleAssignments.filter((assignment) => assignment.role.key !== "participant");
+
+      if (organizerRoles.length === 0) {
+        return h("span", {class: "text-muted"}, "Aucun");
+      }
+
+      return h("div", {class: "flex flex-wrap gap-1"}, organizerRoles.map((assignment) => h(UBadge, {
+        key: assignment.roleId,
+        color: "neutral",
+        variant: "soft",
+      }, () => assignment.role.name)));
+    },
   },
   {
     id: "badge",
@@ -56,10 +81,56 @@ const columns: NamedTableColumn<Admin>[] = [
       },
     }, () => "Générer"),
   },
+  {
+    id: "actions",
+    name: "Actions",
+    enableHiding: false,
+    enableGlobalFilter: false,
+    cell: ({row}) => {
+      return h(
+          "div",
+          {class: "text-right"},
+          h(
+              UDropdownMenu,
+              {
+                content: {align: "end"},
+                items: getRowItems(row),
+                "aria-label": `Actions pour l'administrateur ${row.original.user.firstName} ${row.original.user.lastName}`,
+              },
+              () => h(UButton, {
+                icon: "i-lucide-ellipsis-vertical",
+                color: "neutral",
+                variant: "ghost",
+                class: "ml-auto",
+                "aria-label": `Ouvrir le menu des actions pour l'administrateur ${row.original.user.firstName} ${row.original.user.lastName}`,
+              }),
+          ),
+      );
+    },
+  },
 ];
 
+function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
+  return [{
+    type: "label",
+    label: "Administration",
+  }, {
+    label: "Gérer les rôles",
+    icon: "i-lucide-shield-user",
+    onSelect: async () => {
+      const result = await editRolesModal.open({
+        admin: row.original,
+        roles: roles.value ?? [],
+      });
+      if (result) await refresh();
+    },
+  }];
+}
+
 async function openInviteModal() {
-  const result = await inviteModal.open();
+  const result = await inviteModal.open({
+    roles: roles.value ?? [],
+  });
   if (result) {
     await refresh();
   }

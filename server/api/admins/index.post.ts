@@ -18,18 +18,41 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 400, statusMessage: "Cet email existe déjà dans la base de données.."});
   }
 
+  const roles = await prisma.role.findMany({
+    where: {
+      id: {
+        in: data.roleIds,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (roles.length !== data.roleIds.length) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas.",
+    });
+  }
+
   try {
+    const {roleIds, ...userData} = data;
     const res = await prisma.admin.create({
       data: {
         user: {
           create: {
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
+            ...userData,
+            roleAssignments: {
+              createMany: {
+                data: roles.map((role) => ({
+                  roleId: role.id,
+                })),
+              },
+            },
           },
         },
       },
-      include: {user: true},
     });
 
     try {

@@ -3,7 +3,15 @@ export default defineEventHandler(async (event) => {
 
   return prisma.admin.findMany({
     include: {
-      user: true,
+      user: {
+        include: {
+          roleAssignments: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
     },
   });
 });

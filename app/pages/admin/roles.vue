@@ -44,7 +44,6 @@ const columns: NamedTableColumn<Role>[] = [
     name: "Clé",
     header: ({column}) => getStrSortedHeader(column, "Clé"),
     accessorKey: "key",
-    meta: getWrappingColumnMeta(),
   }, {
     id: "description",
     name: "Description",

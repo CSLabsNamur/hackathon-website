@@ -3,5 +3,18 @@ export default defineEventHandler(async (event) => {
 
   const dbUser = await getDbUser(user);
 
-  return prisma.admin.findUnique({where: {userId: dbUser.id}, include: {user: true}});
+  return prisma.admin.findUnique({
+    where: {userId: dbUser.id},
+    include: {
+      user: {
+        include: {
+          roleAssignments: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
+    },
+  });
 });

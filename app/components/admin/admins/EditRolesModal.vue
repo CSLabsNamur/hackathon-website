@@ -1,30 +1,30 @@
 <script setup lang="ts">
 import type * as v from "valibot";
-import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
-import schema from "#shared/schemas/admins/invite";
+import type { FormErrorEvent, FormSubmitEvent, SelectMenuItem } from "#ui/types";
+import schema from "#shared/schemas/admins/updateRoles";
 
 const props = defineProps<{
+  admin: Admin;
   roles: Role[];
 }>();
 
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
-const actions = useAdminsActions();
+const {updateAdminRoles} = useAdminsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
 const availableRoles = computed(() => props.roles.filter((role) => role.key !== "participant"));
-const roleOptions = computed(() => availableRoles.value.map((role) => ({
+const roleOptions = computed<SelectMenuItem[]>(() => availableRoles.value.map((role) => ({
   label: role.name,
   value: role.id,
 })));
 
 const state = reactive<Schema>({
-  firstName: "",
-  lastName: "",
-  email: "",
-  roleIds: [],
+  roleIds: props.admin.user.roleAssignments
+      .filter((assignment) => assignment.role.key !== "participant")
+      .map((assignment) => assignment.roleId),
 });
 
 const isSubmitting = ref(false);
@@ -33,11 +33,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.inviteAdmin(event.data);
+    await updateAdminRoles(props.admin.id, event.data);
 
     toast.add({
-      title: "Administrateur ajouté",
-      description: "L'administrateur a été ajouté avec succès.",
+      title: "Rôles mis à jour",
+      description: "Les rôles de l'administrateur ont été mis à jour.",
       color: "success",
       duration: 2000,
     });
@@ -46,7 +46,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   } catch {
     toast.add({
       title: "Erreur",
-      description: "Erreur lors de l'ajout de l'administrateur.",
+      description: "Erreur lors de la mise à jour des rôles.",
       color: "error",
     });
   } finally {
@@ -64,26 +64,14 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UModal title="Ajouter un admin"
-          description="Entrez l'adresse email CSLabs de la personne à ajouter comme administrateur."
+  <UModal title="Gérer les rôles"
+          :description="`Mettez à jour les rôles de ${admin.user.firstName} ${admin.user.lastName}.`"
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #body>
       <UContainer>
-        <UForm id="admin-invite-form" :schema :state :disabled="isSubmitting" class="grid grid-cols-1 gap-6"
+        <UForm id="admin-roles-form" :schema :state :disabled="isSubmitting" class="grid grid-cols-1 gap-6"
                @submit="onSubmit" @error="onError">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <UFormField label="Prénom" name="firstName" required>
-              <UInput v-model="state.firstName" icon="i-lucide-user" type="text" class="w-full" placeholder="Prénom"/>
-            </UFormField>
-            <UFormField label="Nom" name="lastName" required>
-              <UInput v-model="state.lastName" icon="i-lucide-user" type="text" class="w-full" placeholder="Nom"/>
-            </UFormField>
-          </div>
-          <UFormField label="Email" name="email" required description="Doit se terminer par @cslabs.be">
-            <UInput v-model="state.email" icon="i-lucide-mail" type="email" class="w-full"
-                    placeholder="...@cslabs.be"/>
-          </UFormField>
           <UFormField label="Rôles" name="roleIds" required>
             <USelectMenu v-model="state.roleIds" :items="roleOptions" value-key="value" multiple class="w-full"
                          placeholder="Sélectionnez un ou plusieurs rôles"/>
@@ -93,7 +81,7 @@ async function onError(event: FormErrorEvent) {
     </template>
 
     <template #footer="{close}">
-      <UButton type="submit" form="admin-invite-form" :loading="isSubmitting">Ajouter</UButton>
+      <UButton type="submit" form="admin-roles-form" :loading="isSubmitting">Enregistrer</UButton>
       <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>

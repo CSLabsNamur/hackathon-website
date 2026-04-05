@@ -82,6 +82,22 @@ export default defineEventHandler(async (event) => {
   }
 
   // Prepare the payload for creating the participant
+  const participantRole = await prisma.role.findUnique({
+    where: {
+      key: "participant",
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!participantRole) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Le rôle participant n'est pas configuré.",
+    });
+  }
+
   const payload: ParticipantCreateInput = {
     ...body,
     user: {
@@ -89,6 +105,15 @@ export default defineEventHandler(async (event) => {
         firstName,
         lastName,
         email,
+        roleAssignments: {
+          create: [{
+            role: {
+              connect: {
+                id: participantRole.id,
+              },
+            },
+          }],
+        },
       },
     },
     curriculumVitae: undefined,
