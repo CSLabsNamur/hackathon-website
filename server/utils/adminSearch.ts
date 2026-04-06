@@ -3,7 +3,6 @@
  * The logic made by AI was heavily refactored and simplified by hand.
  */
 import Fuse, { type FuseOptionKey } from "fuse.js";
-import { ADMIN_SEARCH_MIN_QUERY_LENGTH, type AdminSearchGroup, type AdminSearchItem } from "#shared/utils/adminSearch";
 import {
   ADMIN_SEARCH_MODEL_CONFIGS,
   type AdminSearchModelConfig,
@@ -79,6 +78,16 @@ interface SearchDelegate {
     orderBy: Record<string, "asc" | "desc">;
   }) => Promise<SearchRecord[]>;
 }
+
+export const SEARCH_MODEL_PERMISSIONS: Record<AdminSearchModelName, readonly Permission[]> = {
+  Participant: ["participants.read"],
+  Team: ["teams.read", "participants.read"],
+  Guest: ["guests.read"],
+  Sponsor: ["sponsors.read"],
+  SubmissionRequest: ["submissionRequests.read", "participants.read"],
+  Room: ["rooms.read", "teams.read"],
+  Admin: ["admins.read", "roles.read"],
+};
 
 const DESCRIPTION_MAX_LENGTH = 96;
 const FETCH_LIMIT_FLOOR = 12;
@@ -324,14 +333,27 @@ const buildDefinitions = (): SearchModelDefinition[] => {
     });
 };
 
-export const searchAdminIndex = async (query: string, limit: number): Promise<AdminSearchGroup[]> => {
+export const searchAdminIndex = async (
+  query: string,
+  limit: number,
+  allowedModelNames?: readonly AdminSearchModelName[],
+): Promise<AdminSearchGroup[]> => {
   const input = buildQueryInput(query);
 
   if (!input) return [];
 
   // Disgusting operator but deal with it
   // Basically: if cachedDefinitions is not null, use it, otherwise build definitions and cache them for next calls
-  const definitions = cachedDefinitions ??= buildDefinitions();
+  const allDefinitions = cachedDefinitions ??= buildDefinitions();
+  const allowedModelNameSet = allowedModelNames ? new Set(allowedModelNames) : null;
+  const definitions = allowedModelNameSet
+    ? allDefinitions.filter((definition) => allowedModelNameSet.has(definition.modelName))
+    : allDefinitions;
+
+  if (definitions.length === 0) {
+    return [];
+  }
+
   const perGroupLimit = Math.max(MIN_ITEMS_PER_GROUP, Math.ceil(limit / Math.max(definitions.length, 1)));
   const results = await Promise.all(definitions.map(async (definition) => {
     const delegate = Reflect.get(prisma, definition.modelName.charAt(0).toLowerCase() + definition.modelName.slice(1)) as SearchDelegate | undefined;
