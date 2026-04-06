@@ -113,6 +113,9 @@ export default defineNuxtConfig({
     "/__nuxt_content/pages/**": {
       csurf: false,
     },
+    "__nuxt_hints/**": {
+      csurf: false,
+    },
     "/historique": {static: true},
     "/cookie-policy": {static: true},
     "/admin/**": {ssr: false},

@@ -219,8 +219,8 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
               </template>
               <template #expanded="{row}">
                 <div class="flex flex-col gap-2">
-                  <NuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
-                           class="max-h-48 w-fit object-contain self-center"/>
+                  <LazyNuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
+                               class="max-h-48 w-fit object-contain self-center"/>
                   <USeparator orientation="horizontal"/>
                   <article class="text-white max-h-96 overflow-auto p-4"
                            v-html="getSponsorHTMLDescription(row.original)"/>
