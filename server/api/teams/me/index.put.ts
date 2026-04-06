@@ -7,6 +7,13 @@ export default defineEventHandler(async (event) => {
   const participant = await getParticipantForDbUser(dbUser);
   const team = participant.team;
 
+  if (!team) {
+    throw createError({
+      statusCode: 404,
+      message: "Vous n'êtes pas dans une équipe.",
+    });
+  }
+
   const data = await readValidatedBody(event, v.parser(schema));
 
   return prisma.team.update({
