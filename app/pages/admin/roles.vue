@@ -101,6 +101,11 @@ const columns: NamedTableColumn<Role>[] = [
   },
 ];
 
+const columnVisibility = usePersistentColumnVisibility("admin-roles-table", {
+  key: false,
+});
+const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+
 function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   const canUpdateRole = can("update", "Role");
   const canDeleteRole = can("delete", "Role");
@@ -162,6 +167,14 @@ async function openCreateModal() {
           <div class="flex flex-col gap-1 lg:gap-2">
             <div v-if="status === 'success'" class="flex justify-between">
               <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+              <TourHelperPopover title="Astuce : colonnes personnalisables"
+                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                                 status-key="admin-table-column-visibility" placement="top">
+                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                               aria-label="Afficher ou masquer les colonnes">
+                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+                </UDropdownMenu>
+              </TourHelperPopover>
             </div>
 
             <UTable v-model:global-filter="globalFilter" :columns="columns" :data="roles" sticky
