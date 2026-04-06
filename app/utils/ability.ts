@@ -6,6 +6,12 @@ type AbilityLike = {
   can: (action: AppAction, subject: AppSubjectName) => boolean;
 };
 
+const abilityCache = new Map<string, ClientAppAbility>();
+
+function getPermissionKeyCacheKey(permissionKeys: readonly Permission[] = []) {
+  return [...new Set(permissionKeys)].sort().join("|");
+}
+
 export function createClientAbilityForPermissionKeys(permissionKeys: readonly Permission[] = []): ClientAppAbility {
   const {can, build} = new AbilityBuilder<ClientAppAbility>(createMongoAbility);
 
@@ -14,6 +20,20 @@ export function createClientAbilityForPermissionKeys(permissionKeys: readonly Pe
   }
 
   return build();
+}
+
+export function getClientAbilityForPermissionKeys(permissionKeys: readonly Permission[] = []): ClientAppAbility {
+  const cacheKey = getPermissionKeyCacheKey(permissionKeys);
+  const cachedAbility = abilityCache.get(cacheKey);
+
+  if (cachedAbility) {
+    return cachedAbility;
+  }
+
+  const ability = createClientAbilityForPermissionKeys(permissionKeys);
+  abilityCache.set(cacheKey, ability);
+
+  return ability;
 }
 
 export function canUsePermissionKey(ability: AbilityLike, permission: Permission) {

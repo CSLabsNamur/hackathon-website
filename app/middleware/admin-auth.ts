@@ -1,4 +1,4 @@
-import { canUsePermissionKeys, createClientAbilityForPermissionKeys } from "~/utils/ability";
+import { canUsePermissionKeys, getClientAbilityForPermissionKeys } from "~/utils/ability";
 
 export default defineNuxtRouteMiddleware(async (to) => {
   try {
@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
 
     const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
-    const ability = createClientAbilityForPermissionKeys(admin.authorization.permissionKeys);
+    const ability = getClientAbilityForPermissionKeys(admin.authorization.permissionKeys);
 
     if (!canUsePermissionKeys(ability, requiredPermissions)) {
       return navigateTo("/admin");
