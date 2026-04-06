@@ -16,5 +16,27 @@ export default defineEventHandler(async (event) => {
     ...data,
   };
 
+  const submissionRequest = await prisma.submissionRequest.findUnique({
+    where: {id},
+    select: {
+      _count: {
+        select: {
+          submissions: true,
+        },
+      },
+    },
+  });
+
+  if (!submissionRequest) {
+    throw createError({statusCode: 404, message: "Demande de soumission introuvable."});
+  }
+
+  if (submissionRequest._count.submissions > 0) {
+    throw createError({
+      statusCode: 400,
+      message: "Impossible de modifier une demande de soumission qui a déjà des soumissions associées.",
+    });
+  }
+
   return prisma.submissionRequest.update({where: {id}, data: payload});
 });
