@@ -1,9 +1,10 @@
 import schema from "#shared/schemas/admins/invite";
 import * as v from "valibot";
 import renderAdminInvite from "~~/server/mail/generated/admin-invite";
+import { isSuperAdmin } from "#server/utils/ability";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "admins.create");
+  const {dbUser} = await requirePermission(event, "admins.create");
 
   const data = await readValidatedBody(event, v.parser(schema));
 
@@ -29,6 +30,7 @@ export default defineEventHandler(async (event) => {
     },
     select: {
       id: true,
+      key: true,
     },
   });
 
@@ -36,6 +38,13 @@ export default defineEventHandler(async (event) => {
     throw createError({
       statusCode: 400,
       statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas ou ne peuvent pas être assignés à un administrateur.",
+    });
+  }
+
+  if (roles.some((role) => role.key === "super_admin") && !isSuperAdmin(dbUser)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Vous n'avez pas la permission d'assigner le rôle de super administrateur.",
     });
   }
 
