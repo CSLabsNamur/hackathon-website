@@ -2,13 +2,14 @@ import { canUsePermissionKeys, getClientAbilityForPermissionKeys } from "~/utils
 
 export default defineNuxtRouteMiddleware(async (to) => {
   try {
-    const participant = await $fetch<CurrentParticipant>("/api/participants/me", {
-      credentials: "same-origin",
-      headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
-    });
+    const {data: participant, error} = await useCurrentParticipant();
+
+    if (error.value || !participant.value) {
+      return navigateTo("/");
+    }
 
     const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
-    const ability = getClientAbilityForPermissionKeys(participant.authorization.permissionKeys);
+    const ability = getClientAbilityForPermissionKeys(participant.value.authorization.permissionKeys);
 
     if (!canUsePermissionKeys(ability, requiredPermissions)) {
       return navigateTo("/");
