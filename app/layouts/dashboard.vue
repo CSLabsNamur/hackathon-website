@@ -88,7 +88,7 @@ const topLinks: RestrictedNavigationItem[] = [
     label: "Impressions",
     icon: "i-lucide-printer",
     to: "/admin/prints",
-    requiredPermissions: ["badges.print", "participants.read", "guests.read", "admins.read"],
+    requiredPermissions: ["badges.print", "participants.read", "guests.read", "sponsors.read", "admins.read"],
     onSelect: () => {
       open.value = false;
     },

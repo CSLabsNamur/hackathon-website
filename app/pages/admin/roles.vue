@@ -13,7 +13,9 @@ definePageMeta({
 });
 
 const {status, data: roles, refresh} = await useRoles({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {data: permissions} = await usePermissions();
+const {can} = useAbility(currentAdmin);
 
 const overlay = useOverlay();
 const dayjs = useDayjs();
@@ -100,6 +102,9 @@ const columns: NamedTableColumn<Role>[] = [
 ];
 
 function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
+  const canUpdateRole = can("update", "Role");
+  const canDeleteRole = can("delete", "Role");
+
   return [{
     type: "label",
     label: `Créé le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
@@ -110,8 +115,9 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   }, {
     label: "Modifier le rôle",
     icon: "i-lucide-edit-2",
-    disabled: row.original.system,
+    disabled: row.original.system || !canUpdateRole,
     onSelect: async () => {
+      if (row.original.system || !canUpdateRole) return;
       const result = await editModal.open({
         role: row.original,
         permissions: permissions.value ?? [],
@@ -121,8 +127,9 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   }, {
     label: "Supprimer le rôle",
     icon: "i-lucide-trash-2",
-    disabled: row.original.system || row.original._count.assignments > 0,
+    disabled: row.original.system || row.original._count.assignments > 0 || !canDeleteRole,
     onSelect: async () => {
+      if (row.original.system || row.original._count.assignments > 0 || !canDeleteRole) return;
       const result = await removeModal.open({role: row.original});
       if (result) await refresh();
     },
@@ -130,6 +137,8 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
 }
 
 async function openCreateModal() {
+  if (!can("create", "Role")) return;
+
   const result = await createModal.open({
     permissions: permissions.value ?? [],
   });
@@ -142,7 +151,7 @@ async function openCreateModal() {
     <template #header>
       <DashboardNavbar title="Rôles">
         <template #right>
-          <UButton icon="i-lucide-plus" @click="openCreateModal">Nouveau</UButton>
+          <UButton icon="i-lucide-plus" :disabled="!can('create', 'Role')" @click="openCreateModal">Nouveau</UButton>
         </template>
       </DashboardNavbar>
     </template>

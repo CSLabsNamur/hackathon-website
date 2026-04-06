@@ -19,6 +19,9 @@ definePageMeta({
 
 const actions = useBroadcastsActions();
 const toast = useToast();
+const {data: currentAdmin} = await useCurrentAdmin();
+const {can} = useAbility(currentAdmin);
+const canSendBroadcast = computed(() => can("send", "Broadcast"));
 
 type Schema = v.InferOutput<typeof schema>
 
@@ -318,6 +321,8 @@ const suggestionItems: EditorSuggestionMenuItem[][] = [[{
 //endregion
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  if (!canSendBroadcast.value) return;
+
   try {
     isSubmitting.value = true;
     await actions.sendBroadcast(event.data);
@@ -348,7 +353,7 @@ async function onError(event: FormErrorEvent) {
     <template #body>
       <UContainer class="pb-6 md:pb-8">
         <ContentCard>
-          <UForm id="broadcast-form" :schema :state :disabled="isSubmitting" class="flex flex-col gap-4 lg:gap-6"
+          <UForm id="broadcast-form" :schema :state :disabled="isSubmitting || !canSendBroadcast" class="flex flex-col gap-4 lg:gap-6"
                  @submit="onSubmit" @error="onError">
             <UFormField label="Destinataires" name="recipients" required>
               <URadioGroup v-model="state.recipients" :items="recipientsItems"
@@ -368,7 +373,7 @@ async function onError(event: FormErrorEvent) {
 
             <UFormField label="Message" name="message" required>
               <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html" ref="editor"
-                       :editable="!isSubmitting" :starter-kit="starterKit"
+                       :editable="!isSubmitting && canSendBroadcast" :starter-kit="starterKit"
                        :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
                        :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"
                        class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
@@ -403,7 +408,8 @@ async function onError(event: FormErrorEvent) {
 
           <template #footer>
             <div class="flex justify-end">
-              <UButton type="submit" form="broadcast-form" icon="i-lucide-send" :loading="isSubmitting">
+              <UButton type="submit" form="broadcast-form" icon="i-lucide-send" :loading="isSubmitting"
+                       :disabled="!canSendBroadcast">
                 Envoyer
               </UButton>
             </div>

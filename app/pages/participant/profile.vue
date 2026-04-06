@@ -8,6 +8,8 @@ definePageMeta({
 });
 
 const {status, data: currentParticipant} = await useCurrentParticipant();
+const {can} = useAbility(currentParticipant);
+const canUpdateProfile = computed(() => can("updateOwn", "Participant"));
 const supabase = useSupabaseClient();
 
 const toast = useToast();
@@ -103,7 +105,8 @@ const downloadCV = async () => {
 
           <template #footer>
             <div class="flex gap-1.5">
-              <UButton @click="editModal.open({participant: currentParticipant!})">
+              <UButton :disabled="!canUpdateProfile"
+                       @click="canUpdateProfile && editModal.open({participant: currentParticipant!})">
                 Modifier mon profil
               </UButton>
             </div>

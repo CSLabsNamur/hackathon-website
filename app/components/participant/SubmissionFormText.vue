@@ -5,6 +5,7 @@ import schema, { type SubmitTextSchema } from "#shared/schemas/submissions/submi
 const props = defineProps<{
   participant: Participant;
   submissionRequest: SubmissionRequest;
+  canSubmit?: boolean;
 }>();
 const emit = defineEmits<{ submit: [boolean] }>();
 
@@ -21,6 +22,8 @@ const state = reactive<SubmitTextSchema>({
 const isSubmitting = ref(false);
 
 async function onSubmit() {
+  if (!props.canSubmit) return;
+
   try {
     isSubmitting.value = true;
     await actions.submitText(props.submissionRequest.id, {content: state.content, skipped: false});
@@ -32,6 +35,8 @@ async function onSubmit() {
 }
 
 async function onSkip() {
+  if (!props.canSubmit) return;
+
   await actions.submitText(props.submissionRequest.id, {content: undefined, skipped: true});
   emit("submit", true);
 }
@@ -49,16 +54,16 @@ async function onError(event: FormErrorEvent) {
   <UForm :schema="schema" :state class="grid gap-6" @submit="onSubmit" @error="onError">
     <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined"
                 name="content" :required="submissionRequest.required">
-      <UTextarea v-model="state.content" :disabled="isSubmitting" placeholder="Votre réponse..." :rows="6"
+      <UTextarea v-model="state.content" :disabled="isSubmitting || !canSubmit" placeholder="Votre réponse..." :rows="6"
                  class="w-full" :required="submissionRequest.required"/>
     </UFormField>
 
     <div class="flex gap-1.5 place-self-end">
-      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary" :disabled="isSubmitting"
+      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary" :disabled="isSubmitting || !canSubmit"
                @click="onSkip">
         Passer
       </UButton>
-      <UButton type="submit" :loading="isSubmitting">
+      <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmit">
         Soumettre
       </UButton>
     </div>

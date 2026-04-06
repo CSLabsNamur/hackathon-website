@@ -21,7 +21,9 @@ definePageMeta({
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {renderParticipantBadge} = useParticipantsActions();
+const {can} = useAbility(currentAdmin);
 
 const supabase = useSupabaseClient();
 const toast = useToast();
@@ -236,6 +238,11 @@ const columnVisibility = usePersistentColumnVisibility("admin-participants-table
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+  const canUpdateParticipant = can("updateSensitive", "Participant");
+  const canUpdateCaution = can("update", "Participant");
+  const canDeleteParticipant = can("delete", "Participant");
+  const canPrintBadge = can("print", "Badge");
+
   return [
     {
       type: "label",
@@ -263,7 +270,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Gérer la caution",
       icon: "i-lucide-wallet",
+      disabled: !canUpdateCaution,
       onSelect: async () => {
+        if (!canUpdateCaution) return;
         const result = await cautionModal.open({participant: row.original});
         if (result) await refresh();
       },
@@ -271,7 +280,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Éditer l'utilisateur",
       icon: "i-lucide-edit-2",
+      disabled: !canUpdateParticipant,
       onSelect: async () => {
+        if (!canUpdateParticipant) return;
         const result = await editModal.open({participant: row.original, adminEdit: true});
         if (result) await refresh();
       },
@@ -279,7 +290,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Supprimer l'utilisateur",
       icon: "i-lucide-trash-2",
+      disabled: !canDeleteParticipant,
       onSelect: async () => {
+        if (!canDeleteParticipant) return;
         const result = await removeModal.open({participant: row.original});
         if (result) await refresh();
       },
@@ -287,7 +300,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Générer le badge",
       icon: "i-lucide-id-card",
+      disabled: !canPrintBadge,
       onSelect: async () => {
+        if (!canPrintBadge) return;
         try {
           const badge = await renderParticipantBadge(row.original);
           downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);

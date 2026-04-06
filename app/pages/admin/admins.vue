@@ -12,8 +12,10 @@ definePageMeta({
 });
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {data: roles} = await useRoles();
 const {renderAdminBadge} = useAdminsActions();
+const {can} = useAbility(currentAdmin);
 
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
@@ -62,25 +64,32 @@ const columns: NamedTableColumn<Admin>[] = [
     name: "Badge",
     header: "Badge",
     enableGlobalFilter: false,
-    cell: ({row}) => h(UButton, {
-      icon: "i-lucide-id-card",
-      color: "neutral",
-      variant: "ghost",
-      "aria-label": `Générer le badge pour ${row.original.user.firstName} ${row.original.user.lastName}`,
-      loadingAuto: true,
-      onClick: async () => {
-        try {
-          const badge = await renderAdminBadge(row.original);
-          downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);
-        } catch {
-          toast.add({
-            title: "Erreur",
-            description: "Impossible de générer le badge.",
-            color: "error",
-          });
-        }
-      },
-    }, () => "Générer"),
+    cell: ({row}) => {
+      const canPrintBadge = can("print", "Badge");
+
+      return h(UButton, {
+        icon: "i-lucide-id-card",
+        color: "neutral",
+        variant: "ghost",
+        disabled: !canPrintBadge,
+        "aria-label": `Générer le badge pour ${row.original.user.firstName} ${row.original.user.lastName}`,
+        loadingAuto: true,
+        onClick: async () => {
+          if (!canPrintBadge) return;
+
+          try {
+            const badge = await renderAdminBadge(row.original);
+            downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);
+          } catch {
+            toast.add({
+              title: "Erreur",
+              description: "Impossible de générer le badge.",
+              color: "error",
+            });
+          }
+        },
+      }, () => "Générer");
+    },
   },
   {
     id: "actions",
@@ -112,13 +121,17 @@ const columns: NamedTableColumn<Admin>[] = [
 ];
 
 function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
+  const canUpdateAdmin = can("update", "Admin");
+
   return [{
     type: "label",
     label: "Administration",
   }, {
     label: "Gérer les rôles",
     icon: "i-lucide-shield-user",
+    disabled: !canUpdateAdmin,
     onSelect: async () => {
+      if (!canUpdateAdmin) return;
       const result = await editRolesModal.open({
         admin: row.original,
         roles: roles.value ?? [],
@@ -129,6 +142,8 @@ function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
 }
 
 async function openInviteModal() {
+  if (!can("create", "Admin")) return;
+
   const result = await inviteModal.open({
     roles: roles.value ?? [],
   });
@@ -143,7 +158,7 @@ async function openInviteModal() {
     <template #header>
       <DashboardNavbar title="Administrateurs">
         <template #right>
-          <UButton icon="i-lucide-user-plus" @click="openInviteModal">Ajouter</UButton>
+          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Admin')" @click="openInviteModal">Ajouter</UButton>
         </template>
       </DashboardNavbar>
     </template>

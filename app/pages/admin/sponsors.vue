@@ -13,7 +13,9 @@ definePageMeta({
 });
 
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {renderSponsorBadge} = useSponsorsActions();
+const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -117,6 +119,10 @@ const columns: NamedTableColumn<Sponsor>[] = [
 ];
 
 function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
+  const canUpdateSponsor = can("update", "Sponsor");
+  const canDeleteSponsor = can("delete", "Sponsor");
+  const canPrintBadge = can("print", "Badge");
+
   return [{
     type: "label",
     label: `Ajouté le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
@@ -127,22 +133,27 @@ function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
   }, {
     label: "Éditer le sponsor",
     icon: "i-lucide-edit-2",
+    disabled: !canUpdateSponsor,
     onSelect: async () => {
+      if (!canUpdateSponsor) return;
       const result = await editModal.open({sponsor: row.original});
       if (result) await refresh();
     },
   }, {
     label: "Supprimer le sponsor",
     icon: "i-lucide-trash-2",
+    disabled: !canDeleteSponsor,
     onSelect: async () => {
+      if (!canDeleteSponsor) return;
       const result = await removeModal.open({sponsor: row.original});
       if (result) await refresh();
     },
   }, {
     label: "Générer le badge",
     icon: "i-lucide-id-card",
-    disabled: !row.original.hasBadge,
+    disabled: !row.original.hasBadge || !canPrintBadge,
     onSelect: async () => {
+      if (!row.original.hasBadge || !canPrintBadge) return;
       try {
         const badge = await renderSponsorBadge(row.original);
         downloadBlob(badge, `badge-${row.original.name}.pdf`);
@@ -158,6 +169,8 @@ function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
 }
 
 async function openCreateModal() {
+  if (!can("create", "Sponsor")) return;
+
   const result = await createModal.open();
   if (result) {
     await refresh();
@@ -174,7 +187,7 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
     <template #header>
       <DashboardNavbar title="Sponsors">
         <template #right>
-          <UButton icon="i-lucide-plus" @click="openCreateModal">Nouveau</UButton>
+          <UButton icon="i-lucide-plus" :disabled="!can('create', 'Sponsor')" @click="openCreateModal">Nouveau</UButton>
         </template>
       </DashboardNavbar>
     </template>

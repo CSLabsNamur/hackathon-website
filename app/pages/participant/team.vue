@@ -11,6 +11,8 @@ definePageMeta({
 });
 
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const {can} = useAbility(currentParticipant);
+const canUpdateOwnTeam = computed(() => can("updateOwn", "Team"));
 
 const UButton = resolveComponent("UButton");
 //const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -143,7 +145,8 @@ const copyToken = () => {
 };
 
 const openEditTeamModal = async () => {
-  if (!currentParticipant.value?.team) return;
+  if (!currentParticipant.value?.team || !canUpdateOwnTeam.value) return;
+
   const result = await editTeamModal.open({team: currentParticipant.value.team as unknown as Team});
   if (result) await refreshCurrentParticipant();
 };
@@ -156,6 +159,7 @@ const openEditTeamModal = async () => {
         <template #right>
           <UButton v-if="currentParticipant?.team"
                    icon="i-lucide-edit-2"
+                   :disabled="!canUpdateOwnTeam"
                    @click="openEditTeamModal">
             Modifier
           </UButton>

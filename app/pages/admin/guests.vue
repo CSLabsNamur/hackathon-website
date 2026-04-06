@@ -13,7 +13,9 @@ definePageMeta({
 });
 
 const {status, data: guests, refresh} = await useGuests({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {renderGuestBadge} = useGuestsActions();
+const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -123,6 +125,10 @@ const columns: NamedTableColumn<Guest>[] = [
 ];
 
 function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
+  const canUpdateGuest = can("update", "Guest");
+  const canDeleteGuest = can("delete", "Guest");
+  const canPrintBadge = can("print", "Badge");
+
   return [
     {
       type: "label",
@@ -136,7 +142,9 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
     {
       label: "Éditer l'invité",
       icon: "i-lucide-edit-2",
+      disabled: !canUpdateGuest,
       onSelect: async () => {
+        if (!canUpdateGuest) return;
         const result = await editModal.open({guest: row.original});
         if (result) await refresh();
       },
@@ -144,7 +152,9 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
     {
       label: "Supprimer l'invité",
       icon: "i-lucide-trash-2",
+      disabled: !canDeleteGuest,
       onSelect: async () => {
+        if (!canDeleteGuest) return;
         const result = await removeModal.open({guest: row.original});
         if (result) await refresh();
       },
@@ -152,7 +162,9 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
     {
       label: "Générer le badge",
       icon: "i-lucide-id-card",
+      disabled: !canPrintBadge,
       onSelect: async () => {
+        if (!canPrintBadge) return;
         try {
           const badge = await renderGuestBadge(row.original);
           downloadBlob(badge, `badge-${row.original.name}.pdf`);
@@ -168,6 +180,8 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
 }
 
 async function openCreateModal() {
+  if (!can("create", "Guest")) return;
+
   const result = await createModal.open();
   if (result) {
     await refresh();
@@ -184,7 +198,7 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
     <template #header>
       <DashboardNavbar title="Invités">
         <template #right>
-          <UButton icon="i-lucide-user-plus" @click="openCreateModal">Ajouter</UButton>
+          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Guest')" @click="openCreateModal">Ajouter</UButton>
         </template>
       </DashboardNavbar>
     </template>
