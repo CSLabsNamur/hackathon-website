@@ -153,10 +153,8 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
       <template #default="{collapsed}">
         <UDashboardSearchButton :collapsed class="bg-transparent ring-default"/>
 
-        <RestrictedNavigationMenu :collapsed :items="topLinks" orientation="vertical" tooltip popover
-                                  :user="currentAdmin"/>
-        <RestrictedNavigationMenu :collapsed :items="bottomLinks" orientation="vertical" tooltip :user="currentAdmin"
-                                  class="mt-auto"/>
+        <RestrictedNavigationMenu :collapsed :items="topLinks" :user="currentAdmin"/>
+        <RestrictedNavigationMenu :collapsed :items="bottomLinks" :user="currentAdmin" class="mt-auto"/>
       </template>
 
       <template #footer="{collapsed}">

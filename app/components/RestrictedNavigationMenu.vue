@@ -5,7 +5,12 @@ import type { NavigationMenuItem, NavigationMenuProps } from "@nuxt/ui";
 const props = defineProps<{
   user?: CurrentAdmin | CurrentParticipant | null;
   items?: RestrictedNavigationItem[] | RestrictedNavigationItem[][];
-} & Omit<NavigationMenuProps, "items">>();
+} & Omit<NavigationMenuProps, "items" | "class">>();
+
+const navigationMenuProps = computed(() => {
+  const {user: _user, items: _items, ...forwardedProps} = props;
+  return forwardedProps;
+});
 
 export type RestrictedNavigationItem = Omit<NavigationMenuItem, "children"> & {
   requiredPermissions?: PermissionKey[];
@@ -39,5 +44,5 @@ const links: ComputedRef<NavigationMenuItem[][]> = computed(() => groupedItems.v
 </script>
 
 <template>
-  <UNavigationMenu :v-bind="$attrs" :items="links" orientation="vertical" tooltip popover/>
+  <UNavigationMenu v-bind="{...$attrs, ...navigationMenuProps}" :items="links" orientation="vertical" tooltip popover/>
 </template>
