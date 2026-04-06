@@ -8,7 +8,12 @@ export default defineEventHandler(async (event) => {
         include: {
           members: {
             include: {
-              user: true,
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
         },
