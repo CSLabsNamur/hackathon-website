@@ -120,8 +120,12 @@ export default defineEventHandler(async (event) => {
     caution: CautionStatus.NOT_PAID,
   };
 
+  let uploadedCvPath: string | undefined;
+  let createdUserId: string | undefined;
+
   try {
     const participant = await prisma.participant.create({data: payload});
+    createdUserId = participant.userId;
 
     // Upload CV to Supabase Storage if provided
     if (curriculumVitae) {
@@ -139,20 +143,29 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
       }
 
+      uploadedCvPath = data.path;
+
       await prisma.participant.update({
         where: {id: participant.id},
         data: {
-          curriculumVitae: data.path,
+          curriculumVitae: uploadedCvPath,
         },
       });
     }
   } catch {
-    if (curriculumVitae) {
+    if (uploadedCvPath) {
       // Clean up uploaded CV in case of error
       const supabase = serverSupabaseServiceRole(event);
-      const {error} = await supabase.storage.from("cvs").remove([`${firstName + lastName}_${curriculumVitae.originalFilename}`]);
+      const {error} = await supabase.storage.from("cvs").remove([uploadedCvPath]);
       if (error) {
         console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
+      }
+    }
+    if (createdUserId) {
+      try {
+        await prisma.user.delete({where: {id: createdUserId}});
+      } catch (error) {
+        console.error("Erreur lors de la suppression du participant après échec de la création :", error);
       }
     }
     throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
