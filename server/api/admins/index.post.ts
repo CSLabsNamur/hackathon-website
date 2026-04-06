@@ -23,6 +23,9 @@ export default defineEventHandler(async (event) => {
       id: {
         in: data.roleIds,
       },
+      key: {
+        not: "participant",
+      },
     },
     select: {
       id: true,
@@ -32,7 +35,7 @@ export default defineEventHandler(async (event) => {
   if (roles.length !== data.roleIds.length) {
     throw createError({
       statusCode: 400,
-      statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas.",
+      statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas ou ne peuvent pas être assignés à un administrateur.",
     });
   }
 
