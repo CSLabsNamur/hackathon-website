@@ -139,7 +139,12 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
       }
 
-      payload.curriculumVitae = data.path;
+      await prisma.participant.update({
+        where: {id: participant.id},
+        data: {
+          curriculumVitae: data.path,
+        },
+      });
     }
   } catch {
     if (curriculumVitae) {
