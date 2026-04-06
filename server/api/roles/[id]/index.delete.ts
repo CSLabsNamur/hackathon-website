@@ -2,7 +2,7 @@ import * as v from "valibot";
 import idSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "roles.delete");
+  const {dbUser} = await requirePermission(event, "roles.delete");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idSchema));
 
@@ -14,6 +14,15 @@ export default defineEventHandler(async (event) => {
       _count: {
         select: {
           assignments: true,
+        },
+      },
+      permissions: {
+        select: {
+          permission: {
+            select: {
+              key: true,
+            },
+          },
         },
       },
     },
@@ -29,6 +38,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Les rôles système ne peuvent pas être supprimés.",
     });
   }
+
+  assertCanDelegatePermissions(
+    dbUser,
+    role.permissions.map((rolePermission) => rolePermission.permission.key),
+    "Vous ne pouvez pas supprimer un rôle qui contient des permissions que vous ne possédez pas.",
+  );
 
   if (role._count.assignments > 0) {
     throw createError({

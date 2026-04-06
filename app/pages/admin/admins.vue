@@ -122,6 +122,7 @@ const columns: NamedTableColumn<Admin>[] = [
 
 function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
   const canUpdateAdmin = can("update", "Admin");
+  const canManageThisAdminRoles = canManageRoleAssignments(row.original, currentAdmin, roles);
 
   return [{
     type: "label",
@@ -129,9 +130,9 @@ function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
   }, {
     label: "Gérer les rôles",
     icon: "i-lucide-shield-user",
-    disabled: !canUpdateAdmin,
+    disabled: !canUpdateAdmin || !canManageThisAdminRoles,
     onSelect: async () => {
-      if (!canUpdateAdmin) return;
+      if (!canUpdateAdmin || !canManageThisAdminRoles) return;
       const result = await editRolesModal.open({
         admin: row.original,
         roles: roles.value ?? [],
@@ -158,7 +159,9 @@ async function openInviteModal() {
     <template #header>
       <DashboardNavbar title="Administrateurs">
         <template #right>
-          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Admin')" @click="openInviteModal">Ajouter</UButton>
+          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Admin')" @click="openInviteModal">
+            Ajouter
+          </UButton>
         </template>
       </DashboardNavbar>
     </template>

@@ -1,7 +1,6 @@
 import schema from "#shared/schemas/admins/invite";
 import * as v from "valibot";
 import renderAdminInvite from "~~/server/mail/generated/admin-invite";
-import { isSuperAdmin } from "#server/utils/ability";
 
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "admins.create");
@@ -31,6 +30,15 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       key: true,
+      permissions: {
+        select: {
+          permission: {
+            select: {
+              key: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -40,6 +48,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas ou ne peuvent pas être assignés à un administrateur.",
     });
   }
+
+  assertCanDelegatePermissions(
+    dbUser,
+    roles.flatMap((role) => role.permissions.map((rolePermission) => rolePermission.permission.key)),
+    "Vous ne pouvez pas assigner un rôle qui contient des permissions que vous ne possédez pas.",
+  );
 
   if (roles.some((role) => role.key === "super_admin") && !isSuperAdmin(dbUser)) {
     throw createError({

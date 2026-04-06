@@ -8,6 +8,8 @@ const props = defineProps<{
   roles: Role[];
 }>();
 
+const {data: currentAdmin} = await useCurrentAdmin();
+
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -19,6 +21,7 @@ const availableRoles = computed(() => props.roles.filter((role) => role.key !== 
 const roleOptions = computed<SelectMenuItem[]>(() => availableRoles.value.map((role) => ({
   label: role.name,
   value: role.id,
+  disabled: !canDelegatePermissionKeys(currentAdmin, role.permissions.map((permission) => permission.key)),
 })));
 
 const state = reactive<Schema>({

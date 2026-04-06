@@ -2,7 +2,10 @@ import { AbilityBuilder, type PureAbility } from "@casl/ability";
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
-import type { Permission as PermissionKey } from "#shared/utils/authorization";
+import {
+  getNonDelegablePermissionKeys,
+  type Permission as PermissionKey,
+} from "#shared/utils/authorization";
 import type { AppPrismaQuery, AppSubject } from "./casl";
 import { createPrismaAbility } from "./casl";
 
@@ -100,6 +103,24 @@ export function hasRole(dbUser: DbUser, roleKey: string): boolean {
 
 export function isSuperAdmin(dbUser: DbUser): boolean {
   return hasRole(dbUser, "super_admin");
+}
+
+export function getNonDelegablePermissionKeysForUser(dbUser: DbUser, permissionKeys: Iterable<string>): string[] {
+  return getNonDelegablePermissionKeys({
+    roleKeys: getGrantedRoleKeys(dbUser),
+    permissionKeys: getGrantedPermissionKeys(dbUser),
+  }, permissionKeys);
+}
+
+export function assertCanDelegatePermissions(dbUser: DbUser, permissionKeys: Iterable<string>, statusMessage?: string) {
+  const nonDelegablePermissionKeys = getNonDelegablePermissionKeysForUser(dbUser, permissionKeys);
+
+  if (nonDelegablePermissionKeys.length === 0) return;
+
+  throw createError({
+    statusCode: 403,
+    statusMessage: statusMessage ?? "Vous ne pouvez pas déléguer des permissions que vous ne possédez pas.",
+  });
 }
 
 export function hasOrganizerAccess(dbUser: DbUser): boolean {

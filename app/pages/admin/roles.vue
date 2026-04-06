@@ -134,6 +134,7 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
 function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   const canUpdateRole = can("update", "Role");
   const canDeleteRole = can("delete", "Role");
+  const canManageThisRole = canDelegatePermissionKeys(currentAdmin, row.original.permissions.map((permission) => permission.key));
 
   return [{
     type: "label",
@@ -145,9 +146,9 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   }, {
     label: "Modifier le rôle",
     icon: "i-lucide-edit-2",
-    disabled: row.original.system || !canUpdateRole,
+    disabled: row.original.system || !canUpdateRole || !canManageThisRole,
     onSelect: async () => {
-      if (row.original.system || !canUpdateRole) return;
+      if (row.original.system || !canUpdateRole || !canManageThisRole) return;
       const result = await editModal.open({
         role: row.original,
         permissions: permissions.value ?? [],
@@ -157,9 +158,9 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   }, {
     label: "Supprimer le rôle",
     icon: "i-lucide-trash-2",
-    disabled: row.original.system || row.original._count.assignments > 0 || !canDeleteRole,
+    disabled: row.original.system || row.original._count.assignments > 0 || !canDeleteRole || !canManageThisRole,
     onSelect: async () => {
-      if (row.original.system || row.original._count.assignments > 0 || !canDeleteRole) return;
+      if (row.original.system || row.original._count.assignments > 0 || !canDeleteRole || !canManageThisRole) return;
       const result = await removeModal.open({role: row.original});
       if (result) await refresh();
     },

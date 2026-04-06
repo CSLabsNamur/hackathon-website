@@ -3,7 +3,7 @@ import idSchema from "#shared/schemas/id";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "roles.update");
+  const {dbUser} = await requirePermission(event, "roles.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idSchema));
 
@@ -14,6 +14,15 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       system: true,
+      permissions: {
+        select: {
+          permission: {
+            select: {
+              key: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -27,6 +36,14 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Les rôles système ne peuvent pas être supprimés.",
     });
   }
+
+  assertCanDelegatePermissions(
+    dbUser,
+    role.permissions.map((rolePermission) => rolePermission.permission.key),
+    "Vous ne pouvez pas modifier un rôle qui contient des permissions que vous ne possédez pas.",
+  );
+
+  assertCanDelegatePermissions(dbUser, data.permissionKeys);
 
   // Since DB is the source of truth for permissions, we need to check that all provided permission keys exist before creating the role.
   const permissions = await prisma.permission.findMany({

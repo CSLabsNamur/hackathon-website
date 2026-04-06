@@ -17,7 +17,21 @@ export default defineEventHandler(async (event) => {
         include: {
           roleAssignments: {
             include: {
-              role: true,
+              role: {
+                select: {
+                  id: true,
+                  key: true,
+                  permissions: {
+                    select: {
+                      permission: {
+                        select: {
+                          key: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -41,6 +55,16 @@ export default defineEventHandler(async (event) => {
     },
     select: {
       id: true,
+      key: true,
+      permissions: {
+        select: {
+          permission: {
+            select: {
+              key: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -50,6 +74,20 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Un ou plusieurs rôles sélectionnés n'existent pas.",
     });
   }
+
+  assertCanDelegatePermissions(
+    dbUser,
+    admin.user.roleAssignments
+      .filter((assignment) => assignment.role.key !== "participant")
+      .flatMap((assignment) => assignment.role.permissions.map((rolePermission) => rolePermission.permission.key)),
+    "Vous ne pouvez pas modifier un administrateur qui possède des permissions que vous ne possédez pas.",
+  );
+
+  assertCanDelegatePermissions(
+    dbUser,
+    newAssignedRoles.flatMap((role) => role.permissions.map((rolePermission) => rolePermission.permission.key)),
+    "Vous ne pouvez pas assigner un rôle qui contient des permissions que vous ne possédez pas.",
+  );
 
   // Check that a non super_admin is not trying to assign/revoke the super_admin role
   const superAdminRole = await prisma.role.findUnique({

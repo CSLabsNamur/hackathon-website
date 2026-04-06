@@ -2,9 +2,11 @@ import schema from "#shared/schemas/roles/create";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "roles.create");
+  const {dbUser} = await requirePermission(event, "roles.create");
 
   const data = await readValidatedBody(event, v.parser(schema));
+
+  assertCanDelegatePermissions(dbUser, data.permissionKeys);
 
   // Since DB is the source of truth for permissions, we need to check that all provided permission keys exist before creating the role.
   const permissions = await prisma.permission.findMany({
