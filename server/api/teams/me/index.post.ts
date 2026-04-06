@@ -37,5 +37,15 @@ export default defineEventHandler(async (event) => {
     },
   };
 
-  return prisma.team.create({data: payload});
+  return prisma.$transaction([
+    prisma.participant.update({
+      where: {userId: dbUser.id},
+      data: {
+        team: {
+          disconnect: true,
+        },
+      },
+    }),
+    prisma.team.create({data: payload}),
+  ]);
 });

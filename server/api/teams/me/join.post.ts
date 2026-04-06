@@ -27,14 +27,25 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return prisma.team.update({
-    where: {token: data.token},
-    data: {
-      members: {
-        connect: {
-          userId: dbUser.id,
+  return prisma.$transaction([
+    // Disconnect the user from any existing team in an atomic update, just in case they were added to a team between the check and the update
+    prisma.participant.update({
+      where: {userId: dbUser.id},
+      data: {
+        team: {
+          disconnect: true,
         },
       },
-    },
-  });
+    }),
+    prisma.team.update({
+      where: {token: data.token},
+      data: {
+        members: {
+          connect: {
+            userId: dbUser.id,
+          },
+        },
+      },
+    }),
+  ]);
 });
