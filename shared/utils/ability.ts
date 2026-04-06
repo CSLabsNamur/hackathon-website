@@ -59,6 +59,7 @@ const definePermission = (rule: PermissionRule): PermissionDefinition => ({
   apply: ({can}) => can(rule.action, rule.subject),
 });
 
+// TODO: Permission spéciale pour les cautions
 export const PERMISSION_DEFINITIONS = {
   "participants.read.own": definePermission({action: "readOwn", subject: "Participant"}),
   "participants.update.own": definePermission({action: "updateOwn", subject: "Participant"}),
