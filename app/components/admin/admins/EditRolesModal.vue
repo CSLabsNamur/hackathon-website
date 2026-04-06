@@ -39,7 +39,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       title: "Rôles mis à jour",
       description: "Les rôles de l'administrateur ont été mis à jour.",
       color: "success",
-      duration: 2000,
     });
 
     emit("close", true);

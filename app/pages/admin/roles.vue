@@ -25,7 +25,28 @@ const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 
+const groupedPermissions = computed(() => (permissions: PermissionDb[] | undefined) => permissions?.reduce<Record<string, PermissionDb[]>>((groups, permission) => {
+  if (!groups[permission.group]) {
+    groups[permission.group] = [];
+  }
+
+  groups[permission.group]!.push(permission);
+  return groups;
+}, {}));
+
 const columns: NamedTableColumn<Role>[] = [
+  {
+    id: "expand",
+    enableHiding: false,
+    enableGlobalFilter: false,
+    cell: ({row}) => {
+      return getRowExpandButton(
+          row,
+          "Réduire la description du sponsor",
+          "Développer la description du sponsor",
+      );
+    },
+  },
   {
     id: "name",
     name: "Nom",
@@ -42,37 +63,41 @@ const columns: NamedTableColumn<Role>[] = [
             : null,
       ]);
     },
-  }, {
+  },
+  {
     id: "key",
     name: "Clé",
     header: ({column}) => getStrSortedHeader(column, "Clé"),
     accessorKey: "key",
-  }, {
+  },
+  {
     id: "description",
     name: "Description",
     header: "Description",
     accessorFn: (row) => row.description ?? "",
     meta: getWrappingColumnMeta(),
-  }, {
-    id: "permissions",
-    name: "Permissions",
-    header: "Permissions",
-    accessorFn: (row) => row.permissions.map((permission) => permission.key).join(" "),
-    meta: getWrappingColumnMeta(),
-    cell: ({row}) => {
-      if (row.original.permissions.length === 0) {
-        return h("span", {class: "text-muted"}, "Aucune");
-      }
-
-      return h("div", {class: "flex flex-wrap gap-1"}, row.original.permissions.map((permission) => {
-        return h(UBadge, {
-          key: permission.key,
-          color: "neutral",
-          variant: "soft",
-        }, () => permission.key);
-      }));
-    },
-  }, {
+  },
+  //{
+  //  id: "permissions",
+  //  name: "Permissions",
+  //  header: "Permissions",
+  //  accessorFn: (row) => row.permissions.map((permission) => permission.key).join(" "),
+  //  meta: getWrappingColumnMeta(),
+  //  cell: ({row}) => {
+  //    if (row.original.permissions.length === 0) {
+  //      return h("span", {class: "text-muted"}, "Aucune");
+  //    }
+  //
+  //    return h("div", {class: "flex flex-wrap gap-1"}, row.original.permissions.map((permission) => {
+  //      return h(UBadge, {
+  //        key: permission.key,
+  //        color: "neutral",
+  //        variant: "soft",
+  //      }, () => permission.key);
+  //    }));
+  //  },
+  //},
+  {
     id: "actions",
     name: "Actions",
     enableHiding: false,
@@ -149,6 +174,8 @@ async function openCreateModal() {
   });
   if (result) await refresh();
 }
+
+const expanded = ref({});
 </script>
 
 <template>
@@ -177,13 +204,29 @@ async function openCreateModal() {
               </TourHelperPopover>
             </div>
 
-            <UTable v-model:global-filter="globalFilter" :columns="columns" :data="roles" sticky
-                    :loading="status === 'pending'">
+            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                    v-model:column-visibility="columnVisibility" :columns="columns" :data="roles"
+                    sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
               <template #empty>
                 <div class="max-w-1/2 mx-auto">
                   <UEmpty title="Aucun rôle"
                           description="Aucun rôle n'est encore configuré."
                           icon="i-lucide-circle-slash"/>
+                </div>
+              </template>
+              <template #expanded="{row}">
+                <div class="grid gap-4 md:grid-cols-2">
+                  <UCard v-for="(groupPermissions, group) in groupedPermissions(row.original.permissions)" :key="group">
+                    <p class="text-sm font-semibold uppercase mb-2 text-highlighted">{{ group }}</p>
+
+                    <div class="grid gap-3 md:grid-cols-2">
+                      <div v-for="permission in groupPermissions" :key="permission.id"
+                           class="flex flex-col gap-1">
+                        <span class="font-medium truncate" :title="permission.name">{{ permission.name }}</span>
+                        <LazyUBadge variant="soft" color="neutral" class="max-w-fit">{{ permission.key }}</LazyUBadge>
+                      </div>
+                    </div>
+                  </UCard>
                 </div>
               </template>
             </UTable>
