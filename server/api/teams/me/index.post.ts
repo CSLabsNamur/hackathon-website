@@ -10,42 +10,27 @@ export default defineEventHandler(async (event) => {
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  // Ensure the user is not already in a team
-  const existingTeam = await prisma.team.findFirst({
-    where: {
-      members: {
-        some: {
-          userId: dbUser.id,
-        },
-      },
-    },
-  });
+  const payload: Prisma.TeamCreateInput = data;
 
-  if (existingTeam) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Vous êtes déjà dans une équipe.",
-    });
-  }
-
-  const payload: Prisma.TeamCreateInput = {
-    ...data,
-    members: {
-      connect: {
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.create({data: payload});
+    const updateResult = await tx.participant.updateMany({
+      where: {
         userId: dbUser.id,
+        teamId: null,
       },
-    },
-  };
-
-  return prisma.$transaction([
-    prisma.participant.update({
-      where: {userId: dbUser.id},
       data: {
-        team: {
-          disconnect: true,
-        },
+        teamId: team.id,
       },
-    }),
-    prisma.team.create({data: payload}),
-  ]);
+    });
+
+    if (updateResult.count !== 1) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Vous êtes déjà dans une équipe.",
+      });
+    }
+
+    return team;
+  });
 });

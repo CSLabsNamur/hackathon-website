@@ -9,43 +9,38 @@ export default defineEventHandler(async (event) => {
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  // Ensure the user is not already in a team
-  const existingTeam = await prisma.team.findFirst({
-    where: {
-      members: {
-        some: {
-          userId: dbUser.id,
-        },
-      },
-    },
-  });
-
-  if (existingTeam) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Vous êtes déjà dans une équipe.",
-    });
-  }
-
-  return prisma.$transaction([
-    // Disconnect the user from any existing team in an atomic update, just in case they were added to a team between the check and the update
-    prisma.participant.update({
-      where: {userId: dbUser.id},
-      data: {
-        team: {
-          disconnect: true,
-        },
-      },
-    }),
-    prisma.team.update({
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({
       where: {token: data.token},
-      data: {
-        members: {
-          connect: {
-            userId: dbUser.id,
-          },
-        },
+      select: {
+        id: true,
       },
-    }),
-  ]);
+    });
+
+    if (!team) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Équipe introuvable.",
+      });
+    }
+
+    const updateResult = await tx.participant.updateMany({
+      where: {
+        userId: dbUser.id,
+        teamId: null,
+      },
+      data: {
+        teamId: team.id,
+      },
+    });
+
+    if (updateResult.count !== 1) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Vous êtes déjà dans une équipe.",
+      });
+    }
+
+    return team;
+  });
 });
