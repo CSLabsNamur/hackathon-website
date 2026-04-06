@@ -34,22 +34,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  try {
-    await prisma.$transaction([
-      prisma.participant.delete({where: {id}}),
-      prisma.user.delete({where: {id: participant.userId}}),
-    ]);
-  } catch (e) {
-    console.error("Erreur lors de la suppression du participant et de l'utilisateur:", e);
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Erreur lors de la suppression du participant.",
-    });
-  }
+  const authUser = await getAuthUser(event, participant.user.email);
+  const submissionFilePaths = participant.submissions.flatMap((submission) => submission.files.map((file) => file.path));
 
   // Delete any submission files
-  for (const submission of participant.submissions.filter(s => s.request.type === SubmissionType.FILE)) {
-    const res = await supabase.storage.from("submissions").remove(submission.files.map(f => f.path));
+  if (submissionFilePaths.length > 0) {
+    const res = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(submissionFilePaths);
     if (res.error) {
       console.error("Erreur lors de la suppression des fichiers de soumission:", res.error);
       throw createError({
@@ -71,8 +61,24 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  try {
+    await prisma.$transaction([
+      prisma.submission.deleteMany({
+        where: {
+          participantId: participant.id,
+        },
+      }),
+      prisma.user.delete({where: {id: participant.userId}}),
+    ]);
+  } catch (e) {
+    console.error("Erreur lors de la suppression du participant et de l'utilisateur:", e);
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Erreur lors de la suppression du participant.",
+    });
+  }
+
   // Delete the user from Supabase Auth
-  const authUser = await getAuthUser(event, participant.user.email);
   const res = await supabase.auth.admin.deleteUser(authUser.id);
   if (res.error) {
     console.error("Erreur lors de la suppression de l'utilisateur dans Supabase Auth:", res.error);
