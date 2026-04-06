@@ -46,8 +46,3 @@ export function canUsePermissionKeys(ability?: AbilityLike | null, permissions?:
   if (!ability) return false;
   return permissions.every((permission) => canUsePermissionKey(ability, permission));
 }
-
-export function isSuperAdmin(currentAdmin: MaybeRefOrGetter<CurrentAdmin | null | undefined>) {
-  const admin = toValue(currentAdmin);
-  return admin?.authorization.roleKeys.includes("super_admin");
-}

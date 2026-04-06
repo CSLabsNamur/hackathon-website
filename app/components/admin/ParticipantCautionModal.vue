@@ -6,14 +6,14 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
 const {updateCaution} = useParticipantsActions();
-const {data: currentAdmin} = await useCurrentAdmin();
+const {isSuperAdmin} = await useCurrentAdmin();
 
 const isSubmitting = ref(false);
 
 const {cloned: newCaution, isModified} = useCloned(props.participant.caution);
 
 // NOT_PAID -> PAID/WAIVED, PAID -> REFUNDED, WAIVED -> NOT_PAID, REFUNDED -> PAID. Any other transition is forbidden for non-super-admins.
-const allowedStatuses = isSuperAdmin(currentAdmin) ? Object.values(CautionStatus) : {
+const allowedStatuses = isSuperAdmin.value ? Object.values(CautionStatus) : {
   [CautionStatus.NOT_PAID]: [CautionStatus.PAID, CautionStatus.WAIVED],
   [CautionStatus.PAID]: [CautionStatus.REFUNDED],
   [CautionStatus.WAIVED]: [CautionStatus.NOT_PAID],
