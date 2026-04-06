@@ -129,7 +129,7 @@ model SubmissionRequest {
 
 model Submission {
   id            String            @id @default(cuid(2))
-  request       SubmissionRequest @relation(fields: [requestId], references: [id])
+  request       SubmissionRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   requestId     String
   participant   Participant       @relation(fields: [participantId], references: [id])
   participantId String
