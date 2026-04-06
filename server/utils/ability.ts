@@ -94,6 +94,14 @@ export function getGrantedRoleKeys(dbUser: DbUser): string[] {
   return [...new Set(dbUser.roleAssignments.map((assignment) => assignment.role.key))];
 }
 
+export function hasRole(dbUser: DbUser, roleKey: string): boolean {
+  return getGrantedRoleKeys(dbUser).includes(roleKey);
+}
+
+export function isSuperAdmin(dbUser: DbUser): boolean {
+  return hasRole(dbUser, "super_admin");
+}
+
 export function hasOrganizerAccess(dbUser: DbUser): boolean {
   return getGrantedRoleKeys(dbUser).some((roleKey) => roleKey !== "participant");
 }
