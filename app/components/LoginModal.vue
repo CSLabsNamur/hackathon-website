@@ -73,6 +73,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
   if (submitted.value) return;
 
   console.log("Submitted", payload);
+  // TODO: Stop creating a new user, and instead send the magic link only if the user already exists
   const res = await supabaseClient.auth.signInWithOtp({
     email: payload.data.email,
     options: {
