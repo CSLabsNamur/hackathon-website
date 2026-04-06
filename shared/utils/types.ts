@@ -26,17 +26,36 @@ export type Team = SerializeObject<Prisma.TeamGetPayload<{
   members: TeamMember[];
 };
 export type TeamWithoutRelations = Omit<Team, "members" | "room">;
-export type UserWithAuthorization = Prisma.UserGetPayload<{
-  include: {
-    admin: true;
-    participant: true;
+export type DbUser = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    email: true;
+    firstName: true;
+    lastName: true;
+    admin: {
+      select: {
+        id: true;
+        userId: true;
+      };
+    };
+    participant: {
+      select: {
+        id: true;
+        userId: true;
+      };
+    };
     roleAssignments: {
-      include: {
+      select: {
         role: {
-          include: {
+          select: {
+            key: true;
             permissions: {
-              include: {
-                permission: true;
+              select: {
+                permission: {
+                  select: {
+                    key: true;
+                  };
+                };
               };
             };
           };

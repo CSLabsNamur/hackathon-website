@@ -1,29 +1,28 @@
-import type { JwtPayload } from "@supabase/supabase-js";
+import type { DbUser } from "../../shared/utils/types";
 
-export const getParticipant = async (user: JwtPayload) => {
-  const dbUser = await getDbUser(user);
+export const getParticipantForDbUser = async (dbUser: DbUser) => {
   try {
-    return prisma.participant.findUniqueOrThrow({
+    return await prisma.participant.findUniqueOrThrow({
       where: {userId: dbUser.id},
       include: {
-        team: {include: {members: {include: {user: true}}}},
-        submissions: {include: {request: true}},
+        team: {
+          include: {
+            members: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+        submissions: {
+          include: {
+            request: true,
+          },
+        },
         user: true,
       },
     });
   } catch {
-    throw createError({statusCode: 404, statusMessage: "Participant not found"});
+    throw createError({statusCode: 404, statusMessage: "Participant introuvable"});
   }
 };
-
-export const getDbUser = defineCachedFunction(async (user: JwtPayload) => {
-  try {
-    return prisma.user.findUniqueOrThrow({where: {email: user.email!}});
-  } catch {
-    throw createError({statusCode: 404, statusMessage: "User not found"});
-  }
-}, {
-  maxAge: 60 * 60, // 1 hour
-  name: "sub-user",
-  getKey: (user: JwtPayload) => user.email!,
-});

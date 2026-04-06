@@ -2,15 +2,25 @@ import { AbilityBuilder, type PureAbility } from "@casl/ability";
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
-import type { Permission as PermissionKey } from "#shared/utils/authorization";
+import type { Permission as PermissionKey } from "../../shared/utils/authorization";
+import type { DbUser } from "../../shared/utils/types";
 import type { AppAction, AppPrismaQuery, AppSubject } from "./casl";
 import { createPrismaAbility } from "./casl";
 
+const AUTHORIZATION_CACHE_MAX_AGE_SECONDS = 60;
+
 export type AppAbility = PureAbility<[AppAction, AppSubject], AppPrismaQuery>;
+
+type AuthorizationContext = {
+  authUser: JwtPayload;
+  dbUser: DbUser;
+  ability: AppAbility;
+};
 
 type PermissionContext = {
   can: AbilityBuilder<AppAbility>["can"];
 };
+
 type PermissionDefinition = {
   action: AppAction;
   subject: Extract<AppSubject, string>;
@@ -308,32 +318,50 @@ function getPermissionDefinition(permission: PermissionKey): PermissionDefinitio
   return definition;
 }
 
-export async function requireSignedInUser(event: H3Event) {
-  const user = await serverSupabaseUser(event);
+export function canUsePermission(ability: AppAbility, permission: PermissionKey) {
+  const definition = getPermissionDefinition(permission);
+  return ability.can(definition.action, definition.subject);
+}
 
-  if (!user) {
+export async function requireSignedInUser(event: H3Event) {
+  const authUser = await serverSupabaseUser(event);
+
+  if (!authUser) {
     throw createError({statusCode: 401, statusMessage: "Unauthorized"});
   }
 
-  return user;
+  return authUser;
 }
 
-export async function getUserWithAuthorization(user: JwtPayload): Promise<UserWithAuthorization> {
-  try {
-    return await prisma.user.findUniqueOrThrow({
-      where: {
-        email: user.email!,
+const getCachedDbUser = defineCachedFunction(async (email: string): Promise<DbUser> => prisma.user.findUniqueOrThrow({
+  where: {email},
+  select: {
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+    admin: {
+      select: {
+        id: true,
+        userId: true,
       },
-      include: {
-        admin: true,
-        participant: true,
-        roleAssignments: {
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: {
-                    permission: true,
+    },
+    participant: {
+      select: {
+        id: true,
+        userId: true,
+      },
+    },
+    roleAssignments: {
+      select: {
+        role: {
+          select: {
+            key: true,
+            permissions: {
+              select: {
+                permission: {
+                  select: {
+                    key: true,
                   },
                 },
               },
@@ -341,16 +369,26 @@ export async function getUserWithAuthorization(user: JwtPayload): Promise<UserWi
           },
         },
       },
-    });
+    },
+  },
+}), {
+  maxAge: AUTHORIZATION_CACHE_MAX_AGE_SECONDS,
+  name: "app-user-authorization",
+  getKey: (email: string) => email,
+});
+
+export async function getDbUser(authUser: JwtPayload): Promise<DbUser> {
+  try {
+    return await getCachedDbUser(authUser.email!);
   } catch {
     throw createError({statusCode: 403, statusMessage: "User is not authorized in the application."});
   }
 }
 
-export function getGrantedPermissionKeys(user: UserWithAuthorization): PermissionKey[] {
+export function getGrantedPermissionKeys(dbUser: DbUser): PermissionKey[] {
   const permissionKeys = new Set<PermissionKey>();
 
-  for (const assignment of user.roleAssignments) {
+  for (const assignment of dbUser.roleAssignments) {
     for (const rolePermission of assignment.role.permissions) {
       permissionKeys.add(rolePermission.permission.key as PermissionKey);
     }
@@ -359,39 +397,52 @@ export function getGrantedPermissionKeys(user: UserWithAuthorization): Permissio
   return [...permissionKeys];
 }
 
-export function getGrantedRoleKeys(user: UserWithAuthorization): string[] {
-  return [...new Set(user.roleAssignments.map((assignment) => assignment.role.key))];
+export function getGrantedRoleKeys(dbUser: DbUser): string[] {
+  return [...new Set(dbUser.roleAssignments.map((assignment) => assignment.role.key))];
 }
 
-export function hasOrganizerAccess(user: UserWithAuthorization): boolean {
-  return getGrantedRoleKeys(user).some((roleKey) => roleKey !== "participant");
+export function hasOrganizerAccess(dbUser: DbUser): boolean {
+  return getGrantedRoleKeys(dbUser).some((roleKey) => roleKey !== "participant");
 }
 
-export function createAbilityForUser(user: UserWithAuthorization): AppAbility {
+export function createAbilityForUser(dbUser: DbUser): AppAbility {
+  return createAbilityForPermissionKeys(getGrantedPermissionKeys(dbUser));
+}
+
+export function createAbilityForPermissionKeys(permissionKeys: Iterable<PermissionKey>): AppAbility {
   const {can, build} = new AbilityBuilder<AppAbility>(createPrismaAbility);
 
-  for (const permission of getGrantedPermissionKeys(user)) {
+  for (const permission of permissionKeys) {
     getPermissionDefinition(permission).apply({can});
   }
 
   return build();
 }
 
-// TODO: caching
-export async function createAbilityForRequest(event: H3Event) {
-  const user = await requireSignedInUser(event);
-  const dbUser = await getUserWithAuthorization(user);
+/**
+ * Creates a CASL ability for the current request, based on the signed-in user and their permissions.
+ * The result is cached in the request context for subsequent calls within the same request.
+ *
+ * @param event The H3 event of the current request
+ * @returns The authorization context containing the authenticated user, their database user record, and their CASL ability
+ * @throws An error if there is no signed-in user or if the user is not authorized in the application
+ */
+export async function createAbilityForRequest(event: H3Event): Promise<AuthorizationContext> {
+  const cachedContext = event.context.authorizationContext as AuthorizationContext | undefined;
+  if (cachedContext) return cachedContext;
 
-  return {
-    user,
+  const authUser = await requireSignedInUser(event);
+  const dbUser = await getDbUser(authUser);
+
+  const context = {
+    authUser,
     dbUser,
     ability: createAbilityForUser(dbUser),
   };
-}
 
-export function canUsePermission(ability: AppAbility, permission: PermissionKey) {
-  const definition = getPermissionDefinition(permission);
-  return ability.can(definition.action, definition.subject);
+  event.context.authorizationContext = context;
+
+  return context;
 }
 
 export async function requirePermission(event: H3Event, permission: PermissionKey) {

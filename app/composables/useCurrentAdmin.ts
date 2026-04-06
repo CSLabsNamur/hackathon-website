@@ -1,6 +1,7 @@
 export const useCurrentAdmin = async () => {
   return useFetch<CurrentAdmin>("/api/admins/me", {
-    //server: false,
+    key: "current-admin",
     credentials: "same-origin",
+    dedupe: "defer",
   });
 };
