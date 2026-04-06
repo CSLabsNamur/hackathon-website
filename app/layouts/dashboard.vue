@@ -3,6 +3,7 @@ import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
 const {data: currentAdmin} = await useCurrentAdmin();
+const {canPermissions} = useAbility(currentAdmin);
 
 const colorMode = useColorMode();
 // Provide theme to echarts components
@@ -131,10 +132,12 @@ const bottomLinks: NavigationMenuItem[] = [
 //}
 ];
 
+const searchableTopLinks = computed(() => topLinks.filter((item) => canPermissions(item.requiredPermissions)));
+
 const navigationGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: topLinks.flat() as CommandPaletteItem[],
+  items: searchableTopLinks.value as CommandPaletteItem[],
 }]);
 const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 </script>

@@ -11,15 +11,14 @@ const navigationMenuProps = computed(() => {
   const {user: _user, items: _items, ...forwardedProps} = props;
   return forwardedProps;
 });
+const {canPermissions} = useAbility(() => props.user);
 
 export type RestrictedNavigationItem = Omit<NavigationMenuItem, "children"> & {
   requiredPermissions?: PermissionKey[];
   children?: RestrictedNavigationItem[];
 };
 
-const grantedPermissionKeys = computed(() => new Set(props.user?.authorization.permissionKeys ?? []));
-
-const hasRequiredPermissions = (requiredPermissions?: PermissionKey[]) => !requiredPermissions || requiredPermissions.every((permission) => grantedPermissionKeys.value.has(permission));
+const hasRequiredPermissions = (requiredPermissions?: PermissionKey[]) => canPermissions(requiredPermissions);
 
 const groupedItems = computed<RestrictedNavigationItem[][]>(() => {
   if (props.items?.length === 0) {

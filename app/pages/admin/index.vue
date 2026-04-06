@@ -5,11 +5,10 @@ definePageMeta({
 });
 
 const {data: currentAdmin, status: currentAdminStatus} = await useCurrentAdmin();
+const {can} = useAbility(currentAdmin);
 
-const grantedPermissionKeys = computed(() => new Set(currentAdmin.value?.authorization.permissionKeys ?? []));
-
-const canReadParticipants = computed(() => grantedPermissionKeys.value.has("participants.read"));
-const canReadTeams = computed(() => grantedPermissionKeys.value.has("teams.read"));
+const canReadParticipants = computed(() => can("read", "Participant"));
+const canReadTeams = computed(() => can("read", "Team"));
 
 const hasVisibleOverview = computed(() => canReadParticipants.value || canReadTeams.value);
 </script>

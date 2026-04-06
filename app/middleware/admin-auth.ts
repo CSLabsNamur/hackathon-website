@@ -1,3 +1,5 @@
+import { canUsePermissionKeys, createClientAbilityForPermissionKeys } from "~/utils/ability";
+
 export default defineNuxtRouteMiddleware(async (to) => {
   try {
     const admin = await $fetch<CurrentAdmin>("/api/admins/me", {
@@ -6,8 +8,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
 
     const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
+    const ability = createClientAbilityForPermissionKeys(admin.authorization.permissionKeys);
 
-    if (requiredPermissions.length > 0 && !requiredPermissions.every((permission) => admin.authorization.permissionKeys.includes(permission))) {
+    if (!canUsePermissionKeys(ability, requiredPermissions)) {
       return navigateTo("/admin");
     }
   } catch {

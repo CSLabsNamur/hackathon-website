@@ -1,3 +1,5 @@
+import { canUsePermissionKeys, createClientAbilityForPermissionKeys } from "~/utils/ability";
+
 export default defineNuxtRouteMiddleware(async (to) => {
   try {
     const participant = await $fetch<CurrentParticipant>("/api/participants/me", {
@@ -6,8 +8,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     });
 
     const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
+    const ability = createClientAbilityForPermissionKeys(participant.authorization.permissionKeys);
 
-    if (requiredPermissions.length > 0 && !requiredPermissions.every((permission) => participant.authorization.permissionKeys.includes(permission))) {
+    if (!canUsePermissionKeys(ability, requiredPermissions)) {
       return navigateTo("/");
     }
   } catch {

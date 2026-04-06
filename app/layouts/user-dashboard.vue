@@ -3,6 +3,7 @@ import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
 const {data: currentParticipant, status} = await useCurrentParticipant();
+const {canPermissions} = useAbility(currentParticipant);
 
 const open = ref(false);
 
@@ -66,10 +67,20 @@ const links: RestrictedNavigationItem[][] = [[{
 //}
 ]];
 
+// TODO: reused logic between dashboards and RestrictedNavigationMenu, abstract this
+const filterRestrictedNavigationItems = (items: RestrictedNavigationItem[]): RestrictedNavigationItem[] => items
+    .filter((item) => canPermissions(item.requiredPermissions))
+    .map((item) => ({
+      ...item,
+      children: item.children ? filterRestrictedNavigationItems(item.children) : undefined,
+    }));
+
+const searchableLinks = computed(() => links.map((group) => filterRestrictedNavigationItems(group)));
+
 const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: links.flat() as CommandPaletteItem[],
+  items: searchableLinks.value.flat() as CommandPaletteItem[],
 }]);
 </script>
 
