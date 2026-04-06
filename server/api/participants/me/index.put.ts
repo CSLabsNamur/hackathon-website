@@ -1,7 +1,7 @@
 import schema from "#shared/schemas/participants/edit";
 import * as v from "valibot";
 import type { ParticipantUpdateInput } from "~~/server/prisma/generated/prisma/models/Participant";
-import { serverSupabaseClient } from "#supabase/server";
+import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const {authUser, dbUser} = await requirePermission(event, "participants.update.own");
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     },
   };
 
-  const supabase = await serverSupabaseClient(event);
+  const supabase = serverSupabaseServiceRole(event);
 
   try {
     await supabase.auth.admin.updateUserById(authUser.sub, {
