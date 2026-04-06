@@ -14,31 +14,7 @@ export const createPrismaAbility = createPrismaAbilityFor<Prisma.TypeMap>();
 export type AppPrismaQuery<T extends PrismaModel = Model<Record<string, unknown>, string>> = PrismaQueryOf<Prisma.TypeMap, T>;
 export type WhereInput<TModelName extends Prisma.ModelName> = WhereInputOf<Prisma.TypeMap, TModelName>;
 
-// Catalog types for CASL, to update when adding new permissions or DB models.
-export type AppAction =
-  | "read"
-  | "readOwn"
-  | "readSensitive"
-  | "checkIn"
-  | "create"
-  | "createOwn"
-  | "update"
-  | "updateOwn"
-  | "updateSensitive"
-  | "delete"
-  | "deleteOwn"
-  | "export"
-  | "exportSensitive"
-  | "send"
-  | "assign"
-  | "join"
-  | "print";
-
-export type AppSubject =
-  | "all"
-  | "Broadcast"
-  | "Badge"
-  | Subjects<{
+type AppPrismaSubjects = Subjects<{
   User: P.User;
   Admin: P.Admin;
   Participant: P.Participant;
@@ -53,3 +29,5 @@ export type AppSubject =
   Role: P.Role;
   Permission: P.Permission;
 }>;
+
+export type AppSubject = AppPrismaSubjects | Exclude<AppSubjectName, Prisma.ModelName>;

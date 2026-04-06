@@ -124,6 +124,7 @@ export type AuthorizationInfo = {
 };
 export type CurrentAdmin = Admin & AuthorizationInfo;
 export type CurrentParticipant = Participant & AuthorizationInfo;
+export type CurrentAuthorizedUser = CurrentAdmin | CurrentParticipant;
 
 export const cautionStatusTranslateMap: Record<CautionStatus, string> = {
   [CautionStatus.NOT_PAID]: "Non payé",

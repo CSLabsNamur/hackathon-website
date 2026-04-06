@@ -3,7 +3,7 @@ import type { Permission as PermissionKey } from "#shared/utils/authorization";
 import type { NavigationMenuItem, NavigationMenuProps } from "@nuxt/ui";
 
 const props = defineProps<{
-  user?: CurrentAdmin | CurrentParticipant | null;
+  user?: CurrentAuthorizedUser | null;
   items?: RestrictedNavigationItem[] | RestrictedNavigationItem[][];
 } & Omit<NavigationMenuProps, "items" | "class">>();
 
