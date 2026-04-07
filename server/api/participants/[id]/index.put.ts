@@ -30,13 +30,20 @@ export default defineEventHandler(async (event) => {
   const dbUser = await prisma.user.findUniqueOrThrow({where: {id: oldParticipant.userId}});
 
   try {
-    await supabase.auth.admin.updateUserById(authUser.id, {
+    const authUpdate = await supabase.auth.admin.updateUserById(authUser.id, {
       email,
       user_metadata: {
         firstName,
         lastName,
       },
     });
+
+    if (authUpdate.error) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: "Une erreur est survenue lors de la mise à jour de l'utilisateur dans Supabase.",
+      });
+    }
 
     return prisma.participant.update({where: {userId: dbUser.id}, data: payload});
   } catch {

@@ -32,6 +32,7 @@ export async function getAuthUser(event: H3Event, email: string) {
   }
 
   const authUser = authUserList.data.users.find(u => u.email === email);
+
   if (!authUser) {
     throw createError({statusCode: 404, message: "Utilisateur introuvable."});
   }

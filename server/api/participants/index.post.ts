@@ -122,15 +122,30 @@ export default defineEventHandler(async (event) => {
 
   let uploadedCvPath: string | undefined;
   let createdUserId: string | undefined;
+  let createdAuthUserId: string | undefined;
+  const supabase = serverSupabaseServiceRole(event);
 
   try {
+    const authUser = await supabase.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: {
+        firstName,
+        lastName,
+      },
+    });
+
+    if (authUser.error || !authUser.data.user) {
+      throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du compte d'authentification."});
+    }
+
+    createdAuthUserId = authUser.data.user.id;
+
     const participant = await prisma.participant.create({data: payload});
     createdUserId = participant.userId;
 
     // Upload CV to Supabase Storage if provided
     if (curriculumVitae) {
-      const supabase = serverSupabaseServiceRole(event);
-
       const {data, error} = await supabase.storage
         .from("cvs")
         .upload(`${participant.userId}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
@@ -155,7 +170,6 @@ export default defineEventHandler(async (event) => {
   } catch {
     if (uploadedCvPath) {
       // Clean up uploaded CV in case of error
-      const supabase = serverSupabaseServiceRole(event);
       const {error} = await supabase.storage.from("cvs").remove([uploadedCvPath]);
       if (error) {
         console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
@@ -166,6 +180,12 @@ export default defineEventHandler(async (event) => {
         await prisma.user.delete({where: {id: createdUserId}});
       } catch (error) {
         console.error("Erreur lors de la suppression du participant après échec de la création :", error);
+      }
+    }
+    if (createdAuthUserId) {
+      const {error} = await supabase.auth.admin.deleteUser(createdAuthUserId);
+      if (error) {
+        console.error("Erreur lors de la suppression du compte d'authentification après échec de la création :", error);
       }
     }
     throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
