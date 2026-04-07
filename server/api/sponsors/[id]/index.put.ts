@@ -101,7 +101,8 @@ export default defineEventHandler(async (event) => {
     if (logoFile) {
       try {
         fs.unlinkSync(logoFile.filepath);
-      } catch { /* empty */
+      } catch (error) {
+        console.warn("[sponsors] Failed to remove temporary logo file.", error);
       }
     }
   }

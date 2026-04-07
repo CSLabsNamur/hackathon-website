@@ -178,7 +178,8 @@ export default defineEventHandler(async (event) => {
     for (const f of fileList) {
       try {
         fs.unlinkSync(f.filepath);
-      } catch { /* empty */
+      } catch (error) {
+        console.warn("[submissions] Failed to remove temporary submission file.", error);
       }
     }
   }

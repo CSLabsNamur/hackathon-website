@@ -57,9 +57,9 @@ export default defineEventHandler(async (event) => {
           },
         },
       });
-    } catch {
+    } catch (rollbackError) {
       // If rollback fails, there's not much we can do, but we should log it
-      console.error("Failed to rollback user update after an error occurred.");
+      console.error("Failed to rollback user update after an error occurred.", rollbackError);
     }
 
     throw createError({

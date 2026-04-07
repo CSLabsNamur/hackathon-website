@@ -102,7 +102,8 @@ export default defineEventHandler(async (event) => {
     if (imageFile) {
       try {
         fs.unlinkSync(imageFile.filepath);
-      } catch { /* empty */
+      } catch (error) {
+        console.warn("[guests] Failed to remove temporary image file.", error);
       }
     }
   }

@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 400, statusMessage: "Le fichier est infecté par un virus."});
       }
     } else {
-      console.warn("[submissions] ClamAV unavailable; skipping virus scan.");
+      console.warn("[broadcast] ClamAV unavailable; skipping virus scan.");
     }
   }
 
@@ -105,11 +105,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Erreur lors de l'envoi de l'annonce.",
     });
   } finally {
-    try {
-      for (const f of fileList) {
+    for (const f of fileList) {
+      try {
         fs.unlinkSync(f.filepath);
+      } catch (error) {
+        console.warn("[broadcast] Failed to remove temporary attachment file.", error);
       }
-    } catch { /* empty */
     }
   }
 });
