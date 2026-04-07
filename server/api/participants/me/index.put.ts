@@ -20,6 +20,14 @@ export default defineEventHandler(async (event) => {
   };
 
   const supabase = serverSupabaseServiceRole(event);
+  const oldUser = await prisma.user.findUniqueOrThrow({
+    where: {id: dbUser.id},
+    select: {
+      email: true,
+      firstName: true,
+      lastName: true,
+    },
+  });
 
   try {
     const res = await supabase.auth.admin.updateUserById(authUser.sub, {
@@ -39,10 +47,10 @@ export default defineEventHandler(async (event) => {
     // Try to rollback the email update in case of error
     try {
       await supabase.auth.admin.updateUserById(authUser.sub, {
-        email: authUser.email,
+        email: oldUser.email,
         user_metadata: {
-          firstName: authUser.user_metadata?.firstName,
-          lastName: authUser.user_metadata?.lastName,
+          firstName: oldUser.firstName,
+          lastName: oldUser.lastName,
         },
       });
 
@@ -50,9 +58,9 @@ export default defineEventHandler(async (event) => {
         where: {userId: dbUser.id}, data: {
           user: {
             update: {
-              firstName: authUser.user_metadata?.firstName,
-              lastName: authUser.user_metadata?.lastName,
-              email: authUser.email,
+              firstName: oldUser.firstName,
+              lastName: oldUser.lastName,
+              email: oldUser.email,
             },
           },
         },
