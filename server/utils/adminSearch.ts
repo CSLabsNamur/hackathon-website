@@ -80,16 +80,6 @@ interface SearchDelegate {
   }) => Promise<SearchRecord[]>;
 }
 
-export const SEARCH_MODEL_PERMISSIONS: Record<AdminSearchModelName, readonly Permission[]> = {
-  Participant: ["participants.read"],
-  Team: ["teams.read", "participants.read"],
-  Guest: ["guests.read"],
-  Sponsor: ["sponsors.read"],
-  SubmissionRequest: ["submissionRequests.read", "participants.read"],
-  Room: ["rooms.read", "teams.read"],
-  Admin: ["admins.read", "roles.read"],
-};
-
 const DESCRIPTION_MAX_LENGTH = 96;
 const FETCH_LIMIT_FLOOR = 12;
 const FETCH_LIMIT_MULTIPLIER = 3;
@@ -97,6 +87,7 @@ const FUSE_THRESHOLD = 0.35;
 const MIN_ITEMS_PER_GROUP = 3;
 
 let cachedDefinitions: SearchModelDefinition[] | null = null;
+const cachedDefinitionsByPermissions = new Map<string, SearchModelDefinition[]>();
 
 const truncate = (value: string, maxLength = DESCRIPTION_MAX_LENGTH) => {
   const normalized = value.replace(/\s+/g, " ").trim();
@@ -290,8 +281,15 @@ const shouldIncludeSearchField = (field: AdminSearchPathConfig, allowedPermissio
   return field.requiredPermissions.every((permission) => allowedPermissionKeys.has(permission));
 };
 
+const shouldIncludeSearchModel = (config: AdminSearchModelConfig, allowedPermissionKeys?: ReadonlySet<Permission>) => {
+  if (!allowedPermissionKeys) return true;
+
+  return config.requiredPermissions.every((permission) => allowedPermissionKeys.has(permission));
+};
+
 const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): SearchModelDefinition[] => {
   return (Object.entries(ADMIN_SEARCH_MODEL_CONFIGS) as Array<[AdminSearchModelName, AdminSearchModelConfig]>)
+    .filter(([, config]) => shouldIncludeSearchModel(config, allowedPermissionKeys))
     .map(([modelName, config]) => {
       const searchFields = config.searchFields
         .filter((field) => shouldIncludeSearchField(field, allowedPermissionKeys))
@@ -342,24 +340,30 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
     });
 };
 
-export const searchAdminIndex = async (
-  query: string,
-  limit: number,
-  allowedModelNames?: readonly AdminSearchModelName[],
-  allowedPermissionKeys?: readonly Permission[],
-): Promise<AdminSearchGroup[]> => {
+const getDefinitions = (allowedPermissionKeys?: readonly Permission[]) => {
+  if (!allowedPermissionKeys) {
+    return cachedDefinitions ??= buildDefinitions();
+  }
+
+  const cacheKey = [...new Set(allowedPermissionKeys)].sort().join("\0");
+  const cached = cachedDefinitionsByPermissions.get(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const definitions = buildDefinitions(new Set(allowedPermissionKeys));
+  cachedDefinitionsByPermissions.set(cacheKey, definitions);
+
+  return definitions;
+};
+
+export const searchAdminIndex = async (query: string, limit: number, allowedPermissionKeys?: readonly Permission[]): Promise<AdminSearchGroup[]> => {
   const input = buildQueryInput(query);
 
   if (!input) return [];
 
-  // Disgusting operator but deal with it
-  // Basically: if cachedDefinitions is not null, use it, otherwise build definitions and cache them for next calls
-  const allowedPermissionKeySet = allowedPermissionKeys ? new Set(allowedPermissionKeys) : undefined;
-  const allDefinitions = allowedPermissionKeySet ? buildDefinitions(allowedPermissionKeySet) : cachedDefinitions ??= buildDefinitions();
-  const allowedModelNameSet = allowedModelNames ? new Set(allowedModelNames) : null;
-  const definitions = allowedModelNameSet
-    ? allDefinitions.filter((definition) => allowedModelNameSet.has(definition.modelName))
-    : allDefinitions;
+  const definitions = getDefinitions(allowedPermissionKeys);
 
   if (definitions.length === 0) {
     return [];

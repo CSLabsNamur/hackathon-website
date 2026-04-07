@@ -50,6 +50,8 @@ export interface AdminSearchPathConfig {
  * Configuration for a model, used to build the Prisma query, the Fuse index, and the displayed result sections.
  */
 export interface AdminSearchModelConfig {
+  /** Permissions required to include this model in global search */
+  requiredPermissions: readonly Permission[];
   route: string;
   /** Label for the result group, usually the plural of the model name */
   groupLabel: string;
@@ -97,6 +99,7 @@ const truncate = (value: string | undefined, maxLength = 96) => {
 
 export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearchModelConfig> = {
   Participant: {
+    requiredPermissions: ["participants.read"],
     route: "/admin/participants",
     groupLabel: "Participants",
     icon: "i-lucide-user-check",
@@ -118,6 +121,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     ],
   },
   Team: {
+    requiredPermissions: ["teams.read", "participants.read"],
     route: "/admin/teams",
     groupLabel: "Équipes",
     icon: "i-lucide-users",
@@ -137,6 +141,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     ],
   },
   Guest: {
+    requiredPermissions: ["guests.read"],
     route: "/admin/guests",
     groupLabel: "Invités",
     icon: "i-lucide-id-card",
@@ -161,6 +166,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   Sponsor: {
+    requiredPermissions: ["sponsors.read"],
     route: "/admin/sponsors",
     groupLabel: "Sponsors",
     icon: "i-lucide-handshake",
@@ -177,6 +183,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   SubmissionRequest: {
+    requiredPermissions: ["submissionRequests.read", "participants.read"],
     route: "/admin/submissions-requests",
     groupLabel: "Demandes de soumission",
     icon: "i-lucide-file-text",
@@ -205,6 +212,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   Room: {
+    requiredPermissions: ["rooms.read", "teams.read"],
     route: "/admin/rooms",
     groupLabel: "Salles",
     icon: "i-lucide-door-open",
@@ -228,6 +236,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     buildTo: (record) => `/admin/rooms#room-${record.id}`,
   },
   Admin: {
+    requiredPermissions: ["admins.read", "roles.read"],
     route: "/admin/admins",
     groupLabel: "Administrateurs",
     icon: "i-lucide-shield-plus",
