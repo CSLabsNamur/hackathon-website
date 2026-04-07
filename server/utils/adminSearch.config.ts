@@ -2,6 +2,7 @@
  * This file is 80% AI generated.
  */
 import type { GuestType, SubmissionType } from "#shared/utils/types";
+import type { Permission } from "#shared/utils/authorization";
 
 export type SearchValue =
   | string
@@ -41,6 +42,8 @@ export interface AdminSearchPathConfig {
   match?: AdminSearchFieldMatch;
   /** Relative Fuse ranking weight for this field compared to the other fields of the same model */
   weight?: number;
+  /** Extra permissions required to include this field in search/indexing */
+  requiredPermissions?: readonly Permission[];
 }
 
 /**
@@ -106,8 +109,8 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
       {path: "githubAccount"},
       {path: "linkedInAccount"},
       {path: "school"},
-      {path: "diet"},
-      {path: "needs"},
+      {path: "diet", requiredPermissions: ["participants.read.sensitive"]},
+      {path: "needs", requiredPermissions: ["participants.read.sensitive"]},
       {path: "user.firstName", relationModes: ["one"], weight: 4},
       {path: "user.lastName", relationModes: ["one"], weight: 4},
       {path: "user.email", relationModes: ["one"], weight: 5},

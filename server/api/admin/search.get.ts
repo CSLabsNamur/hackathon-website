@@ -16,7 +16,7 @@ export default defineEventHandler(async (event): Promise<AdminSearchResponse> =>
     .filter(([, permissions]) => permissions.every((permission) => canUsePermission(context.ability, permission)))
     .map(([modelName]) => modelName as AdminSearchModelName);
 
-  const groups = await searchAdminIndex(query, limit, allowedModelNames);
+  const groups = await searchAdminIndex(query, limit, allowedModelNames, getGrantedPermissionKeys(context.dbUser));
 
   return {
     groups,

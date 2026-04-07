@@ -12,6 +12,7 @@ import {
   type SearchValue,
 } from "./adminSearch.config";
 import prisma from "./prisma";
+import type { Permission } from "#shared/utils/authorization";
 
 type SearchWhere = Record<string, unknown>;
 type SearchSelectTree = Record<string, true | { select: SearchSelectTree }>;
@@ -283,13 +284,21 @@ const buildWhereClauses = (field: SearchFieldDefinition, query: SearchQueryInput
   });
 };
 
-const buildDefinitions = (): SearchModelDefinition[] => {
+const shouldIncludeSearchField = (field: AdminSearchPathConfig, allowedPermissionKeys?: ReadonlySet<Permission>) => {
+  if (!field.requiredPermissions?.length || !allowedPermissionKeys) return true;
+
+  return field.requiredPermissions.every((permission) => allowedPermissionKeys.has(permission));
+};
+
+const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): SearchModelDefinition[] => {
   return (Object.entries(ADMIN_SEARCH_MODEL_CONFIGS) as Array<[AdminSearchModelName, AdminSearchModelConfig]>)
     .map(([modelName, config]) => {
-      const searchFields = config.searchFields.map((field) => ({
-        ...field,
-        weight: field.weight ?? 1,
-      }));
+      const searchFields = config.searchFields
+        .filter((field) => shouldIncludeSearchField(field, allowedPermissionKeys))
+        .map((field) => ({
+          ...field,
+          weight: field.weight ?? 1,
+        }));
       const searchTermPath = config.searchTermPath ?? config.titlePaths[0] ?? "id";
       const rankWithSearchTerm = Boolean(config.searchTermPath);
       const selectPaths = new Set<string>([
@@ -337,6 +346,7 @@ export const searchAdminIndex = async (
   query: string,
   limit: number,
   allowedModelNames?: readonly AdminSearchModelName[],
+  allowedPermissionKeys?: readonly Permission[],
 ): Promise<AdminSearchGroup[]> => {
   const input = buildQueryInput(query);
 
@@ -344,7 +354,8 @@ export const searchAdminIndex = async (
 
   // Disgusting operator but deal with it
   // Basically: if cachedDefinitions is not null, use it, otherwise build definitions and cache them for next calls
-  const allDefinitions = cachedDefinitions ??= buildDefinitions();
+  const allowedPermissionKeySet = allowedPermissionKeys ? new Set(allowedPermissionKeys) : undefined;
+  const allDefinitions = allowedPermissionKeySet ? buildDefinitions(allowedPermissionKeySet) : cachedDefinitions ??= buildDefinitions();
   const allowedModelNameSet = allowedModelNames ? new Set(allowedModelNames) : null;
   const definitions = allowedModelNameSet
     ? allDefinitions.filter((definition) => allowedModelNameSet.has(definition.modelName))
