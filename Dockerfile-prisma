@@ -10,8 +10,9 @@ RUN corepack enable && pnpm install prisma @prisma/adapter-pg @prisma/client dot
 FROM base AS prisma
 WORKDIR /app
 
-COPY package.json prisma.config.ts ./
+COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
 COPY server/prisma/ ./server/prisma/
+COPY shared/utils/authorization.ts ./shared/utils/authorization.ts
 COPY --chmod=0755 docker-entrypoint.sh .
 
 RUN pnpm prisma generate
