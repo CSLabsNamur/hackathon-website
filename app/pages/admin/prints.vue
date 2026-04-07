@@ -2,10 +2,14 @@
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["badges.print", "participants.read", "guests.read", "sponsors.read", "admins.read"],
 });
 
 const toast = useToast();
 const {renderAllBadges} = usePrintsActions();
+const {data: currentAdmin} = await useCurrentAdmin();
+const {can} = useAbility(currentAdmin);
+const canPrintBadges = computed(() => can("print", "Badge"));
 
 const [
   {status: participantsStatus, data: participants},
@@ -49,7 +53,7 @@ const selectedBadgeCount = computed(() => {
 });
 
 async function downloadAllBadges() {
-  if (!selectedBadgeCount.value || isGeneratingBadges.value) {
+  if (!selectedBadgeCount.value || isGeneratingBadges.value || !canPrintBadges.value) {
     return;
   }
 
@@ -113,7 +117,8 @@ async function downloadAllBadges() {
 
             <div class="flex flex-col gap-3 rounded-xl border border-default bg-elevated/20 p-5 self-end">
               <UButton block size="lg" icon="i-lucide-download" :loading="isGeneratingBadges"
-                       :disabled="isLoading || selectedBadgeCount === 0" @click="downloadAllBadges">
+                       :disabled="isLoading || selectedBadgeCount === 0 || !canPrintBadges"
+                       @click="downloadAllBadges">
                 Télécharger le PDF
               </UButton>
               <p class="text-xs text-muted">

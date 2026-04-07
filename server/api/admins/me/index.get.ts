@@ -1,7 +1,30 @@
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.ADMIN);
+  const {dbUser} = await requireOrganizerAccess(event);
 
-  const dbUser = await getDbUser(user);
+  const admin = await prisma.admin.findUnique({
+    where: {userId: dbUser.id},
+    include: {
+      user: {
+        include: {
+          roleAssignments: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
-  return prisma.admin.findUnique({where: {userId: dbUser.id}, include: {user: true}});
+  if (!admin) {
+    throw createError({statusCode: 403, statusMessage: "Forbidden"});
+  }
+
+  return {
+    ...admin,
+    authorization: {
+      roleKeys: getGrantedRoleKeys(dbUser),
+      permissionKeys: getGrantedPermissionKeys(dbUser),
+    },
+  };
 });

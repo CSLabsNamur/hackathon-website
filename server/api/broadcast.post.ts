@@ -14,7 +14,7 @@ function escapeHtml(value: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "broadcasts.send");
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 400, statusMessage: "Le fichier est infecté par un virus."});
       }
     } else {
-      console.warn("[submissions] ClamAV unavailable; skipping virus scan.");
+      console.warn("[broadcast] ClamAV unavailable; skipping virus scan.");
     }
   }
 
@@ -86,6 +86,7 @@ export default defineEventHandler(async (event) => {
   try {
     const {sendMail} = useNodeMailer();
 
+    // TODO: Use email outbox
     await sendMail({
       bcc: recipients,
       subject: data.title,
@@ -105,11 +106,12 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Erreur lors de l'envoi de l'annonce.",
     });
   } finally {
-    try {
-      for (const f of fileList) {
+    for (const f of fileList) {
+      try {
         fs.unlinkSync(f.filepath);
+      } catch (error) {
+        console.warn("[broadcast] Failed to remove temporary attachment file.", error);
       }
-    } catch { /* empty */
     }
   }
 });

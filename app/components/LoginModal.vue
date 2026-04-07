@@ -29,7 +29,7 @@ const codeFields: AuthFormField[] = [{
 }];
 
 const providers = [{
-  label: "CSLabs",
+  label: "CSLabs - Admins",
   icon: "i-simple-icons-google",
   onClick: async () => {
     const res = await supabaseClient.auth.signInWithOAuth({
@@ -76,7 +76,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
   const res = await supabaseClient.auth.signInWithOtp({
     email: payload.data.email,
     options: {
-      shouldCreateUser: true,
+      shouldCreateUser: false,
       emailRedirectTo: `${siteConfig.url}/auth/callback`,
     },
   });

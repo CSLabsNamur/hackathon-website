@@ -10,7 +10,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "guests.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
@@ -102,7 +102,8 @@ export default defineEventHandler(async (event) => {
     if (imageFile) {
       try {
         fs.unlinkSync(imageFile.filepath);
-      } catch { /* empty */
+      } catch (error) {
+        console.warn("[guests] Failed to remove temporary image file.", error);
       }
     }
   }

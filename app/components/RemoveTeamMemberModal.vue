@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // TODO: Add removing a team member back
 /* eslint-disable @typescript-eslint/no-unused-vars */
-const props = defineProps<{ participant: Participant | ParticipantWithoutRelations }>();
+const props = defineProps<{ participant: CurrentParticipant | AdminParticipant | CurrentParticipantTeamMember }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

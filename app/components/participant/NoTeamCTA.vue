@@ -6,14 +6,18 @@ const overlay = useOverlay();
 const createModal = overlay.create(ParticipantCreateTeamModal);
 const joinModal = overlay.create(ParticipantJoinTeamModal);
 
-const {refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 const {refresh: refreshTeams} = await useTeams({lazy: true});
+const {can} = useAbility(currentParticipant);
 
-const links: ButtonProps[] = [
+const links = computed<ButtonProps[]>(() => [
   {
     label: "Créer une équipe",
     color: "primary",
+    disabled: !can("createOwn", "Team"),
     onClick: async () => {
+      if (!can("createOwn", "Team")) return;
+
       const result = await createModal.open();
       if (result) {
         await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
@@ -23,14 +27,17 @@ const links: ButtonProps[] = [
   {
     label: "Rejoindre une équipe",
     color: "secondary",
+    disabled: !can("join", "Team"),
     onClick: async () => {
+      if (!can("join", "Team")) return;
+
       const result = await joinModal.open();
       if (result) {
         await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
       }
     },
   },
-];
+]);
 </script>
 
 <template>

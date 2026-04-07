@@ -7,9 +7,12 @@ import { AdminTeamsEditModal } from "#components";
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["teams.read.own"],
 });
 
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const {can} = useAbility(currentParticipant);
+const canUpdateOwnTeam = computed(() => can("updateOwn", "Team"));
 
 const UButton = resolveComponent("UButton");
 //const UDropdownMenu = resolveComponent("UDropdownMenu");
@@ -18,11 +21,31 @@ const overlay = useOverlay();
 const editTeamModal = overlay.create(AdminTeamsEditModal);
 
 const toast = useToast();
+const supabase = useSupabaseClient();
 const {copy} = useClipboard();
 
 //const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
-const columns: TableColumn<ParticipantWithoutRelations>[] = [
+const downloadCV = async (participant: CurrentParticipantTeamMember) => {
+  if (!participant.curriculumVitae) {
+    return;
+  }
+
+  const blob = await supabase.storage.from("cvs").download(participant.curriculumVitae);
+
+  if (blob.error || !blob.data) {
+    toast.add({
+      title: "Erreur",
+      description: "Impossible de télécharger le CV.",
+      color: "error",
+    });
+    return;
+  }
+
+  downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
+};
+
+const columns: TableColumn<CurrentParticipantTeamMember>[] = [
   {
     id: "name",
     header: "Nom",
@@ -58,7 +81,7 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
           variant: "link",
           size: "sm",
           icon: "i-lucide-download",
-          to: cvLink,
+          onClick: () => downloadCV(row.original),
         });
       }
     },
@@ -66,10 +89,6 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
     header: "École",
     accessorKey: "school",
-  },
-  {
-    header: "Régime alimentaire",
-    accessorKey: "diet",
   },
   //TODO: Profile button?
   //{
@@ -110,7 +129,7 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
 ];
 
 // TODO: Do we allow participants to remove others from their team?
-//function getRowItems(row: Row<ParticipantWithoutRelations>): Array<DropdownMenuItem> {
+//function getRowItems(row: Row<CurrentParticipantTeamMember>): Array<DropdownMenuItem> {
 //  return [
 //    {
 //      label: "Retirer de l'équipe",
@@ -142,7 +161,8 @@ const copyToken = () => {
 };
 
 const openEditTeamModal = async () => {
-  if (!currentParticipant.value?.team) return;
+  if (!currentParticipant.value?.team || !canUpdateOwnTeam.value) return;
+
   const result = await editTeamModal.open({team: currentParticipant.value.team as unknown as Team});
   if (result) await refreshCurrentParticipant();
 };
@@ -155,6 +175,7 @@ const openEditTeamModal = async () => {
         <template #right>
           <UButton v-if="currentParticipant?.team"
                    icon="i-lucide-edit-2"
+                   :disabled="!canUpdateOwnTeam"
                    @click="openEditTeamModal">
             Modifier
           </UButton>

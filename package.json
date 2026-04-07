@@ -35,6 +35,8 @@
   },
   "packageManager": "pnpm@9.15.9",
   "dependencies": {
+    "@casl/ability": "^6.8.0",
+    "@casl/prisma": "^1.6.1",
     "@iconify-json/lucide": "^1.2.101",
     "@iconify-json/simple-icons": "^1.2.76",
     "@nuxt/content": "3.12.0",

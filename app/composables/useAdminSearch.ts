@@ -1,6 +1,8 @@
 import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
+import type { MaybeRefOrGetter } from "vue";
+import { toValue } from "vue";
 
-export const useAdminSearch = (navigationGroups: CommandPaletteGroup<CommandPaletteItem>[]) => {
+export const useAdminSearch = (navigationGroups: MaybeRefOrGetter<CommandPaletteGroup<CommandPaletteItem>[]>) => {
   const searchTerm = ref("");
   const loading = ref(false);
   const resultGroups = ref<AdminSearchGroup[]>([]);
@@ -57,7 +59,7 @@ export const useAdminSearch = (navigationGroups: CommandPaletteGroup<CommandPale
       items: group.items as CommandPaletteItem[],
     }));
 
-    return [...dynamicGroups, ...navigationGroups];
+    return [...dynamicGroups, ...toValue(navigationGroups)];
   });
 
   return {

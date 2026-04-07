@@ -2,6 +2,7 @@
  * This file is 80% AI generated.
  */
 import type { GuestType, SubmissionType } from "#shared/utils/types";
+import type { Permission } from "#shared/utils/authorization";
 
 export type SearchValue =
   | string
@@ -26,7 +27,8 @@ export type AdminSearchModelName =
   | "Sponsor"
   | "SubmissionRequest"
   | "Room"
-  | "Admin";
+  | "Admin"
+  | "Role";
 
 export type AdminSearchFieldMatch = "contains" | "string_contains" | "has" | "equals";
 
@@ -41,12 +43,16 @@ export interface AdminSearchPathConfig {
   match?: AdminSearchFieldMatch;
   /** Relative Fuse ranking weight for this field compared to the other fields of the same model */
   weight?: number;
+  /** Extra permissions required to include this field in search/indexing */
+  requiredPermissions?: readonly Permission[];
 }
 
 /**
  * Configuration for a model, used to build the Prisma query, the Fuse index, and the displayed result sections.
  */
 export interface AdminSearchModelConfig {
+  /** Permissions required to include this model in global search */
+  requiredPermissions: readonly Permission[];
   route: string;
   /** Label for the result group, usually the plural of the model name */
   groupLabel: string;
@@ -94,6 +100,7 @@ const truncate = (value: string | undefined, maxLength = 96) => {
 
 export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearchModelConfig> = {
   Participant: {
+    requiredPermissions: ["participants.read"],
     route: "/admin/participants",
     groupLabel: "Participants",
     icon: "i-lucide-user-check",
@@ -106,8 +113,8 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
       {path: "githubAccount"},
       {path: "linkedInAccount"},
       {path: "school"},
-      {path: "diet"},
-      {path: "needs"},
+      {path: "diet", requiredPermissions: ["participants.read.sensitive"]},
+      {path: "needs", requiredPermissions: ["participants.read.sensitive"]},
       {path: "user.firstName", relationModes: ["one"], weight: 4},
       {path: "user.lastName", relationModes: ["one"], weight: 4},
       {path: "user.email", relationModes: ["one"], weight: 5},
@@ -115,6 +122,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     ],
   },
   Team: {
+    requiredPermissions: ["teams.read", "participants.read"],
     route: "/admin/teams",
     groupLabel: "Équipes",
     icon: "i-lucide-users",
@@ -134,6 +142,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     ],
   },
   Guest: {
+    requiredPermissions: ["guests.read"],
     route: "/admin/guests",
     groupLabel: "Invités",
     icon: "i-lucide-id-card",
@@ -158,6 +167,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   Sponsor: {
+    requiredPermissions: ["sponsors.read"],
     route: "/admin/sponsors",
     groupLabel: "Sponsors",
     icon: "i-lucide-handshake",
@@ -174,6 +184,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   SubmissionRequest: {
+    requiredPermissions: ["submissionRequests.read", "participants.read"],
     route: "/admin/submissions-requests",
     groupLabel: "Demandes de soumission",
     icon: "i-lucide-file-text",
@@ -202,6 +213,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   Room: {
+    requiredPermissions: ["rooms.read", "teams.read"],
     route: "/admin/rooms",
     groupLabel: "Salles",
     icon: "i-lucide-door-open",
@@ -225,6 +237,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     buildTo: (record) => `/admin/rooms#room-${record.id}`,
   },
   Admin: {
+    requiredPermissions: ["admins.read", "roles.read"],
     route: "/admin/admins",
     groupLabel: "Administrateurs",
     icon: "i-lucide-shield-plus",
@@ -237,6 +250,20 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
       {path: "user.firstName", relationModes: ["one"], weight: 4},
       {path: "user.lastName", relationModes: ["one"], weight: 4},
       {path: "user.email", relationModes: ["one"], weight: 5},
+    ],
+  },
+  Role: {
+    requiredPermissions: ["roles.read"],
+    route: "/admin/roles",
+    groupLabel: "Rôles",
+    icon: "i-lucide-shield-check",
+    titlePaths: ["name"],
+    descriptionPaths: ["description"],
+    orderBy: "updatedAt",
+    searchFields: [
+      {path: "id"},
+      {path: "name"},
+      {path: "description"},
     ],
   },
 };

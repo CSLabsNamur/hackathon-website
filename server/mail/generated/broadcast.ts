@@ -422,7 +422,7 @@ let compiled: Handlebars.TemplateDelegate | undefined;
 
 export default function render(data?: BroadcastTemplateData): string {
   if (!compiled) {
-    compiled = Handlebars.compile(templateSource, { noEscape: true });
+    compiled = Handlebars.compile(templateSource, {noEscape: true});
   }
   return compiled(data);
 }

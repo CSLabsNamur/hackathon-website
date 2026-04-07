@@ -2,6 +2,7 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { AdminCreateManyInput, RoomCreateInput, ScheduleItemCreateInput } from "./generated/prisma/models";
 import "dotenv/config";
+import { PERMISSION_CATALOG } from "../../shared/utils/authorization";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -142,6 +143,39 @@ const admins: AdminSeed[] = [
   },
 ];
 
+// Permissions and roles
+const participantPermissionKeys = [
+  "participants.read.own",
+  "participants.update.own",
+  "teams.read.own",
+  "teams.create.own",
+  "teams.update.own",
+  "teams.join",
+  "teams.read",
+  "submissionRequests.read",
+  "submissions.read.own",
+  "submissions.update.own",
+  "submissions.delete.own",
+  "rooms.read",
+] as const;
+
+const systemRoles = [
+  {
+    key: "participant",
+    name: "Participant",
+    description: "Rôle attribué automatiquement aux participants.",
+    system: true,
+    permissionKeys: participantPermissionKeys,
+  },
+  {
+    key: "super_admin",
+    name: "Super administrateur",
+    description: "Accès complet à l'administration.",
+    system: true,
+    permissionKeys: PERMISSION_CATALOG.map((permission) => permission.key),
+  },
+] as const;
+
 // Submission Requests
 //const submissionRequests: SubmissionRequestCreateInput[] = [
 //  //{
@@ -264,6 +298,68 @@ const rooms: RoomCreateInput[] = [
 ];
 
 async function main() {
+  //region Permissions and roles
+  // Upsert permissions to ensure they exist and are updated if the catalog changes
+  await prisma.$transaction(PERMISSION_CATALOG.map((permission) => prisma.permission.upsert({
+    where: {
+      key: permission.key,
+    },
+    create: permission,
+    update: {
+      group: permission.group,
+      name: permission.name,
+      description: null,
+    },
+  })));
+
+  // Create the two default system roles
+  await prisma.$transaction(systemRoles.map((role) => prisma.role.upsert({
+    where: {
+      key: role.key,
+    },
+    create: role,
+    update: {
+      name: role.name,
+      description: role.description,
+      system: role.system,
+    },
+  })));
+
+  // Fetch permissions to get their IDs for role-permission assignments
+  const permissionRows = await prisma.permission.findMany({
+    where: {
+      key: {
+        in: PERMISSION_CATALOG.map((permission) => permission.key),
+      },
+    },
+    select: {
+      id: true,
+      key: true,
+    },
+  });
+  const permissionIdByKey = new Map(permissionRows.map((permission) => [permission.key, permission.id]));
+
+  // Assign permissions to system roles
+  for (const roleSeed of systemRoles) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: {
+        key: roleSeed.key,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await prisma.rolePermission.createMany({
+      data: roleSeed.permissionKeys.map((permissionKey) => ({
+        roleId: role.id,
+        permissionId: permissionIdByKey.get(permissionKey)!,
+      })),
+      skipDuplicates: true,
+    });
+  }
+  //endregion
+
   //region Teams
   //await prisma.team.createMany({data: teams, skipDuplicates: true});
   //
@@ -327,6 +423,60 @@ async function main() {
     data: adminData,
     skipDuplicates: true,
   });
+  //endregion
+
+  //region Role assignments backfill
+  const [participantRole, superAdminRole] = await prisma.$transaction([
+    prisma.role.findUniqueOrThrow({
+      where: {
+        key: "participant",
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.role.findUniqueOrThrow({
+      where: {
+        key: "super_admin",
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  const [participantUsers, adminUsers] = await prisma.$transaction([
+    prisma.participant.findMany({
+      select: {
+        userId: true,
+      },
+    }),
+    prisma.admin.findMany({
+      select: {
+        userId: true,
+      },
+    }),
+  ]);
+
+  if (participantUsers.length > 0) {
+    await prisma.userRoleAssignment.createMany({
+      data: participantUsers.map((participant) => ({
+        userId: participant.userId,
+        roleId: participantRole.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  if (adminUsers.length > 0) {
+    await prisma.userRoleAssignment.createMany({
+      data: adminUsers.map((admin) => ({
+        userId: admin.userId,
+        roleId: superAdminRole.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
   //endregion
 
   //region Submission Requests

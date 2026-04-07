@@ -38,6 +38,7 @@ useSeoMeta({
         </div>
 
         <template v-if="sponsorHasDescription(sponsor)" #description>
+          <!--eslint-disable-next-line vue/no-v-html -->
           <article class="max-w-none" v-html="getSponsorHTMLDescription(sponsor)"/>
         </template>
       </UPageCard>

@@ -2,7 +2,7 @@ import * as v from "valibot";
 import adminSearchQuerySchema from "#shared/schemas/admin/search";
 
 export default defineEventHandler(async (event): Promise<AdminSearchResponse> => {
-  await requireAuth(event, UserRole.ADMIN);
+  const context = await requireOrganizerAccess(event);
 
   const {query, limit} = await getValidatedQuery(event, v.parser(adminSearchQuerySchema));
 
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event): Promise<AdminSearchResponse> =>
     };
   }
 
-  const groups = await searchAdminIndex(query, limit);
+  const groups = await searchAdminIndex(query, limit, getGrantedPermissionKeys(context.dbUser));
 
   return {
     groups,

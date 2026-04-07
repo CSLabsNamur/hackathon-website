@@ -1,10 +1,20 @@
-export default defineNuxtRouteMiddleware(async (_to, _from) => {
-  //const user = useSupabaseUser()
-  // TODO: Change when fixed https://github.com/nuxt-modules/supabase/issues/565
-  const supabase = useSupabaseClient();
-  const {data} = await supabase.auth.getClaims();
+import { canUsePermissionKeys, getClientAbilityForPermissionKeys } from "~/utils/ability";
 
-  if (!data?.claims || data.claims.app_metadata?.role !== "participant") {
+export default defineNuxtRouteMiddleware(async (to) => {
+  try {
+    const {data: participant, error} = await useCurrentParticipant();
+
+    if (error.value || !participant.value) {
+      return navigateTo("/");
+    }
+
+    const requiredPermissions = (to.meta.requiredPermissions as Permission[] | undefined) ?? [];
+    const ability = getClientAbilityForPermissionKeys(participant.value.authorization.permissionKeys);
+
+    if (!canUsePermissionKeys(ability, requiredPermissions)) {
+      return navigateTo("/");
+    }
+  } catch {
     return navigateTo("/");
   }
 });

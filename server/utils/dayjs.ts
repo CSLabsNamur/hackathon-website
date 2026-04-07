@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import isBetween from "dayjs/plugin/isBetween.js";
+import IsSameOrAfter from "dayjs/plugin/isSameOrAfter.js";
 import fr from "dayjs/locale/fr.js";
 
 // Load French locale
@@ -11,6 +12,7 @@ dayjs.locale(fr);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isBetween);
+dayjs.extend(IsSameOrAfter);
 
 // Set default timezone if needed
 dayjs.tz.setDefault("Europe/Brussels");

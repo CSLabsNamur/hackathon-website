@@ -2,11 +2,15 @@
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["submissionRequests.read", "submissions.read.own"],
 });
 
 const {data: submissionsRequests} = await useSubmissionsRequests({lazy: false});
 // TODO: Why not use useSubmissions instead?
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const {can} = useAbility(currentParticipant);
+const canUpdateSubmission = computed(() => can("updateOwn", "Submission"));
+const canDeleteSubmission = computed(() => can("deleteOwn", "Submission"));
 
 const active = ref(0);
 
@@ -26,6 +30,15 @@ const allCompleted = computed(() =>
 );
 
 const wantToModify = ref(false);
+const modifySubmissionLinks = computed(() => [{
+  label: "Modifier mes soumissions",
+  color: "warning" as const,
+  disabled: !canUpdateSubmission.value,
+  onClick: () => {
+    if (!canUpdateSubmission.value) return;
+    wantToModify.value = true;
+  },
+}]);
 
 onMounted(async () => {
   const nextActive = (submissionsRequests.value ?? []).findIndex((submission) => !submittedRequestIds.value.has(submission.id));
@@ -63,6 +76,7 @@ const onSubmit = async (status: boolean) => {
                     :key="active"
                     :participant="currentParticipant!"
                     :submission-request="submissionsRequests![active]!"
+                    :can-submit="canUpdateSubmission"
                     class="min-h-56"
                     @submit="onSubmit"
                 />
@@ -71,6 +85,8 @@ const onSubmit = async (status: boolean) => {
                     :key="active"
                     :participant="currentParticipant!"
                     :submission-request="submissionsRequests![active]!"
+                    :can-submit="canUpdateSubmission"
+                    :can-delete="canDeleteSubmission"
                     class="min-h-56"
                     @delete-file="refreshCurrentParticipant"
                     @submit="onSubmit"
@@ -83,7 +99,7 @@ const onSubmit = async (status: boolean) => {
                 title="Toutes les soumissions sont terminées"
                 description="Vous avez soumis tous les documents requis. Merci !"
                 icon="i-lucide-check-circle"
-                :links="[{label: 'Modifier mes soumissions', color: 'warning', onClick: () => {  wantToModify = true }}]"
+                :links="modifySubmissionLinks"
             />
           </template>
         </UCard>

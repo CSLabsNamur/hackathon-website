@@ -1,25 +1,66 @@
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  const context = await requirePermission(event, "participants.read");
+  const includeSensitive = canUsePermission(context.ability, "participants.read.sensitive");
 
-  return prisma.participant.findMany({
-    include: {
+  const participants = await prisma.participant.findMany({
+    select: {
+      id: true,
+      userId: true,
+      githubAccount: true,
+      linkedInAccount: true,
+      school: true,
+      caution: true,
+      teamId: true,
+      curriculumVitae: true,
+      createdAt: true,
+      updatedAt: true,
+      ...(includeSensitive
+        ? {
+          diet: true,
+          needs: true,
+          imageAgreement: true,
+          newsletter: true,
+        }
+        : {}),
       team: {
-        include: {
+        select: {
+          id: true,
+          name: true,
           members: {
-            include: {
-              user: true,
+            select: {
+              id: true,
+              caution: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
         },
       },
-      submissions: {
-        include: {
-          request: true,
-          // TODO: Urgently check for unnecessary data exposure. Not critical now as only admins can access this endpoint, but still.
-          files: true,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
         },
       },
-      user: true,
     },
   });
+
+  if (includeSensitive) {
+    return participants;
+  }
+
+  return participants.map((participant) => ({
+    ...participant,
+    diet: null,
+    needs: null,
+    imageAgreement: null,
+    newsletter: null,
+  }));
 });

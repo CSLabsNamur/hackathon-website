@@ -69,7 +69,8 @@ async function onError(event: FormErrorEvent) {
         <UForm id="guest-create-form" :schema :state :disabled="isSubmitting"
                class="grid grid-cols-1 md:grid-cols-2 gap-6"
                @submit="onSubmit" @error="onError">
-          <UFormField label="Nom" name="name" description="Laissez vide pour utiliser le type d'invité." :class="{'md:col-span-2': hasExplicitName}">
+          <UFormField label="Nom" name="name" description="Laissez vide pour utiliser le type d'invité."
+                      :class="{'md:col-span-2': hasExplicitName}">
             <UInput v-model="state.name" icon="i-lucide-user" class="w-full" placeholder="Nom"/>
           </UFormField>
 

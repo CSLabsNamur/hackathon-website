@@ -1,16 +1,32 @@
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {dbUser} = await requirePermission(event, "participants.read.own");
 
-  const dbUser = await getDbUser(user);
-
-  return prisma.participant.findUnique({
+  const participant = await prisma.participant.findUnique({
     where: {userId: dbUser.id},
     include: {
       team: {
         include: {
           members: {
-            include: {
-              user: true,
+            select: {
+              id: true,
+              githubAccount: true,
+              linkedInAccount: true,
+              school: true,
+              caution: true,
+              curriculumVitae: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+              submissions: {
+                select: {
+                  id: true,
+                  requestId: true,
+                },
+              },
             },
           },
         },
@@ -21,7 +37,26 @@ export default defineEventHandler(async (event) => {
           files: true,
         },
       },
-      user: true,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
     },
   });
+
+  if (!participant) {
+    throw createError({statusCode: 404, statusMessage: "Participant introuvable"});
+  }
+
+  return {
+    ...participant,
+    authorization: {
+      roleKeys: getGrantedRoleKeys(dbUser),
+      permissionKeys: getGrantedPermissionKeys(dbUser),
+    },
+  };
 });

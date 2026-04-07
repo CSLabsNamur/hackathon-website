@@ -3,9 +3,11 @@ import type { FormErrorEvent } from "#ui/types";
 import { createUploadSchema, type UploadSchema } from "#shared/schemas/submissions/upload";
 
 const props = defineProps<{
-  // TODO: Use Submission instead of Participant
-  participant: Participant;
+  // TODO: Use Submission instead of CurrentParticipant
+  participant: CurrentParticipant;
   submissionRequest: SubmissionRequest;
+  canSubmit?: boolean;
+  canDelete?: boolean;
 }>();
 const emit = defineEmits<{ submit: [boolean], deleteFile: [] }>();
 
@@ -30,6 +32,8 @@ const acceptedLabel = computed(() => acceptedFormatsToLabel(props.submissionRequ
 const formSchema = computed(() => createUploadSchema(props.submissionRequest.acceptedFormats));
 
 async function onSubmit() {
+  if (!props.canSubmit) return;
+
   try {
     isSubmitting.value = true;
     if (!state.files || state.files.length === 0) {
@@ -49,11 +53,15 @@ async function onSubmit() {
 }
 
 async function onSkip() {
+  if (!props.canSubmit) return;
+
   await actions.uploadFiles(props.submissionRequest.id, {files: undefined, skipped: true});
   emit("submit", true);
 }
 
 async function onDeleteFile(fileId: string) {
+  if (!props.canDelete) return;
+
   try {
     isDeletingFileId.value = fileId;
     await actions.deleteSubmissionFile(props.submissionRequest.id, fileId);
@@ -83,7 +91,7 @@ async function onError(event: FormErrorEvent) {
     <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined" name="files"
                 :error-pattern="/files\.\d*/" :required="submissionRequest.required">
       <div class="grid gap-2">
-        <UFileUpload v-model="state.files" :disabled="isSubmitting" description="Choisir un fichier..."
+        <UFileUpload v-model="state.files" :disabled="isSubmitting || !canSubmit" description="Choisir un fichier..."
                      :accept="acceptAttr" layout="list"
                      :required="submissionRequest.required" class="w-full" :multiple="!!submissionRequest.multiple"/>
 
@@ -94,7 +102,7 @@ async function onError(event: FormErrorEvent) {
               <span class="truncate" :title="f.originalName">{{ f.originalName }}</span>
               <UButton size="xs" color="error" variant="ghost"
                        :loading="isDeletingFileId === f.id"
-                       :disabled="isSubmitting"
+                       :disabled="isSubmitting || !canDelete"
                        @click="onDeleteFile(f.id)">
                 Supprimer
               </UButton>
@@ -109,11 +117,12 @@ async function onError(event: FormErrorEvent) {
     </UFormField>
 
     <div class="flex gap-1.5 place-self-end">
-      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary" :disabled="isSubmitting"
+      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary"
+               :disabled="isSubmitting || !canSubmit"
                loading-auto @click="onSkip">
         Passer
       </UButton>
-      <UButton type="submit" :loading="isSubmitting">
+      <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmit">
         Soumettre
       </UButton>
     </div>

@@ -12,7 +12,7 @@ export const useSponsors = async (params?: UseSponsorsParams) => {
 };
 
 export const useSponsorsActions = () => {
-  const { $api } = useNuxtApp();
+  const {$api} = useNuxtApp();
 
   const toSponsorFormData = (data: CreateSponsorSchema | EditSponsorSchema) => {
     const formData = new FormData();

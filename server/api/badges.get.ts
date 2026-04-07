@@ -2,7 +2,7 @@ import * as v from "valibot";
 import renderBadgesQuerySchema from "#shared/schemas/badges/render";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  const context = await requirePermission(event, "badges.print");
 
   const {
     participants: includeParticipants = true,
@@ -16,6 +16,19 @@ export default defineEventHandler(async (event) => {
       statusCode: 400,
       statusMessage: "Aucun type de badge sélectionné.",
     });
+  }
+
+  const readPermissionChecks = [
+    [includeParticipants, "participants.read"],
+    [includeGuests, "guests.read"],
+    [includeSponsors, "sponsors.read"],
+    [includeAdmins, "admins.read"],
+  ] as const;
+
+  for (const [shouldInclude, permission] of readPermissionChecks) {
+    if (shouldInclude && !canUsePermission(context.ability, permission)) {
+      throw createError({statusCode: 403, statusMessage: "Forbidden"});
+    }
   }
 
   const [participants, guests, sponsors, admins] = await Promise.all([

@@ -10,6 +10,12 @@ export default defineNuxtConfig({
 
   // TODO: Delete when fixed https://github.com/prisma/prisma/issues/28804
   nitro: {
+    experimental: {
+      tasks: true,
+    },
+    scheduledTasks: {
+      "*/5 * * * *": ["emails:process"],
+    },
     rollupConfig: {
       external: [/^@prisma\//, /\.wasm$/],
     },
@@ -111,6 +117,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     "/__nuxt_content/pages/**": {
+      csurf: false,
+    },
+    "__nuxt_hints/**": {
       csurf: false,
     },
     "/historique": {static: true},

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from "@nuxt/ui";
+import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
-const {data: adminUser} = await useCurrentAdmin();
+const {data: currentAdmin} = await useCurrentAdmin();
+const {canPermissions} = useAbility(currentAdmin);
 
 const colorMode = useColorMode();
 // Provide theme to echarts components
@@ -10,79 +12,107 @@ provide(THEME_KEY, theme);
 
 const open = ref(false);
 
-const topLinks: NavigationMenuItem[][] = [
-  [{
+const topLinks: RestrictedNavigationItem[] = [
+  {
     label: "Accueil",
     icon: "i-lucide-house",
     to: "/admin",
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Participants",
     icon: "i-lucide-user-check",
     to: "/admin/participants",
+    requiredPermissions: ["participants.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Équipes",
     icon: "i-lucide-users",
     to: "/admin/teams",
+    requiredPermissions: ["teams.read", "participants.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Invités",
     icon: "i-lucide-id-card",
     to: "/admin/guests",
+    requiredPermissions: ["guests.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Sponsors",
     icon: "i-lucide-handshake",
     to: "/admin/sponsors",
+    requiredPermissions: ["sponsors.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Diffusions",
     icon: "i-lucide-send",
     to: "/admin/broadcast",
+    requiredPermissions: ["broadcasts.send"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Soumissions",
     icon: "i-lucide-file-text",
     to: "/admin/submissions-requests",
+    requiredPermissions: ["submissionRequests.read", "participants.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Salles",
     icon: "i-lucide-door-open",
     to: "/admin/rooms",
+    requiredPermissions: ["rooms.read", "teams.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Impressions",
     icon: "i-lucide-printer",
     to: "/admin/prints",
+    requiredPermissions: ["badges.print", "participants.read", "guests.read", "sponsors.read", "admins.read"],
     onSelect: () => {
       open.value = false;
     },
-  }, {
+  },
+  {
     label: "Administrateurs",
     icon: "i-lucide-shield-plus",
     to: "/admin/admins",
+    requiredPermissions: ["admins.read", "roles.read"],
     onSelect: () => {
       open.value = false;
     },
-  }],
+  },
+  {
+    label: "Rôles",
+    icon: "i-lucide-shield-user",
+    to: "/admin/roles",
+    requiredPermissions: ["roles.read"],
+    onSelect: () => {
+      open.value = false;
+    },
+  },
 ];
+
 const bottomLinks: NavigationMenuItem[] = [
   {
     label: "Retour au site",
@@ -102,11 +132,13 @@ const bottomLinks: NavigationMenuItem[] = [
 //}
 ];
 
-const navigationGroups: CommandPaletteGroup<CommandPaletteItem>[] = [{
+const searchableTopLinks = computed(() => topLinks.filter((item) => canPermissions(item.requiredPermissions)));
+
+const navigationGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: topLinks.flat() as CommandPaletteItem[],
-}];
+  items: searchableTopLinks.value as CommandPaletteItem[],
+}]);
 const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 </script>
 
@@ -124,14 +156,14 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
       <template #default="{collapsed}">
         <UDashboardSearchButton :collapsed class="bg-transparent ring-default"/>
 
-        <UNavigationMenu :collapsed :items="topLinks" orientation="vertical" tooltip popover/>
-        <UNavigationMenu :collapsed :items="bottomLinks" orientation="vertical" tooltip class="mt-auto"/>
+        <RestrictedNavigationMenu :collapsed :items="topLinks" :user="currentAdmin"/>
+        <RestrictedNavigationMenu :collapsed :items="bottomLinks" :user="currentAdmin" class="mt-auto"/>
       </template>
 
       <template #footer="{collapsed}">
-        <USkeleton v-if="!adminUser" :width="collapsed ? '2.5rem' : '100%'" :height="collapsed ? '2.5rem' : '3rem'"
+        <USkeleton v-if="!currentAdmin" :width="collapsed ? '2.5rem' : '100%'" :height="collapsed ? '2.5rem' : '3rem'"
                    class="mx-auto rounded"/>
-        <AdminUserMenu v-else :admin="adminUser" :collapsed/>
+        <AdminUserMenu v-else :admin="currentAdmin" :collapsed/>
       </template>
     </UDashboardSidebar>
 

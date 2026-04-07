@@ -2,7 +2,6 @@ import schema from "#shared/schemas/participants/create";
 import * as v from "valibot";
 import { serverSupabaseServiceRole } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
-import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import formidable from "formidable";
 import { fileTypeFromFile } from "file-type";
 import renderRegistration from "~~/server/mail/generated/registration";
@@ -82,29 +81,75 @@ export default defineEventHandler(async (event) => {
   }
 
   // Prepare the payload for creating the participant
-  const payload: ParticipantCreateInput = {
-    ...body,
-    user: {
-      create: {
-        firstName,
-        lastName,
-        email,
-      },
+  const participantRole = await prisma.role.findUnique({
+    where: {
+      key: "participant",
     },
-    curriculumVitae: undefined,
-    caution: CautionStatus.NOT_PAID,
-  };
+    select: {
+      id: true,
+    },
+  });
+
+  if (!participantRole) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Le rôle participant n'est pas configuré.",
+    });
+  }
+
+  let uploadedCvPath: string | undefined;
+  let createdUserId: string | undefined;
+  let createdAuthUserId: string | undefined;
+  let registrationEmailJobId: string | undefined;
+  const supabase = serverSupabaseServiceRole(event);
 
   try {
-    const participant = await prisma.participant.create({data: payload});
+    const authUser = await supabase.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: {
+        firstName,
+        lastName,
+      },
+    });
+
+    if (authUser.error || !authUser.data.user) {
+      throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du compte d'authentification."});
+    }
+
+    createdAuthUserId = authUser.data.user.id;
+
+    const participant = await prisma.participant.create({
+      data: {
+        ...body,
+        user: {
+          create: {
+            firstName,
+            lastName,
+            email,
+            supabaseAuthId: createdAuthUserId,
+            roleAssignments: {
+              create: [{
+                role: {
+                  connect: {
+                    id: participantRole.id,
+                  },
+                },
+              }],
+            },
+          },
+        },
+        curriculumVitae: undefined,
+        caution: CautionStatus.NOT_PAID,
+      },
+    });
+    createdUserId = participant.userId;
 
     // Upload CV to Supabase Storage if provided
     if (curriculumVitae) {
-      const supabase = serverSupabaseServiceRole(event);
-
       const {data, error} = await supabase.storage
         .from("cvs")
-        .upload(`${participant.userId}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
+        .upload(`${participant.id}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
           cacheControl: "3600",
           upsert: false,
           contentType: curriculumVitae.mimetype || undefined,
@@ -114,26 +159,19 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 500, statusMessage: "Erreur lors du téléchargement du CV."});
       }
 
-      payload.curriculumVitae = data.path;
-    }
-  } catch {
-    if (curriculumVitae) {
-      // Clean up uploaded CV in case of error
-      const supabase = serverSupabaseServiceRole(event);
-      const {error} = await supabase.storage.from("cvs").remove([`${firstName + lastName}_${curriculumVitae.originalFilename}`]);
-      if (error) {
-        console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
-      }
-    }
-    throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
-  }
+      uploadedCvPath = data.path;
 
-  // Send confirmation email
-  try {
-    const {sendMail} = useNodeMailer();
+      await prisma.participant.update({
+        where: {id: participant.id},
+        data: {
+          curriculumVitae: uploadedCvPath,
+        },
+      });
+    }
 
-    await sendMail({
-      to: email,
+    const registrationEmailJob = await enqueueEmail({
+      type: "participant_registration",
+      recipient: email,
       subject: "Confirmation d'inscription au Hackathon du CSLabs",
       html: renderRegistration({
         firstName,
@@ -142,12 +180,52 @@ export default defineEventHandler(async (event) => {
       }),
       replyTo: "event@cslabs.be",
     });
+    registrationEmailJobId = registrationEmailJob.id;
   } catch {
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Inscription enregistrée, mais erreur lors de l'envoi de l'email de confirmation.",
-    });
+    if (uploadedCvPath) {
+      // Clean up uploaded CV in case of error
+      const {error} = await supabase.storage.from("cvs").remove([uploadedCvPath]);
+      if (error) {
+        console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
+      }
+    }
+    if (createdUserId) {
+      try {
+        await prisma.user.delete({where: {id: createdUserId}});
+      } catch (error) {
+        console.error("Erreur lors de la suppression du participant après échec de la création :", error);
+      }
+    }
+    if (createdAuthUserId) {
+      const {error} = await supabase.auth.admin.deleteUser(createdAuthUserId);
+      if (error) {
+        console.error("Erreur lors de la suppression du compte d'authentification après échec de la création :", error);
+      }
+    }
+    throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
   }
 
-  return {success: true, message: "Inscription enregistrée avec succès."};
+  let emailWarning: string | undefined;
+
+  if (registrationEmailJobId) {
+    try {
+      const emailResult = await processEmailOutboxNow(registrationEmailJobId);
+      if (emailResult.failed > 0) {
+        emailWarning = "Inscription enregistrée, mais l'email de confirmation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+        console.warn("L'email de confirmation est planifié pour une nouvelle tentative.", {
+          emailJobId: registrationEmailJobId,
+          email,
+        });
+      }
+    } catch (error) {
+      emailWarning = "Inscription enregistrée, mais l'email de confirmation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+      console.error("Erreur lors de l'envoi immédiat de l'email de confirmation :", error);
+    }
+  }
+
+  return {
+    success: true,
+    message: "Inscription enregistrée avec succès.",
+    emailWarning,
+  };
 });

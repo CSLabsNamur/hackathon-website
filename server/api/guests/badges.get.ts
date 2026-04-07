@@ -1,5 +1,6 @@
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "badges.print");
+  await requirePermission(event, "guests.read");
 
   const guests = await prisma.guest.findMany({
     orderBy: {

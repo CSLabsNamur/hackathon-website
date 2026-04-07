@@ -2,7 +2,7 @@
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 
 const props = defineProps<{
-  participant: Participant;
+  participant: CurrentParticipant;
   collapsed?: boolean;
 }>();
 

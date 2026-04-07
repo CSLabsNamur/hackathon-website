@@ -3,6 +3,12 @@ import type * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/admins/invite";
 
+const props = defineProps<{
+  roles: Role[];
+}>();
+
+const {data: currentAdmin} = await useCurrentAdmin();
+
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -10,10 +16,18 @@ const actions = useAdminsActions();
 
 type Schema = v.InferOutput<typeof schema>
 
+const availableRoles = computed(() => props.roles.filter((role) => role.key !== "participant"));
+const roleOptions = computed(() => availableRoles.value.map((role) => ({
+  label: role.name,
+  value: role.id,
+  disabled: !canDelegatePermissionKeys(currentAdmin, role.permissions.map((permission) => permission.key)),
+})));
+
 const state = reactive<Schema>({
   firstName: "",
   lastName: "",
   email: "",
+  roleIds: [],
 });
 
 const isSubmitting = ref(false);
@@ -22,13 +36,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.inviteAdmin(event.data);
+    const result = await actions.inviteAdmin(event.data);
 
     toast.add({
       title: "Administrateur ajouté",
-      description: "L'administrateur a été ajouté avec succès.",
-      color: "success",
-      duration: 2000,
+      description: result.emailWarning ?? "L'administrateur a été ajouté avec succès.",
+      color: result.emailWarning ? "warning" : "success",
+      duration: result.emailWarning ? 6000 : 2000,
     });
 
     emit("close", true);
@@ -72,6 +86,10 @@ async function onError(event: FormErrorEvent) {
           <UFormField label="Email" name="email" required description="Doit se terminer par @cslabs.be">
             <UInput v-model="state.email" icon="i-lucide-mail" type="email" class="w-full"
                     placeholder="...@cslabs.be"/>
+          </UFormField>
+          <UFormField label="Rôles" name="roleIds" required>
+            <USelectMenu v-model="state.roleIds" :items="roleOptions" value-key="value" multiple class="w-full"
+                         placeholder="Sélectionnez un ou plusieurs rôles"/>
           </UFormField>
         </UForm>
       </UContainer>

@@ -1,13 +1,22 @@
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN | UserRole.USER);
+  await requirePermission(event, "teams.read");
 
   return prisma.team.findMany({
     include: {
       members: {
-        include: {
-          user: true,
+        select: {
+          id: true,
+          caution: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
         },
-      }, room: true,
+      },
+      room: true,
     },
   });
 });

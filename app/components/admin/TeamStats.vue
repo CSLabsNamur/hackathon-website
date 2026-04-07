@@ -2,23 +2,37 @@
 defineOptions({
   inheritAttrs: false,
 });
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   rounded?: boolean;
-}>(), {rounded: true});
+  includeParticipantDerivedStats?: boolean;
+}>(), {
+  rounded: true,
+  includeParticipantDerivedStats: true,
+});
 
-const {status: participantsStatus, data: participants} = await useParticipants({lazy: true});
 const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
+
+const participantsFetch = props.includeParticipantDerivedStats ? await useParticipants({lazy: true}) : null;
+const participantsStatus = computed(() => participantsFetch?.status.value ?? "success");
+const participants = computed(() => participantsFetch?.data.value ?? null);
 
 const dayjs = useDayjs();
 
 const {eventDateEnd} = useRuntimeConfig().public;
 
+type TeamStat = {
+  title: string;
+  value: number | string;
+  icon: string;
+  condition?: boolean;
+};
+
 const stats = computed(() => {
-  if (!participants.value || !teams.value) {
+  if (!teams.value) {
     return [];
   }
 
-  const allStats = [{
+  const allStats: TeamStat[] = [{
     title: "Nombre d'équipes",
     value: teams.value.length,
     icon: "i-lucide-users",
@@ -26,7 +40,13 @@ const stats = computed(() => {
     title: "Dernière équipe créée",
     value: teams.value.length > 0 ? teams.value.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]!.name : "Aucune équipe",
     icon: "i-lucide-clock",
-  }, {
+  }];
+
+  if (!props.includeParticipantDerivedStats || !participants.value) {
+    return allStats;
+  }
+
+  allStats.push({
     title: "Teams valides",
     value: `${teams.value.filter(team => team.members.every(member => {
       const participant = participants.value!.find(u => u.id === member.id);
@@ -43,7 +63,7 @@ const stats = computed(() => {
     })).length} / ${teams.value.length}`,
     icon: "i-lucide-euro",
     condition: dayjs().isAfter(dayjs(eventDateEnd)),
-  }];
+  });
 
   return allStats.filter(stat => stat.condition === undefined || stat.condition);
 });
@@ -74,9 +94,11 @@ const [DefineFallback, UseFallback] = createReusableTemplate();
       <UseFallback/>
     </template>
 
-    <UseFallback v-if="participantsStatus === 'pending' || teamsStatus === 'pending'"/>
-    <UPageGrid v-else-if="participantsStatus === 'success' && teamsStatus === 'success'"
-               class="gap-4 sm:gap-6 lg:gap-px" v-bind="$attrs">
+    <UseFallback
+        v-if="teamsStatus === 'pending' || (props.includeParticipantDerivedStats && participantsStatus === 'pending')"/>
+    <UPageGrid
+        v-else-if="teamsStatus === 'success' && (!props.includeParticipantDerivedStats || participantsStatus === 'success')"
+        class="gap-4 sm:gap-6 lg:gap-px" v-bind="$attrs">
       <template v-for="stat in stats" :key="stat.title">
         <UPageCard :icon="stat.icon"
                    :title="stat.title" variant="subtle"

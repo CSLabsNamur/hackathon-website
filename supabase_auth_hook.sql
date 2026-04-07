@@ -1,98 +1,74 @@
 BEGIN;
--- Assumes that there is an is_admin flag on the profiles table.
-create or replace function public.custom_access_token_hook(event jsonb)
-    returns jsonb
-    language plpgsql
-as
+
+-- Supabase custom access token hook.
+--
+-- Keep this hook as a coarse application-membership gate.
+-- Authorization itself is enforced by the Nuxt/Prisma/CASL RBAC layer and by RBAC-aware Storage RLS.
+--
+-- This deliberately does not serialize application roles or permissions into the JWT.
+-- Permission changes should be read from the database, not from stale tokens.
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
+    RETURNS jsonb
+    LANGUAGE plpgsql
+AS
 $$
-declare
-    claims     jsonb;
-    user_id    text;
-    has_role   boolean := false;
-    role_value text;
-begin
-    -- Resolve user_id from User table by email from claims
-    select id into user_id from public."User" where email = (event -> 'claims' ->> 'email');
+DECLARE
+    app_user_id             text;
+    has_admin_profile       boolean;
+    has_participant_profile boolean;
+BEGIN
+    -- Resolve the application user from JWT sub
+    SELECT id
+    INTO app_user_id
+    FROM public."User"
+    WHERE "supabaseAuthId" = (event -> 'claims' ->> 'sub');
 
-    -- If no user_id found, deny access
-    if user_id is null then
-        return jsonb_build_object(
+    -- Deny tokens for Auth users that are not known by the application
+    -- This should not happen.
+    IF app_user_id IS NULL THEN
+        RETURN jsonb_build_object(
                 'error',
                 jsonb_build_object(
                         'http_code', 403,
-                        'message',
-                        'User not found.'
+                        'message', 'User not found.'
                 )
                );
-    end if;
+    END IF;
 
-    -- Check Admin table first
-    select exists(select 1
-                  from public."Admin" a
-                  where a."userId" = user_id)
-    into has_role;
+    -- A user must have exactly one profile (Admin or Participant)
+    SELECT EXISTS (SELECT 1 FROM public."Admin" WHERE "userId" = app_user_id)
+    INTO has_admin_profile;
 
-    if has_role then
-        role_value := 'admin';
-    else
-        -- If not admin, check Participant table
-        select exists(select 1
-                      from public."Participant" p
-                      where p."userId" = user_id)
-        into has_role;
+    SELECT EXISTS (SELECT 1 FROM public."Participant" WHERE "userId" = app_user_id)
+    INTO has_participant_profile;
 
-        if has_role then
-            role_value := 'participant';
-        end if;
-    end if;
-
-    -- If user is neither admin nor participant, deny access
-    if not has_role then
-        return jsonb_build_object(
+    IF has_admin_profile = has_participant_profile THEN
+        RETURN jsonb_build_object(
                 'error',
                 jsonb_build_object(
                         'http_code', 403,
-                        'message',
-                        'User does not have any role.'
+                        'message', 'User must have exactly one application profile.'
                 )
                );
-    end if;
+    END IF;
 
-    -- User has a role, attach it to the claims
-    claims := event -> 'claims';
-
-    -- Ensure app_metadata exists
-    if jsonb_typeof(claims -> 'app_metadata') is null then
-        claims := jsonb_set(claims, '{app_metadata}', '{}'::jsonb);
-    end if;
-
-    -- Set role claim under app_metadata
-    claims := jsonb_set(
-            claims,
-            '{app_metadata,role}',
-            to_jsonb(role_value)
-              );
-
-    -- Update event claims
-    event := jsonb_set(event, '{claims}', claims);
-
-    -- Return modified event
-    return event;
-end;
+    RETURN event;
+END;
 $$;
 
-grant execute
-    on function public.custom_access_token_hook
-    to supabase_auth_admin;
+GRANT EXECUTE
+    ON FUNCTION public.custom_access_token_hook(jsonb)
+    TO supabase_auth_admin;
 
-revoke execute
-    on function public.custom_access_token_hook
-    from authenticated, anon, public;
+REVOKE EXECUTE
+    ON FUNCTION public.custom_access_token_hook(jsonb)
+    FROM authenticated, anon, public;
 
-grant select
-    on table public."User", public."Admin", public."Participant"
-    to supabase_auth_admin;
+-- The hook runs as supabase_auth_admin, so it needs read access to the profile tables used above
+GRANT SELECT
+    ON TABLE public."User", public."Admin", public."Participant"
+    TO supabase_auth_admin;
 
 GRANT USAGE ON SCHEMA "public" TO supabase_auth_admin;
--- GRANT SELECT ON ALL TABLES IN SCHEMA "public" TO supabase_auth_admin;
+
 COMMIT;

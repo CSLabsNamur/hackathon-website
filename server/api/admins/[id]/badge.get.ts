@@ -2,7 +2,8 @@ import * as v from "valibot";
 import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event, UserRole.ADMIN);
+  await requirePermission(event, "badges.print");
+  await requirePermission(event, "admins.read");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   const admin = await prisma.admin.findUnique({

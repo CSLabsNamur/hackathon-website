@@ -9,9 +9,12 @@ import RemoveModal from "~/components/admin/teams/RemoveModal.vue";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["teams.read", "participants.read"],
 });
 
 const {status, data: teams, refresh} = await useTeams({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
+const {can} = useAbility(currentAdmin);
 
 const toast = useToast();
 const dayjs = useDayjs();
@@ -119,6 +122,9 @@ const columnVisibility = usePersistentColumnVisibility("admin-teams-table-column
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
+  const canUpdateTeam = can("update", "Team");
+  const canDeleteTeam = can("delete", "Team");
+
   return [
     {
       type: "label",
@@ -154,7 +160,9 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
     {
       label: "Éditer l'équipe",
       icon: "i-lucide-edit-2",
+      disabled: !canUpdateTeam,
       onSelect: async () => {
+        if (!canUpdateTeam) return;
         const result = await editModal.open({team: row.original, adminEdit: true});
         if (result) await refresh();
       },
@@ -162,7 +170,9 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
+      disabled: !canDeleteTeam,
       onSelect: async () => {
+        if (!canDeleteTeam) return;
         const result = await removeModal.open({team: row.original});
         if (result) await refresh();
       },

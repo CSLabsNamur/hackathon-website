@@ -3,7 +3,6 @@
  * The logic made by AI was heavily refactored and simplified by hand.
  */
 import Fuse, { type FuseOptionKey } from "fuse.js";
-import { ADMIN_SEARCH_MIN_QUERY_LENGTH, type AdminSearchGroup, type AdminSearchItem } from "#shared/utils/adminSearch";
 import {
   ADMIN_SEARCH_MODEL_CONFIGS,
   type AdminSearchModelConfig,
@@ -13,6 +12,7 @@ import {
   type SearchValue,
 } from "./adminSearch.config";
 import prisma from "./prisma";
+import type { Permission } from "#shared/utils/authorization";
 
 type SearchWhere = Record<string, unknown>;
 type SearchSelectTree = Record<string, true | { select: SearchSelectTree }>;
@@ -87,6 +87,7 @@ const FUSE_THRESHOLD = 0.35;
 const MIN_ITEMS_PER_GROUP = 3;
 
 let cachedDefinitions: SearchModelDefinition[] | null = null;
+const cachedDefinitionsByPermissions = new Map<string, SearchModelDefinition[]>();
 
 const truncate = (value: string, maxLength = DESCRIPTION_MAX_LENGTH) => {
   const normalized = value.replace(/\s+/g, " ").trim();
@@ -274,13 +275,28 @@ const buildWhereClauses = (field: SearchFieldDefinition, query: SearchQueryInput
   });
 };
 
-const buildDefinitions = (): SearchModelDefinition[] => {
+const shouldIncludeSearchField = (field: AdminSearchPathConfig, allowedPermissionKeys?: ReadonlySet<Permission>) => {
+  if (!field.requiredPermissions?.length || !allowedPermissionKeys) return true;
+
+  return field.requiredPermissions.every((permission) => allowedPermissionKeys.has(permission));
+};
+
+const shouldIncludeSearchModel = (config: AdminSearchModelConfig, allowedPermissionKeys?: ReadonlySet<Permission>) => {
+  if (!allowedPermissionKeys) return true;
+
+  return config.requiredPermissions.every((permission) => allowedPermissionKeys.has(permission));
+};
+
+const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): SearchModelDefinition[] => {
   return (Object.entries(ADMIN_SEARCH_MODEL_CONFIGS) as Array<[AdminSearchModelName, AdminSearchModelConfig]>)
+    .filter(([, config]) => shouldIncludeSearchModel(config, allowedPermissionKeys))
     .map(([modelName, config]) => {
-      const searchFields = config.searchFields.map((field) => ({
-        ...field,
-        weight: field.weight ?? 1,
-      }));
+      const searchFields = config.searchFields
+        .filter((field) => shouldIncludeSearchField(field, allowedPermissionKeys))
+        .map((field) => ({
+          ...field,
+          weight: field.weight ?? 1,
+        }));
       const searchTermPath = config.searchTermPath ?? config.titlePaths[0] ?? "id";
       const rankWithSearchTerm = Boolean(config.searchTermPath);
       const selectPaths = new Set<string>([
@@ -324,14 +340,35 @@ const buildDefinitions = (): SearchModelDefinition[] => {
     });
 };
 
-export const searchAdminIndex = async (query: string, limit: number): Promise<AdminSearchGroup[]> => {
+const getDefinitions = (allowedPermissionKeys?: readonly Permission[]) => {
+  if (!allowedPermissionKeys) {
+    return cachedDefinitions ??= buildDefinitions();
+  }
+
+  const cacheKey = [...new Set(allowedPermissionKeys)].sort().join("\0");
+  const cached = cachedDefinitionsByPermissions.get(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const definitions = buildDefinitions(new Set(allowedPermissionKeys));
+  cachedDefinitionsByPermissions.set(cacheKey, definitions);
+
+  return definitions;
+};
+
+export const searchAdminIndex = async (query: string, limit: number, allowedPermissionKeys?: readonly Permission[]): Promise<AdminSearchGroup[]> => {
   const input = buildQueryInput(query);
 
   if (!input) return [];
 
-  // Disgusting operator but deal with it
-  // Basically: if cachedDefinitions is not null, use it, otherwise build definitions and cache them for next calls
-  const definitions = cachedDefinitions ??= buildDefinitions();
+  const definitions = getDefinitions(allowedPermissionKeys);
+
+  if (definitions.length === 0) {
+    return [];
+  }
+
   const perGroupLimit = Math.max(MIN_ITEMS_PER_GROUP, Math.ceil(limit / Math.max(definitions.length, 1)));
   const results = await Promise.all(definitions.map(async (definition) => {
     const delegate = Reflect.get(prisma, definition.modelName.charAt(0).toLowerCase() + definition.modelName.slice(1)) as SearchDelegate | undefined;

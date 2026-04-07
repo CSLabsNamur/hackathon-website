@@ -5,38 +5,42 @@ import schema from "#shared/schemas/teams/join";
  * Join a team as the current user.
  */
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
-
-  const dbUser = await getDbUser(user);
+  const {dbUser} = await requirePermission(event, "teams.join");
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  // Ensure the user is not already in a team
-  const existingTeam = await prisma.team.findFirst({
-    where: {
-      members: {
-        some: {
-          userId: dbUser.id,
-        },
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.findUnique({
+      where: {token: data.token},
+      select: {
+        id: true,
       },
-    },
-  });
-
-  if (existingTeam) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Vous êtes déjà dans une équipe.",
     });
-  }
 
-  return prisma.team.update({
-    where: {token: data.token},
-    data: {
-      members: {
-        connect: {
-          userId: dbUser.id,
-        },
+    if (!team) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: "Équipe introuvable.",
+      });
+    }
+
+    const updateResult = await tx.participant.updateMany({
+      where: {
+        userId: dbUser.id,
+        teamId: null,
       },
-    },
+      data: {
+        teamId: team.id,
+      },
+    });
+
+    if (updateResult.count !== 1) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Vous êtes déjà dans une équipe.",
+      });
+    }
+
+    return team;
   });
 });

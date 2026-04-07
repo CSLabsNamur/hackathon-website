@@ -6,38 +6,31 @@ import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
  * Create a new team and associate the current user as a member.
  */
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
-
-  const dbUser = await getDbUser(user);
+  const {dbUser} = await requirePermission(event, "teams.create.own");
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  // Ensure the user is not already in a team
-  const existingTeam = await prisma.team.findFirst({
-    where: {
-      members: {
-        some: {
-          userId: dbUser.id,
-        },
-      },
-    },
-  });
+  const payload: Prisma.TeamCreateInput = data;
 
-  if (existingTeam) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Vous êtes déjà dans une équipe.",
-    });
-  }
-
-  const payload: Prisma.TeamCreateInput = {
-    ...data,
-    members: {
-      connect: {
+  return prisma.$transaction(async (tx) => {
+    const team = await tx.team.create({data: payload});
+    const updateResult = await tx.participant.updateMany({
+      where: {
         userId: dbUser.id,
+        teamId: null,
       },
-    },
-  };
+      data: {
+        teamId: team.id,
+      },
+    });
 
-  return prisma.team.create({data: payload});
+    if (updateResult.count !== 1) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "Vous êtes déjà dans une équipe.",
+      });
+    }
+
+    return team;
+  });
 });

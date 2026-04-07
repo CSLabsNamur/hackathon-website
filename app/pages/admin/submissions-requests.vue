@@ -11,6 +11,7 @@ import { submissionTypeTranslateMap } from "#shared/utils/types";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["submissionRequests.read", "participants.read"],
 });
 
 const {
@@ -19,6 +20,8 @@ const {
   refresh: refreshSubmissionRequests,
 } = await useSubmissionsRequests({lazy: true});
 const {status: participantsStatus, data: participants} = await useParticipants({lazy: false});
+const {data: currentAdmin} = await useCurrentAdmin();
+const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -126,11 +129,16 @@ const columnVisibility = usePersistentColumnVisibility("admin-submission-request
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
 const openCreateModal = async () => {
+  if (!can("create", "SubmissionRequest")) return;
+
   const result = await createModal.open();
   if (result) await refreshSubmissionRequests();
 };
 
 function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
+  const canUpdateSubmissionRequest = can("update", "SubmissionRequest");
+  const canDeleteSubmissionRequest = can("delete", "SubmissionRequest");
+
   return [
     {
       type: "label",
@@ -151,7 +159,9 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     {
       label: "Éditer",
       icon: "i-lucide-edit-2",
+      disabled: !canUpdateSubmissionRequest,
       onSelect: async () => {
+        if (!canUpdateSubmissionRequest) return;
         const result = await editModal.open({submissionRequest: row.original});
         if (result) await refreshSubmissionRequests();
       },
@@ -159,7 +169,9 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
+      disabled: !canDeleteSubmissionRequest,
       onSelect: async () => {
+        if (!canDeleteSubmissionRequest) return;
         const result = await removeModal.open({submissionRequest: row.original});
         if (result) await refreshSubmissionRequests();
       },
@@ -173,7 +185,8 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     <template #header>
       <DashboardNavbar title="Demandes de soumissions">
         <template #right>
-          <UButton variant="ghost" icon="i-lucide-plus" :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}"
+          <UButton variant="ghost" icon="i-lucide-plus" :disabled="!can('create', 'SubmissionRequest')"
+                   :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}"
                    @click="openCreateModal">
             <template v-if="$device.isDesktopOrTablet">Nouvelle demande</template>
           </UButton>

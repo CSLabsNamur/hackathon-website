@@ -2,10 +2,17 @@ import schema from "#shared/schemas/teams/edit";
 import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event, UserRole.USER);
+  const {dbUser} = await requirePermission(event, "teams.update.own");
 
-  const participant = await getParticipant(user);
+  const participant = await getParticipantForDbUser(dbUser);
   const team = participant.team;
+
+  if (!team) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: "Vous n'êtes pas dans une équipe.",
+    });
+  }
 
   const data = await readValidatedBody(event, v.parser(schema));
 

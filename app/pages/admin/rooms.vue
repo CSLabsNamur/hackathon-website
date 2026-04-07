@@ -4,16 +4,20 @@ import { vDraggable } from "vue-draggable-plus";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["rooms.read", "teams.read"],
 });
 
 const toast = useToast();
 
 const {status, data: roomsOriginal, refresh} = await useRooms({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {reorderRooms} = useRoomsActions();
 const {data: teams} = await useTeams({lazy: false});
+const {can} = useAbility(currentAdmin);
 
 const {cloned: rooms, isModified} = useCloned(() => roomsOriginal.value ?? []);
 const isSaving = ref(false);
+const canAssignTeamsToRooms = computed(() => can("assign", "Room"));
 
 const assignedTeamIds = computed(() => new Set(
     rooms.value.flatMap((room) => room.teams.map((team) => team.id)),
@@ -71,6 +75,10 @@ async function confirm() {
   if (isSaving.value) {
     return;
   }
+  if (!canAssignTeamsToRooms.value) {
+    isModifying.value = false;
+    return;
+  }
 
   try {
     if (!isModified.value) {
@@ -113,7 +121,7 @@ async function confirm() {
         <template #right>
           <UButton variant="ghost"
                    :loading="isSaving"
-                   :disabled="isSaving"
+                   :disabled="isSaving || !canAssignTeamsToRooms"
                    :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'"
                    @click="isModifying ? confirm() : modify()">
             {{ isModifying ? "Confirmer" : "Modifier" }}
@@ -138,12 +146,14 @@ async function confirm() {
         </div>
 
         <div v-else :key="`rooms-${isModifying}`"
-             v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying}]"
+             v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying || !canAssignTeamsToRooms}]"
              class="flex flex-wrap gap-6">
-          <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room" :is-modifying="isModifying"
+          <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room"
+                         :is-modifying="isModifying && canAssignTeamsToRooms"
                          @update:teams="updateRoomTeams(room.id, $event)"/>
           <AdminRoomCard v-if="teams && teams.length > 0 && status === 'success'" :room="unassignedTeamsRoom"
-                         :is-modifying="isModifying" hide-handle @update:teams="updateUnassignedTeams"/>
+                         :is-modifying="isModifying && canAssignTeamsToRooms" hide-handle
+                         @update:teams="updateUnassignedTeams"/>
         </div>
       </UContainer>
     </template>

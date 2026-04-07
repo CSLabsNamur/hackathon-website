@@ -4,6 +4,7 @@ import type { TableColumn } from "#ui/components/Table.vue";
 definePageMeta({
   layout: "user-dashboard",
   middleware: "participant-auth",
+  requiredPermissions: ["teams.read"],
 });
 
 const {status, data: teams} = await useTeams({lazy: true});

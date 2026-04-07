@@ -1,6 +1,6 @@
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Column, Row, VisibilityState } from "@tanstack/vue-table";
-import type { Ref } from "vue";
+import { type MaybeRefOrGetter, type Ref, toValue } from "vue";
 import { UButton, UDropdownMenu } from "#components";
 import type { TableColumn } from "@nuxt/ui";
 
@@ -132,9 +132,9 @@ export function usePersistentColumnVisibility(storageKey: string, defaults: Visi
   });
 }
 
-export function useColumnVisibilityDropdownItems<T>(columns: NamedTableColumn<T>[], columnVisibility: Ref<VisibilityState>) {
+export function useColumnVisibilityDropdownItems<T>(columns: MaybeRefOrGetter<NamedTableColumn<T>[]>, columnVisibility: Ref<VisibilityState>) {
   return computed<DropdownMenuItem[]>(() => {
-    const dropdownItems: DropdownMenuItem[] = columns
+    const dropdownItems: DropdownMenuItem[] = toValue(columns)
       .filter((column) => column.id && column.enableHiding !== false)
       .map((column) => ({
         label: column.name || column.id,

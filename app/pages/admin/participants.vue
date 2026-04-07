@@ -17,10 +17,14 @@ import { CautionStatus } from "#shared/utils/types";
 definePageMeta({
   layout: "dashboard",
   middleware: "admin-auth",
+  requiredPermissions: ["participants.read"],
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
+const {data: currentAdmin} = await useCurrentAdmin();
 const {renderParticipantBadge} = useParticipantsActions();
+const {can} = useAbility(currentAdmin);
+const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
 
 const supabase = useSupabaseClient();
 const toast = useToast();
@@ -31,7 +35,7 @@ const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
 
-const downloadCV = async (participant: Participant) => {
+const downloadCV = async (participant: AdminParticipant) => {
   if (!participant.curriculumVitae) {
     return;
   }
@@ -55,7 +59,7 @@ const cautionItems = Object.values(CautionStatus).map((status) => ({
   value: status,
 }));
 
-const columns: NamedTableColumn<Participant>[] = [
+const allColumns: NamedTableColumn<AdminParticipant>[] = [
   {
     id: "name",
     name: "Nom",
@@ -228,13 +232,23 @@ const columns: NamedTableColumn<Participant>[] = [
   //}
 ];
 
+const sensitiveParticipantColumnIds: readonly string[] = ["diet", "needs", "agreements"] as const;
+const columns = computed(() => canReadSensitiveParticipants.value
+    ? allColumns
+    : allColumns.filter(column => !sensitiveParticipantColumnIds.includes(column.id)));
+
 const columnVisibility = usePersistentColumnVisibility("admin-participants-table-column-visibility", {
   caution: false,
   agreements: false,
 });
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
-function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
+  const canUpdateParticipant = can("updateSensitive", "Participant");
+  const canUpdateCaution = can("updateCaution", "Participant");
+  const canDeleteParticipant = can("delete", "Participant");
+  const canPrintBadge = can("print", "Badge");
+
   return [
     {
       type: "label",
@@ -262,7 +276,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Gérer la caution",
       icon: "i-lucide-wallet",
+      disabled: !canUpdateCaution,
       onSelect: async () => {
+        if (!canUpdateCaution) return;
         const result = await cautionModal.open({participant: row.original});
         if (result) await refresh();
       },
@@ -270,7 +286,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Éditer l'utilisateur",
       icon: "i-lucide-edit-2",
+      disabled: !canUpdateParticipant,
       onSelect: async () => {
+        if (!canUpdateParticipant) return;
         const result = await editModal.open({participant: row.original, adminEdit: true});
         if (result) await refresh();
       },
@@ -278,7 +296,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Supprimer l'utilisateur",
       icon: "i-lucide-trash-2",
+      disabled: !canDeleteParticipant,
       onSelect: async () => {
+        if (!canDeleteParticipant) return;
         const result = await removeModal.open({participant: row.original});
         if (result) await refresh();
       },
@@ -286,7 +306,9 @@ function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
     {
       label: "Générer le badge",
       icon: "i-lucide-id-card",
+      disabled: !canPrintBadge,
       onSelect: async () => {
+        if (!canPrintBadge) return;
         try {
           const badge = await renderParticipantBadge(row.original);
           downloadBlob(badge, `badge-${row.original.user.firstName}-${row.original.user.lastName}.pdf`);
