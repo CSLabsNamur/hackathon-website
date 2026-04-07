@@ -89,36 +89,26 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 400, statusMessage: "Un seul fichier est autorisé."});
   }
 
-  const submission = await prisma.submission.upsert({
+  const existingSubmission = await prisma.submission.findUnique({
     where: {
       requestId_participantId: {
         requestId: id,
         participantId: participant.id,
       },
     },
-    create: {
-      skipped: false,
-      content: null,
-      request: {connect: {id}},
-      participant: {connect: {id: participant.id}},
-    },
-    update: {
-      skipped: false,
-      content: null,
-    },
     include: {files: true},
   });
-
-  // If not multiple, replace existing files
-  if (!request.multiple && submission.files.length) {
-    const supabase = serverSupabaseServiceRole(event);
-    await supabase.storage.from(SUBMISSIONS_BUCKET).remove(submission.files.map((f) => f.path));
-    await prisma.submissionFile.deleteMany({where: {submissionId: submission.id}});
-  }
+  const existingFilePaths = new Set(existingSubmission?.files.map((file) => file.path) ?? []);
 
   const supabase = serverSupabaseServiceRole(event);
-
-  const createdFiles = [] as { path: string }[];
+  const uploadedFiles = [] as {
+    bucket: string;
+    path: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    sha256: string;
+  }[];
 
   try {
     for (const f of fileList) {
@@ -150,6 +140,10 @@ export default defineEventHandler(async (event) => {
       // TODO: change this to use UUID
       const storagePath = `${participant.id}/${id}/${sha256}_${safeName}`;
 
+      if (uploadedFiles.some((file) => file.path === storagePath) || (request.multiple && existingFilePaths.has(storagePath))) {
+        throw createError({statusCode: 400, statusMessage: "Un fichier est présent plusieurs fois dans la soumission."});
+      }
+
       const {data, error} = await supabase.storage
         .from(SUBMISSIONS_BUCKET)
         .upload(storagePath, fs.createReadStream(f.filepath), {
@@ -162,44 +156,86 @@ export default defineEventHandler(async (event) => {
         throw createError({statusCode: 500, statusMessage: "Erreur lors du téléversement du fichier."});
       }
 
-      createdFiles.push({path: data.path});
-
-      await prisma.submissionFile.create({
-        data: {
-          submissionId: submission.id,
-          bucket: SUBMISSIONS_BUCKET,
-          path: data.path,
-          originalName,
-          mimeType: detected.mime,
-          size: f.size,
-          sha256,
-        },
+      uploadedFiles.push({
+        bucket: SUBMISSIONS_BUCKET,
+        path: data.path,
+        originalName,
+        mimeType: detected.mime,
+        size: f.size,
+        sha256,
       });
-
-      // Cleanup temp file
+    }
+  } catch (e) {
+    const uploadedPathsToRemove = uploadedFiles.map((file) => file.path).filter((path) => !existingFilePaths.has(path));
+    if (uploadedPathsToRemove.length) {
+      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(uploadedPathsToRemove);
+      if (error) {
+        console.error("Erreur lors de la suppression des fichiers téléversés après échec:", error);
+      }
+    }
+    throw e;
+  } finally {
+    for (const f of fileList) {
       try {
         fs.unlinkSync(f.filepath);
       } catch { /* empty */
       }
     }
-  } catch (e) {
-    if (createdFiles.length) {
-      await supabase.storage.from(SUBMISSIONS_BUCKET).remove(createdFiles.map((x) => x.path));
-      await prisma.submissionFile.deleteMany({
-        where: {
-          submissionId: submission.id,
-          path: {in: createdFiles.map((x) => x.path)},
-        },
-      });
-      await prisma.submission.delete({where: {id: submission.id}});
-    }
-    throw e;
   }
 
-  //return prisma.submission.findUnique({
-  //  where: {id: submission.id},
-  //  include: {files: true, request: true},
-  //});
+  const uploadedFilePaths = uploadedFiles.map((file) => file.path);
+  const newUploadedFilePaths = uploadedFilePaths.filter((path) => !existingFilePaths.has(path));
+  const replacedFilePaths = request.multiple ? [] : existingSubmission?.files.map((file) => file.path) ?? [];
 
-  return submission;
+  try {
+    const submission = await prisma.submission.upsert({
+      where: {
+        requestId_participantId: {
+          requestId: id,
+          participantId: participant.id,
+        },
+      },
+      create: {
+        skipped: false,
+        content: null,
+        request: {connect: {id}},
+        participant: {connect: {id: participant.id}},
+        files: {
+          createMany: {
+            data: uploadedFiles,
+          },
+        },
+      },
+      update: {
+        skipped: false,
+        content: null,
+        files: {
+          ...(request.multiple ? {} : {deleteMany: {}}),
+          createMany: {
+            data: uploadedFiles,
+          },
+        },
+      },
+      include: {files: true, request: true},
+    });
+
+    const replacedStoragePaths = replacedFilePaths.filter((path) => !uploadedFilePaths.includes(path));
+    if (replacedStoragePaths.length > 0) {
+      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(replacedStoragePaths);
+      if (error) {
+        console.error("Erreur lors de la suppression des anciens fichiers de soumission:", error);
+      }
+    }
+
+    return submission;
+  } catch (e) {
+    if (newUploadedFilePaths.length) {
+      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(newUploadedFilePaths);
+      if (error) {
+        console.error("Erreur lors de la suppression des fichiers téléversés après échec de l'enregistrement:", error);
+      }
+    }
+
+    throw e;
+  }
 });

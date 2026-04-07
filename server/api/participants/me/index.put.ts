@@ -22,13 +22,17 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole(event);
 
   try {
-    await supabase.auth.admin.updateUserById(authUser.sub, {
+    const res = await supabase.auth.admin.updateUserById(authUser.sub, {
       email,
       user_metadata: {
         firstName,
         lastName,
       },
     });
+
+    if (res.error) {
+      throw res.error;
+    }
 
     return prisma.participant.update({where: {userId: dbUser.id}, data: payload});
   } catch {

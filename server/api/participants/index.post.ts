@@ -148,7 +148,7 @@ export default defineEventHandler(async (event) => {
     if (curriculumVitae) {
       const {data, error} = await supabase.storage
         .from("cvs")
-        .upload(`${participant.userId}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
+        .upload(`${participant.id}/${firstName + lastName}_cv`, fs.createReadStream(curriculumVitae.filepath), {
           cacheControl: "3600",
           upsert: false,
           contentType: curriculumVitae.mimetype || undefined,
