@@ -117,7 +117,8 @@ async function onError(event: FormErrorEvent) {
     </UFormField>
 
     <div class="flex gap-1.5 place-self-end">
-      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary" :disabled="isSubmitting || !canSubmit"
+      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary"
+               :disabled="isSubmitting || !canSubmit"
                loading-auto @click="onSkip">
         Passer
       </UButton>

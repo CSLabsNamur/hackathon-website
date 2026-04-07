@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const { permissionKeys, ...roleData } = data;
+  const {permissionKeys, ...roleData} = data;
 
   try {
     return await prisma.role.create({

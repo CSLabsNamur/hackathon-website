@@ -4,7 +4,7 @@ const props = defineProps<{ role: Role }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
-const { removeRole } = useRolesActions();
+const {removeRole} = useRolesActions();
 
 const isRemoving = ref(false);
 

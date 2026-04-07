@@ -1,6 +1,6 @@
 import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
-import { toValue } from "vue";
 import type { MaybeRefOrGetter } from "vue";
+import { toValue } from "vue";
 
 export const useAdminSearch = (navigationGroups: MaybeRefOrGetter<CommandPaletteGroup<CommandPaletteItem>[]>) => {
   const searchTerm = ref("");

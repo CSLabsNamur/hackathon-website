@@ -3,8 +3,8 @@ export default defineEventHandler(async (event) => {
 
   return prisma.permission.findMany({
     orderBy: [
-      { group: "asc" },
-      { key: "asc" },
+      {group: "asc"},
+      {key: "asc"},
     ],
   });
 });

@@ -141,7 +141,10 @@ export default defineEventHandler(async (event) => {
       const storagePath = `${participant.id}/${id}/${sha256}_${safeName}`;
 
       if (uploadedFiles.some((file) => file.path === storagePath) || (request.multiple && existingFilePaths.has(storagePath))) {
-        throw createError({statusCode: 400, statusMessage: "Un fichier est présent plusieurs fois dans la soumission."});
+        throw createError({
+          statusCode: 400,
+          statusMessage: "Un fichier est présent plusieurs fois dans la soumission.",
+        });
       }
 
       const {data, error} = await supabase.storage

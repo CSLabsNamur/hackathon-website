@@ -1,4 +1,4 @@
-import type {CreateScheduleItemSchema} from "#shared/schemas/schedule/create";
+import type { CreateScheduleItemSchema } from "#shared/schemas/schedule/create";
 
 export async function assertScheduleItemCanBeSaved(data: CreateScheduleItemSchema, ignoredScheduleItemId?: string) {
   if (dayjs(data.startTime).isSameOrAfter(dayjs(data.endTime))) {

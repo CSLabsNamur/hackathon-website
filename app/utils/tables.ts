@@ -1,6 +1,6 @@
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Column, Row, VisibilityState } from "@tanstack/vue-table";
-import { toValue, type MaybeRefOrGetter, type Ref } from "vue";
+import { type MaybeRefOrGetter, type Ref, toValue } from "vue";
 import { UButton, UDropdownMenu } from "#components";
 import type { TableColumn } from "@nuxt/ui";
 

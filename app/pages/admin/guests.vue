@@ -198,7 +198,8 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
     <template #header>
       <DashboardNavbar title="Invités">
         <template #right>
-          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Guest')" @click="openCreateModal">Ajouter</UButton>
+          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Guest')" @click="openCreateModal">Ajouter
+          </UButton>
         </template>
       </DashboardNavbar>
     </template>

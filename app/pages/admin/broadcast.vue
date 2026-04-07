@@ -349,7 +349,8 @@ async function onError(event: FormErrorEvent) {
     <template #body>
       <UContainer class="pb-6 md:pb-8">
         <ContentCard>
-          <UForm id="broadcast-form" :schema :state :disabled="isSubmitting || !canSendBroadcast" class="flex flex-col gap-4 lg:gap-6"
+          <UForm id="broadcast-form" :schema :state :disabled="isSubmitting || !canSendBroadcast"
+                 class="flex flex-col gap-4 lg:gap-6"
                  @submit="onSubmit" @error="onError">
             <UFormField label="Destinataires" name="recipients" required>
               <URadioGroup v-model="state.recipients" :items="recipientsItems"

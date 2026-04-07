@@ -36,8 +36,8 @@ export const richTextToPlainText = (input?: JSONContent | null): string => {
 
   const text = typeof input.text === "string" ? input.text : "";
   const children = Array.isArray(input.content)
-      ? input.content.map((child) => richTextToPlainText(child)).filter(Boolean)
-      : [];
+    ? input.content.map((child) => richTextToPlainText(child)).filter(Boolean)
+    : [];
 
   return [text, ...children].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 };

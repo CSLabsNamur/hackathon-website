@@ -136,7 +136,10 @@ export default defineEventHandler(async (event) => {
     if (error) {
       console.error("Erreur lors de la suppression du compte d'authentification après échec de la création de l'administrateur :", error);
     }
-    throw createError({statusCode: 400, statusMessage: "Impossible d'ajouter cet administrateur ou de planifier son email d'invitation."});
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Impossible d'ajouter cet administrateur ou de planifier son email d'invitation.",
+    });
   }
 
   let emailWarning: string | undefined;

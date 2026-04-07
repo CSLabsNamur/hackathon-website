@@ -23,12 +23,12 @@ const hasVisibleOverview = computed(() => canReadParticipants.value || canReadTe
         <div class="flex flex-col gap-6 lg:gap-8">
           <div v-if="currentAdminStatus === 'success' && hasVisibleOverview" class="space-y-px">
             <LazyAdminParticipantStats v-if="canReadParticipants"
-                                   :rounded="!canReadTeams"
-                                   :class="canReadTeams ? '*:first:rounded-tl-lg *:last:rounded-tr-lg' : undefined"/>
+                                       :rounded="!canReadTeams"
+                                       :class="canReadTeams ? '*:first:rounded-tl-lg *:last:rounded-tr-lg' : undefined"/>
             <LazyAdminTeamStats v-if="canReadTeams"
-                            :rounded="!canReadParticipants"
-                            :include-participant-derived-stats="canReadParticipants"
-                            :class="canReadParticipants ? '*:first:rounded-bl-lg *:last:rounded-br-lg' : undefined"/>
+                                :rounded="!canReadParticipants"
+                                :include-participant-derived-stats="canReadParticipants"
+                                :class="canReadParticipants ? '*:first:rounded-bl-lg *:last:rounded-br-lg' : undefined"/>
           </div>
           <UPageGrid v-if="currentAdminStatus === 'success' && canReadParticipants" class="lg:flex">
             <LazyAdminChartsRegistrationTimeline class="w-2/3"/>

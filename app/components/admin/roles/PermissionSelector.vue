@@ -83,14 +83,16 @@ function setPermissionEnabledForGroup(group: string, enabled: boolean) {
         </p>
 
         <UCheckbox :id="`select-all-${group}`" :model-value="selectAllCheckboxModel(groupPermissions)"
-                   :disabled="disabled || getDelegablePermissions(groupPermissions).length === 0" label="Tout sélectionner"
+                   :disabled="disabled || getDelegablePermissions(groupPermissions).length === 0"
+                   label="Tout sélectionner"
                    @update:model-value="setPermissionEnabledForGroup(group, $event as boolean)"/>
       </div>
 
       <div class="grid gap-3 md:grid-cols-2">
         <UCheckbox v-for="permission in groupPermissions" :id="`permission-${permission.id}`"
                    :key="permission.id" :model-value="model.includes(permission.key)"
-                   :disabled="isPermissionDisabled(permission.key)" :label="permission.name" :description="permission.key"
+                   :disabled="isPermissionDisabled(permission.key)" :label="permission.name"
+                   :description="permission.key"
                    @update:model-value="setPermissionEnabled(permission.key, $event as boolean)"/>
       </div>
     </div>

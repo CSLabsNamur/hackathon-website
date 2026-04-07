@@ -2,10 +2,7 @@ import { AbilityBuilder, type PureAbility } from "@casl/ability";
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
-import {
-  getNonDelegablePermissionKeys,
-  type Permission as PermissionKey,
-} from "#shared/utils/authorization";
+import { getNonDelegablePermissionKeys, type Permission as PermissionKey } from "#shared/utils/authorization";
 import type { AppPrismaQuery, AppSubject } from "./casl";
 import { createPrismaAbility } from "./casl";
 
