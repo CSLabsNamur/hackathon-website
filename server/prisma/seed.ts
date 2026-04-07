@@ -161,6 +161,7 @@ const participantPermissionKeys = [
 
 const systemRoles = [
   {
+    id: "participant",
     key: "participant",
     name: "Participant",
     description: "Rôle attribué automatiquement aux participants.",
@@ -168,6 +169,7 @@ const systemRoles = [
     permissionKeys: participantPermissionKeys,
   },
   {
+    id: "super_admin",
     key: "super_admin",
     name: "Super administrateur",
     description: "Accès complet à l'administration.",
@@ -317,7 +319,13 @@ async function main() {
     where: {
       key: role.key,
     },
-    create: role,
+    create: {
+      id: role.id,
+      key: role.key,
+      name: role.name,
+      description: role.description,
+      system: role.system,
+    },
     update: {
       name: role.name,
       description: role.description,
@@ -502,5 +510,6 @@ async function main() {
 }
 
 main().finally(async () => {
+  console.log("Seeding completed.");
   await prisma.$disconnect();
 });
