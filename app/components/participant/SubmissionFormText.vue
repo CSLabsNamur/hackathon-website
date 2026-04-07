@@ -3,7 +3,7 @@ import type { FormErrorEvent } from "#ui/types";
 import schema, { type SubmitTextSchema } from "#shared/schemas/submissions/submitText";
 
 const props = defineProps<{
-  participant: Participant;
+  participant: CurrentParticipant;
   submissionRequest: SubmissionRequest;
   canSubmit?: boolean;
 }>();

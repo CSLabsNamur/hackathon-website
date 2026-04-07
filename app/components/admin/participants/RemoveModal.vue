@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ participant: Participant }>();
+const props = defineProps<{ participant: AdminParticipant }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

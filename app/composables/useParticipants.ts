@@ -7,7 +7,7 @@ interface UseParticipantsParams {
 }
 
 export const useParticipants = async (params?: UseParticipantsParams) => {
-  return useFetch("/api/participants", {
+  return useFetch<AdminParticipant[]>("/api/participants", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });
@@ -50,7 +50,7 @@ export const useParticipantsActions = () => {
     });
   };
 
-  const renderParticipantBadge = async (participant: Participant) => {
+  const renderParticipantBadge = async (participant: Pick<AdminParticipant, "id">) => {
     return $api<Blob>(`/api/participants/${participant.id}/badge`);
   };
 

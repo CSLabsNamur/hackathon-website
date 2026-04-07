@@ -3,8 +3,8 @@ import type { FormErrorEvent } from "#ui/types";
 import { createUploadSchema, type UploadSchema } from "#shared/schemas/submissions/upload";
 
 const props = defineProps<{
-  // TODO: Use Submission instead of Participant
-  participant: Participant;
+  // TODO: Use Submission instead of CurrentParticipant
+  participant: CurrentParticipant;
   submissionRequest: SubmissionRequest;
   canSubmit?: boolean;
   canDelete?: boolean;

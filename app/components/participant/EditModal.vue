@@ -3,7 +3,7 @@ import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 import { default as schema, type EditParticipantSchema } from "#shared/schemas/participants/edit";
 
-const props = defineProps<{ participant: Participant, adminEdit?: boolean }>();
+const props = defineProps<{ participant: CurrentParticipant | AdminParticipant, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

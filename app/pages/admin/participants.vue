@@ -24,6 +24,7 @@ const {status, data: participants, refresh} = await useParticipants({lazy: true}
 const {data: currentAdmin} = await useCurrentAdmin();
 const {renderParticipantBadge} = useParticipantsActions();
 const {can} = useAbility(currentAdmin);
+const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
 
 const supabase = useSupabaseClient();
 const toast = useToast();
@@ -34,7 +35,7 @@ const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
 
-const downloadCV = async (participant: Participant) => {
+const downloadCV = async (participant: AdminParticipant) => {
   if (!participant.curriculumVitae) {
     return;
   }
@@ -58,7 +59,7 @@ const cautionItems = Object.values(CautionStatus).map((status) => ({
   value: status,
 }));
 
-const columns: NamedTableColumn<Participant>[] = [
+const allColumns: NamedTableColumn<AdminParticipant>[] = [
   {
     id: "name",
     name: "Nom",
@@ -231,13 +232,18 @@ const columns: NamedTableColumn<Participant>[] = [
   //}
 ];
 
+const sensitiveParticipantColumnIds: readonly string[] = ["diet", "needs", "agreements"] as const;
+const columns = computed(() => canReadSensitiveParticipants.value
+    ? allColumns
+    : allColumns.filter(column => !sensitiveParticipantColumnIds.includes(column.id)));
+
 const columnVisibility = usePersistentColumnVisibility("admin-participants-table-column-visibility", {
   caution: false,
   agreements: false,
 });
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
-function getRowItems(row: Row<Participant>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
   const canUpdateParticipant = can("updateSensitive", "Participant");
   const canUpdateCaution = can("update", "Participant");
   const canDeleteParticipant = can("delete", "Participant");

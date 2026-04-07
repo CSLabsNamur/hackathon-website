@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ participant: Participant }>();
+const props = defineProps<{ participant: CurrentParticipant }>();
 
 const {data: submissionsRequests} = await useSubmissionsRequests({lazy: true});
 

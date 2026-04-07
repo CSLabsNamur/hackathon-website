@@ -3,23 +3,52 @@ export default defineEventHandler(async (event) => {
   const includeSensitive = canUsePermission(context.ability, "participants.read.sensitive");
 
   const participants = await prisma.participant.findMany({
-    include: {
+    select: {
+      id: true,
+      userId: true,
+      githubAccount: true,
+      linkedInAccount: true,
+      school: true,
+      caution: true,
+      teamId: true,
+      curriculumVitae: true,
+      createdAt: true,
+      updatedAt: true,
+      ...(includeSensitive
+        ? {
+          diet: true,
+          needs: true,
+          imageAgreement: true,
+          newsletter: true,
+        }
+        : {}),
       team: {
-        include: {
+        select: {
+          id: true,
+          name: true,
           members: {
-            include: {
-              user: true,
+            select: {
+              id: true,
+              caution: true,
+              user: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
             },
           },
         },
       },
-      submissions: {
-        include: {
-          request: true,
-          files: includeSensitive,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
         },
       },
-      user: true,
     },
   });
 
@@ -31,10 +60,7 @@ export default defineEventHandler(async (event) => {
     ...participant,
     diet: null,
     needs: null,
-    curriculumVitae: null,
-    submissions: participant.submissions.map((submission) => ({
-      ...submission,
-      files: [],
-    })),
+    imageAgreement: null,
+    newsletter: null,
   }));
 });

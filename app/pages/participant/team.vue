@@ -26,7 +26,7 @@ const {copy} = useClipboard();
 
 //const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
-const downloadCV = async (participant: ParticipantWithoutRelations) => {
+const downloadCV = async (participant: CurrentParticipantTeamMember) => {
   if (!participant.curriculumVitae) {
     return;
   }
@@ -45,7 +45,7 @@ const downloadCV = async (participant: ParticipantWithoutRelations) => {
   downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
 };
 
-const columns: TableColumn<ParticipantWithoutRelations>[] = [
+const columns: TableColumn<CurrentParticipantTeamMember>[] = [
   {
     id: "name",
     header: "Nom",
@@ -129,7 +129,7 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
 ];
 
 // TODO: Do we allow participants to remove others from their team?
-//function getRowItems(row: Row<ParticipantWithoutRelations>): Array<DropdownMenuItem> {
+//function getRowItems(row: Row<CurrentParticipantTeamMember>): Array<DropdownMenuItem> {
 //  return [
 //    {
 //      label: "Retirer de l'équipe",

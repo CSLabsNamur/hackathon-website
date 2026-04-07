@@ -5,8 +5,7 @@ import type { Permission as PermissionKey } from "./authorization";
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
 export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/generated/prisma/browser";
 
-// Custom types, for additional relationships or specific use
-// TODO: Huge problem: These types are not updated automatically when the Prisma schema changes. Need to refactor to use global includes.
+// Custom DTO types for API responses.
 type TeamMember = SerializeObject<Prisma.ParticipantGetPayload<{
   select: {
     id: true,
@@ -64,21 +63,105 @@ export type DbUser = Prisma.UserGetPayload<{
     };
   };
 }>;
-export type Participant = SerializeObject<Prisma.ParticipantGetPayload<{
-  include: {
-    team: {
-      include: {
-        members: {
-          include: { user: true, submissions: { include: { request: true }, select: { id: true, requestId: true } } }
-        }
-      }
-    },
-    submissions: { include: { request: true, files: true } },
-    user: true
-  }
+type ParticipantScalar = SerializeObject<Prisma.ParticipantGetPayload<object>>;
+type ParticipantUser = SerializeObject<Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    email: true;
+    firstName: true;
+    lastName: true;
+  };
 }>>;
+type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetPayload<{
+  include: {
+    request: true;
+    files: true;
+  };
+}>>;
+type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
+  include: {
+    members: {
+      select: {
+        id: true;
+        githubAccount: true;
+        linkedInAccount: true;
+        school: true;
+        caution: true;
+        curriculumVitae: true;
+        user: {
+          select: {
+            id: true;
+            firstName: true;
+            lastName: true;
+          };
+        };
+        submissions: {
+          select: {
+            id: true;
+            requestId: true;
+          };
+        };
+      };
+    };
+  };
+}>>;
+
+export type CurrentParticipant = ParticipantScalar & {
+  team: CurrentParticipantTeam | null;
+  submissions: CurrentParticipantSubmission[];
+  user: ParticipantUser;
+} & AuthorizationInfo;
+export type CurrentParticipantTeamMember = CurrentParticipantTeam["members"][number];
+
+type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
+  select: {
+    id: true;
+    userId: true;
+    githubAccount: true;
+    linkedInAccount: true;
+    school: true;
+    caution: true;
+    teamId: true;
+    createdAt: true;
+    updatedAt: true;
+    team: {
+      select: {
+        id: true;
+        name: true;
+        members: {
+          select: {
+            id: true;
+            caution: true;
+            user: {
+              select: {
+                id: true;
+                firstName: true;
+                lastName: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    user: {
+      select: {
+        id: true;
+        email: true;
+        firstName: true;
+        lastName: true;
+      };
+    };
+  };
+}>>;
+export type AdminParticipant = AdminParticipantBase & {
+  diet: string | null;
+  needs: string | null;
+  curriculumVitae: string | null;
+  imageAgreement: boolean | null;
+  newsletter: boolean | null;
+};
+
 export type ParticipantWithUser = Prisma.ParticipantGetPayload<{ include: { user: true } }>
-export type ParticipantWithoutRelations = Omit<Participant, "team" | "submissions">;
 export type Admin = SerializeObject<Prisma.AdminGetPayload<{
   include: {
     user: {
@@ -123,7 +206,6 @@ export type AuthorizationInfo = {
   };
 };
 export type CurrentAdmin = Admin & AuthorizationInfo;
-export type CurrentParticipant = Participant & AuthorizationInfo;
 export type CurrentAuthorizedUser = CurrentAdmin | CurrentParticipant;
 
 export const cautionStatusTranslateMap: Record<CautionStatus, string> = {
