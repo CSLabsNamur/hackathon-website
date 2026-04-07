@@ -56,8 +56,6 @@ const recipientsItems = [{
 const isSubmitting = ref(false);
 
 //region Editor
-const editor = useTemplateRef("editor");
-
 const starterKit: Partial<StarterKitOptions> = {
   link: {
     defaultProtocol: "https",
@@ -199,8 +197,6 @@ const toolbarItemsMobile: EditorToolbarItem[][] = [
     tooltip: {text: "Lien"},
   }],
 ];
-
-//const characterCount = computed(() => editor.value.editor.storage.characterCount.characters());
 
 // SSR-safe function to append menus to body (avoids z-index issues in docs)
 const appendToBody = import.meta.client ? () => document.body : undefined;
@@ -372,7 +368,7 @@ async function onError(event: FormErrorEvent) {
             </UFormField>
 
             <UFormField label="Message" name="message" required>
-              <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html" ref="editor"
+              <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html"
                        :editable="!isSubmitting && canSendBroadcast" :starter-kit="starterKit"
                        :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
                        :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"

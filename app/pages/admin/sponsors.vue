@@ -222,6 +222,7 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
                   <LazyNuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
                                class="max-h-48 w-fit object-contain self-center"/>
                   <USeparator orientation="horizontal"/>
+                  <!--eslint-disable vue/no-v-html -->
                   <article class="text-white max-h-96 overflow-auto p-4"
                            v-html="getSponsorHTMLDescription(row.original)"/>
                 </div>

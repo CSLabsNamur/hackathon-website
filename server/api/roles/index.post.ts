@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       },
     });
   } catch (e) {
+    console.error("Error creating role:", e);
     throw createError({
       statusCode: 400,
       statusMessage: "Impossible de créer ce rôle (clé déjà utilisée ?).",
