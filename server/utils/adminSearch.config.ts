@@ -27,7 +27,8 @@ export type AdminSearchModelName =
   | "Sponsor"
   | "SubmissionRequest"
   | "Room"
-  | "Admin";
+  | "Admin"
+  | "Role";
 
 export type AdminSearchFieldMatch = "contains" | "string_contains" | "has" | "equals";
 
@@ -249,6 +250,20 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
       {path: "user.firstName", relationModes: ["one"], weight: 4},
       {path: "user.lastName", relationModes: ["one"], weight: 4},
       {path: "user.email", relationModes: ["one"], weight: 5},
+    ],
+  },
+  Role: {
+    requiredPermissions: ["roles.read"],
+    route: "/admin/roles",
+    groupLabel: "Rôles",
+    icon: "i-lucide-shield-check",
+    titlePaths: ["name"],
+    descriptionPaths: ["description"],
+    orderBy: "updatedAt",
+    searchFields: [
+      {path: "id"},
+      {path: "name"},
+      {path: "description"},
     ],
   },
 };
