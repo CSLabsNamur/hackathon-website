@@ -3,6 +3,7 @@ import idParamSchema from "#shared/schemas/id";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "badges.print");
+  await requirePermission(event, "guests.read");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
   const guest = await prisma.guest.findUnique({
