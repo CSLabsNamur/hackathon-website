@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const participant = await prisma.participant.findUnique({where: {id}});
   if (!participant) {
-    throw createError({statusCode: 404, message: "Participant introuvable."});
+    throw createError({statusCode: 404, statusMessage: "Participant introuvable."});
   }
 
   if (isSuperAdmin(dbUser)) {
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     if (canUpdateCaution) {
       return prisma.participant.update({where: {id}, data});
     } else {
-      throw createError({statusCode: 403, message: "Transition de statut de caution interdite."});
+      throw createError({statusCode: 403, statusMessage: "Transition de statut de caution interdite."});
     }
   }
 });

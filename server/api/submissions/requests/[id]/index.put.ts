@@ -28,13 +28,13 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!submissionRequest) {
-    throw createError({statusCode: 404, message: "Demande de soumission introuvable."});
+    throw createError({statusCode: 404, statusMessage: "Demande de soumission introuvable."});
   }
 
   if (submissionRequest._count.submissions > 0) {
     throw createError({
       statusCode: 400,
-      message: "Impossible de modifier une demande de soumission qui a déjà des soumissions associées.",
+      statusMessage: "Impossible de modifier une demande de soumission qui a déjà des soumissions associées.",
     });
   }
 

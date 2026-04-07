@@ -19,13 +19,13 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!submissionRequest) {
-    throw createError({statusCode: 404, message: "Demande de soumission introuvable."});
+    throw createError({statusCode: 404, statusMessage: "Demande de soumission introuvable."});
   }
 
   if (submissionRequest.submissions.length > 0 && !isSuperAdmin(dbUser)) {
     throw createError({
       statusCode: 400,
-      message: "Impossible de supprimer une demande de soumission qui a déjà des soumissions associées sans être super admin.",
+      statusMessage: "Impossible de supprimer une demande de soumission qui a déjà des soumissions associées sans être super admin.",
     });
   }
 
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
       console.error("Erreur lors de la suppression des fichiers de soumission:", error);
       throw createError({
         statusCode: 500,
-        message: "Erreur lors de la suppression des fichiers de soumission.",
+        statusMessage: "Erreur lors de la suppression des fichiers de soumission.",
       });
     }
   }

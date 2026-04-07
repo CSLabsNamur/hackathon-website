@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   const scheduleItem = await prisma.scheduleItem.findUnique({where: {id}});
   if (!scheduleItem) {
-    throw createError({statusCode: 404, message: "Partie de planning introuvable"});
+    throw createError({statusCode: 404, statusMessage: "Partie de planning introuvable"});
   }
 
   return prisma.scheduleItem.delete({where: {id}});

@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!team) {
     throw createError({
       statusCode: 404,
-      message: "Vous n'êtes pas dans une équipe.",
+      statusMessage: "Vous n'êtes pas dans une équipe.",
     });
   }
 

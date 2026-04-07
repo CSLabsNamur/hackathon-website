@@ -18,11 +18,11 @@ export default defineEventHandler(async (event) => {
   });
 
   if (!team) {
-    throw createError({statusCode: 404, message: "Team introuvable."});
+    throw createError({statusCode: 404, statusMessage: "Team introuvable."});
   }
 
   if (team._count.members > 0) {
-    throw createError({statusCode: 400, message: "Impossible de supprimer une équipe qui a des membres."});
+    throw createError({statusCode: 400, statusMessage: "Impossible de supprimer une équipe qui a des membres."});
   }
 
   return prisma.team.delete({where: {id}});

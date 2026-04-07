@@ -16,13 +16,13 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
 
       // TODO: Hide detailed errors such as Prisma errors
-      const errorData = await response._data as { message?: string };
+      const errorData = await response._data as { message?: string, statusMessage?: string };
       await nuxtApp.runWithContext(() => {
         const toast = useToast();
         toast.add({
           color: "error",
           title: "Erreur",
-          description: errorData.message || "Une erreur inattendue s'est produite. Veuillez contacter un administrateur.",
+          description: errorData.statusMessage || errorData.message || "Une erreur inattendue s'est produite. Veuillez contacter un administrateur.",
           icon: "i-lucide-alert-circle",
           duration: 10000,
         });
