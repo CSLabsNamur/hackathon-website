@@ -2,7 +2,6 @@ import schema from "#shared/schemas/participants/create";
 import * as v from "valibot";
 import { serverSupabaseServiceRole } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
-import type { ParticipantCreateInput } from "~~/server/prisma/generated/prisma/models/Participant";
 import formidable from "formidable";
 import { fileTypeFromFile } from "file-type";
 import renderRegistration from "~~/server/mail/generated/registration";
@@ -98,28 +97,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const payload: ParticipantCreateInput = {
-    ...body,
-    user: {
-      create: {
-        firstName,
-        lastName,
-        email,
-        roleAssignments: {
-          create: [{
-            role: {
-              connect: {
-                id: participantRole.id,
-              },
-            },
-          }],
-        },
-      },
-    },
-    curriculumVitae: undefined,
-    caution: CautionStatus.NOT_PAID,
-  };
-
   let uploadedCvPath: string | undefined;
   let createdUserId: string | undefined;
   let createdAuthUserId: string | undefined;
@@ -141,7 +118,30 @@ export default defineEventHandler(async (event) => {
 
     createdAuthUserId = authUser.data.user.id;
 
-    const participant = await prisma.participant.create({data: payload});
+    const participant = await prisma.participant.create({
+      data: {
+        ...body,
+        user: {
+          create: {
+            firstName,
+            lastName,
+            email,
+            supabaseAuthId: createdAuthUserId,
+            roleAssignments: {
+              create: [{
+                role: {
+                  connect: {
+                    id: participantRole.id,
+                  },
+                },
+              }],
+            },
+          },
+        },
+        curriculumVitae: undefined,
+        caution: CautionStatus.NOT_PAID,
+      },
+    });
     createdUserId = participant.userId;
 
     // Upload CV to Supabase Storage if provided

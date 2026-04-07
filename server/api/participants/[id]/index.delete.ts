@@ -34,7 +34,13 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const authUser = await getAuthUser(event, participant.user.email);
+  if (!participant.user.supabaseAuthId) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Le compte d'authentification du participant n'est pas lié correctement.",
+    });
+  }
+
   const submissionFilePaths = participant.submissions.flatMap((submission) => submission.files.map((file) => file.path));
 
   // Delete any submission files
@@ -79,7 +85,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Delete the user from Supabase Auth
-  const res = await supabase.auth.admin.deleteUser(authUser.id);
+  const res = await supabase.auth.admin.deleteUser(participant.user.supabaseAuthId);
   if (res.error) {
     console.error("Erreur lors de la suppression de l'utilisateur dans Supabase Auth:", res.error);
     throw createError({

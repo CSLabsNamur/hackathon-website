@@ -28,6 +28,7 @@ export type TeamWithoutRelations = Omit<Team, "members" | "room">;
 export type DbUser = Prisma.UserGetPayload<{
   select: {
     id: true;
+    supabaseAuthId: true;
     email: true;
     firstName: true;
     lastName: true;
@@ -122,6 +123,7 @@ type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
     school: true;
     caution: true;
     teamId: true;
+    curriculumVitae: true;
     createdAt: true;
     updatedAt: true;
     team: {
@@ -156,7 +158,6 @@ type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
 export type AdminParticipant = AdminParticipantBase & {
   diet: string | null;
   needs: string | null;
-  curriculumVitae: string | null;
   imageAgreement: boolean | null;
   newsletter: boolean | null;
 };
@@ -207,6 +208,17 @@ export type AuthorizationInfo = {
 };
 export type CurrentAdmin = Admin & AuthorizationInfo;
 export type CurrentAuthorizedUser = CurrentAdmin | CurrentParticipant;
+export type CurrentUser = {
+  kind: "admin" | "participant";
+  user: Prisma.UserGetPayload<{
+    select: {
+      id: true;
+      email: true;
+      firstName: true;
+      lastName: true;
+    }
+  }>;
+} & AuthorizationInfo;
 
 export const cautionStatusTranslateMap: Record<CautionStatus, string> = {
   [CautionStatus.NOT_PAID]: "Non payé",

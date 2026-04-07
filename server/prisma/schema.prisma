@@ -14,6 +14,7 @@ datasource db {
 // ==== Users and Teams ====
 model User {
   id              String               @id @default(cuid(2))
+  supabaseAuthId  String?              @unique
   email           String               @unique
   firstName       String
   lastName        String

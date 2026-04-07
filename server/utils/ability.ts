@@ -19,10 +19,11 @@ type AuthorizationContext = {
   ability: AppAbility;
 };
 
-const getCachedDbUser = defineCachedFunction(async (email: string): Promise<DbUser> => prisma.user.findUniqueOrThrow({
-  where: {email},
+const getCachedDbUser = defineCachedFunction(async (supabaseAuthId: string): Promise<DbUser> => prisma.user.findUniqueOrThrow({
+  where: {supabaseAuthId},
   select: {
     id: true,
+    supabaseAuthId: true,
     email: true,
     firstName: true,
     lastName: true,
@@ -60,7 +61,7 @@ const getCachedDbUser = defineCachedFunction(async (email: string): Promise<DbUs
 }), {
   maxAge: AUTHORIZATION_CACHE_MAX_AGE_SECONDS,
   name: "db-user-authorization",
-  getKey: (email: string) => email,
+  getKey: (supabaseAuthId: string) => supabaseAuthId,
 });
 
 export async function requireSignedInUser(event: H3Event) {
@@ -74,8 +75,14 @@ export async function requireSignedInUser(event: H3Event) {
 }
 
 export async function getDbUser(authUser: JwtPayload): Promise<DbUser> {
+  if (!authUser.sub) {
+    throw createError({statusCode: 401, statusMessage: "Invalid authentication token."});
+  }
+
   try {
-    return await getCachedDbUser(authUser.email!);
+    const dbUser = await getCachedDbUser(authUser.sub);
+    isDbUserValid(dbUser);
+    return dbUser;
   } catch {
     throw createError({statusCode: 403, statusMessage: "User is not authorized in the application."});
   }
@@ -105,6 +112,36 @@ export function isSuperAdmin(dbUser: DbUser): boolean {
   return hasRole(dbUser, "super_admin");
 }
 
+export function isDbUserValid(dbUser: DbUser) {
+  const hasAdminProfile = dbUser.admin !== null;
+  const hasParticipantProfile = dbUser.participant !== null;
+
+  if (hasAdminProfile === hasParticipantProfile) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "L'utilisateur doit avoir exactement un profil applicatif.",
+    });
+  }
+
+  const roleKeys = getGrantedRoleKeys(dbUser);
+  const hasParticipantRole = roleKeys.includes("participant");
+  const hasOrganizerRole = roleKeys.some((roleKey) => roleKey !== "participant");
+
+  if (hasAdminProfile && (hasParticipantRole || !hasOrganizerRole)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Les rôles de l'administrateur ne correspondent pas à son profil.",
+    });
+  }
+
+  if (hasParticipantProfile && (hasOrganizerRole || !hasParticipantRole)) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: "Les rôles du participant ne correspondent pas à son profil.",
+    });
+  }
+}
+
 export function getNonDelegablePermissionKeysForUser(dbUser: DbUser, permissionKeys: Iterable<string>): string[] {
   return getNonDelegablePermissionKeys({
     roleKeys: getGrantedRoleKeys(dbUser),
@@ -124,7 +161,9 @@ export function assertCanDelegatePermissions(dbUser: DbUser, permissionKeys: Ite
 }
 
 export function hasOrganizerAccess(dbUser: DbUser): boolean {
-  return getGrantedRoleKeys(dbUser).some((roleKey) => roleKey !== "participant");
+  return dbUser.admin !== null
+    && dbUser.participant === null
+    && getGrantedRoleKeys(dbUser).some((roleKey) => roleKey !== "participant");
 }
 
 export function createAbilityForPermissionKeys(permissionKeys: Iterable<PermissionKey>): AppAbility {

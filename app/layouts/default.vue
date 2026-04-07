@@ -8,6 +8,7 @@ const {teaserEnabled} = useRuntimeConfig().public;
 
 const supabaseClient = useSupabaseClient();
 const user = useSupabaseUser();
+const {data: currentUser, refresh: refreshCurrentUser, clear: clearCurrentUser} = await useCurrentUser();
 
 const overlay = useOverlay();
 const loginModal = overlay.create(LoginModal);
@@ -38,13 +39,13 @@ const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
   },
   {
     label: "Panel Admin",
-    condition: user.value?.app_metadata?.role === "admin",
+    condition: currentUser.value?.kind === "admin",
     to: "/admin",
     icon: "i-lucide-shield",
   },
   {
     label: "Panel Participant",
-    condition: user.value?.app_metadata?.role === "participant",
+    condition: currentUser.value?.kind === "participant",
     to: "/participant",
     icon: "i-lucide-user",
   },
@@ -88,6 +89,14 @@ const footerLogos: FooterLogos[] = [{
   to: "https://www.instagram.com/cslabs_namur/",
   ariaLabel: "Instagram",
 }];
+
+watch(user, async (newUser) => {
+  if (newUser) {
+    await refreshCurrentUser();
+  } else {
+    clearCurrentUser();
+  }
+});
 
 //watchEffect(() => {
 //  console.log("User changed:", user.value);

@@ -141,17 +141,13 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const participantRoleIds = admin.user.roleAssignments
-    .filter((assignment) => assignment.role.key === "participant")
-    .map((assignment) => assignment.roleId);
-
   return prisma.admin.update({
     where: {id},
     data: {
       user: {
         update: {
           roleAssignments: {
-            deleteMany: participantRoleIds.length > 0 ? {roleId: {notIn: participantRoleIds}} : {},
+            deleteMany: {},
             createMany: {
               data: newAssignedRoles
                 .map((role) => role.id)
