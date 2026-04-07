@@ -21,9 +21,29 @@ const overlay = useOverlay();
 const editTeamModal = overlay.create(AdminTeamsEditModal);
 
 const toast = useToast();
+const supabase = useSupabaseClient();
 const {copy} = useClipboard();
 
 //const removeMemberModal = overlay.create(RemoveTeamMemberModal);
+
+const downloadCV = async (participant: ParticipantWithoutRelations) => {
+  if (!participant.curriculumVitae) {
+    return;
+  }
+
+  const blob = await supabase.storage.from("cvs").download(participant.curriculumVitae);
+
+  if (blob.error || !blob.data) {
+    toast.add({
+      title: "Erreur",
+      description: "Impossible de télécharger le CV.",
+      color: "error",
+    });
+    return;
+  }
+
+  downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
+};
 
 const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
@@ -61,7 +81,7 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
           variant: "link",
           size: "sm",
           icon: "i-lucide-download",
-          to: cvLink,
+          onClick: () => downloadCV(row.original),
         });
       }
     },
@@ -69,10 +89,6 @@ const columns: TableColumn<ParticipantWithoutRelations>[] = [
   {
     header: "École",
     accessorKey: "school",
-  },
-  {
-    header: "Régime alimentaire",
-    accessorKey: "diet",
   },
   //TODO: Profile button?
   //{

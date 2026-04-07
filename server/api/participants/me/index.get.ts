@@ -7,11 +7,24 @@ export default defineEventHandler(async (event) => {
       team: {
         include: {
           members: {
-            include: {
+            select: {
+              id: true,
+              githubAccount: true,
+              linkedInAccount: true,
+              school: true,
+              caution: true,
+              curriculumVitae: true,
               user: {
                 select: {
+                  id: true,
                   firstName: true,
                   lastName: true,
+                },
+              },
+              submissions: {
+                select: {
+                  id: true,
+                  requestId: true,
                 },
               },
             },
@@ -24,12 +37,19 @@ export default defineEventHandler(async (event) => {
           files: true,
         },
       },
-      user: true,
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
     },
   });
 
   if (!participant) {
-    throw createError({statusCode: 404, statusMessage: "Participant not found"});
+    throw createError({statusCode: 404, statusMessage: "Participant introuvable"});
   }
 
   return {

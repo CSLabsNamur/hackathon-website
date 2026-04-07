@@ -6,22 +6,14 @@ export const getParticipantForDbUser = async (dbUser: DbUser) => {
   try {
     return await prisma.participant.findUniqueOrThrow({
       where: {userId: dbUser.id},
-      include: {
+      select: {
+        id: true,
+        userId: true,
         team: {
-          include: {
-            members: {
-              include: {
-                user: true,
-              },
-            },
+          select: {
+            id: true,
           },
         },
-        submissions: {
-          include: {
-            request: true,
-          },
-        },
-        user: true,
       },
     });
   } catch {
