@@ -24,6 +24,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "lint": "eslint .",
+    "typecheck": "nuxi typecheck",
     "mail:generate": "tsx scripts/generate-mail-templates.ts",
     "start": "node .output/server/index.mjs",
     "db:generate": "prisma generate",
@@ -95,6 +97,7 @@
     "@types/node": "22.19.5",
     "@types/pdfkit": "^0.17.5",
     "@types/qrcode": "^1.5.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.0.0"
   }
 }

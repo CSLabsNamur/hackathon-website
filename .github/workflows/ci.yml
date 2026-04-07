@@ -3,9 +3,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main ]
   push:
     branches: [ main, dev ]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,12 +17,15 @@ permissions:
 env:
   NODE_VERSION: 22
   DATABASE_URL: "postgresql://user:password@localhost:5432/dbname"
+  NUXT_SITE_URL: "https://hackathon.cslabs.be"
+  NUXT_PUBLIC_SITE_URL: "https://hackathon.cslabs.be"
+  SUPABASE_URL: "https://supabase-hackathon.cslabs.be"
 
 jobs:
-  lint:
-    name: Lint
+  checks:
+    name: Lint and typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -34,32 +37,16 @@ jobs:
           database-url: ${{ env.DATABASE_URL }}
 
       - name: ESLint
-        run: pnpm exec eslint .
-
-  typecheck:
-    name: Typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Node + pnpm and install dependencies
-        uses: ./.github/actions/setup-node-pnpm
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          database-url: ${{ env.DATABASE_URL }}
+        run: pnpm run lint
 
       - name: Nuxt typecheck
-        run: pnpm exec nuxt typecheck
+        run: pnpm run typecheck
 
   build:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs:
-      - lint
-      - typecheck
+    timeout-minutes: 15
+    needs: checks
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
