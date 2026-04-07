@@ -86,6 +86,7 @@ export default defineEventHandler(async (event) => {
   try {
     const {sendMail} = useNodeMailer();
 
+    // TODO: Use email outbox
     await sendMail({
       bcc: recipients,
       subject: data.title,

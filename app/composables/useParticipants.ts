@@ -24,14 +24,14 @@ export const useParticipantsActions = () => {
       formData.append(key, value instanceof File ? value : String(value));
     }
 
-    await $api("/api/participants", {
+    return $api("/api/participants", {
       method: "POST",
       body: formData,
     });
   };
 
   const updateParticipant = async (id: string, data: EditParticipantSchema) => {
-    await $api(`/api/participants/${id}`, {
+    return $api(`/api/participants/${id}`, {
       method: "PUT",
       body: data,
     });

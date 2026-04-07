@@ -100,6 +100,7 @@ export default defineEventHandler(async (event) => {
   let uploadedCvPath: string | undefined;
   let createdUserId: string | undefined;
   let createdAuthUserId: string | undefined;
+  let registrationEmailJobId: string | undefined;
   const supabase = serverSupabaseServiceRole(event);
 
   try {
@@ -167,6 +168,19 @@ export default defineEventHandler(async (event) => {
         },
       });
     }
+
+    const registrationEmailJob = await enqueueEmail({
+      type: "participant_registration",
+      recipient: email,
+      subject: "Confirmation d'inscription au Hackathon du CSLabs",
+      html: renderRegistration({
+        firstName,
+        lastName,
+        profileUrl: "https://hackathon.cslabs.be/participant/profile",
+      }),
+      replyTo: "event@cslabs.be",
+    });
+    registrationEmailJobId = registrationEmailJob.id;
   } catch {
     if (uploadedCvPath) {
       // Clean up uploaded CV in case of error
@@ -191,26 +205,27 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 500, statusMessage: "Erreur lors de la création du participant."});
   }
 
-  // Send confirmation email
-  try {
-    const {sendMail} = useNodeMailer();
+  let emailWarning: string | undefined;
 
-    await sendMail({
-      to: email,
-      subject: "Confirmation d'inscription au Hackathon du CSLabs",
-      html: renderRegistration({
-        firstName,
-        lastName,
-        profileUrl: "https://hackathon.cslabs.be/participant/profile",
-      }),
-      replyTo: "event@cslabs.be",
-    });
-  } catch {
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Inscription enregistrée, mais erreur lors de l'envoi de l'email de confirmation.",
-    });
+  if (registrationEmailJobId) {
+    try {
+      const emailResult = await processEmailOutboxNow(registrationEmailJobId);
+      if (emailResult.failed > 0) {
+        emailWarning = "Inscription enregistrée, mais l'email de confirmation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+        console.warn("L'email de confirmation est planifié pour une nouvelle tentative.", {
+          emailJobId: registrationEmailJobId,
+          email,
+        });
+      }
+    } catch (error) {
+      emailWarning = "Inscription enregistrée, mais l'email de confirmation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+      console.error("Erreur lors de l'envoi immédiat de l'email de confirmation :", error);
+    }
   }
 
-  return {success: true, message: "Inscription enregistrée avec succès."};
+  return {
+    success: true,
+    message: "Inscription enregistrée avec succès.",
+    emailWarning,
+  };
 });

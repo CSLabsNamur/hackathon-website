@@ -34,13 +34,13 @@ async function onSubmit(event: FormSubmitEvent<CreateParticipantSchema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.createParticipant(event.data);
+    const result = await actions.createParticipant(event.data);
 
     toast.add({
       title: "Inscription soumise !",
-      description: "Merci pour votre inscription ! Vous recevrez bientôt un email de confirmation.",
-      color: "success",
-      icon: "i-lucide-check-circle",
+      description: result.emailWarning ?? "Merci pour votre inscription ! Vous recevrez bientôt un email de confirmation.",
+      color: result.emailWarning ? "warning" : "success",
+      icon: result.emailWarning ? "i-lucide-triangle-alert" : "i-lucide-check-circle",
     });
   } finally {
     isSubmitting.value = false;

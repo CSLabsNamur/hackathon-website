@@ -90,6 +90,8 @@ export default defineEventHandler(async (event) => {
   const createdAuthUserId = authUser.data.user.id;
 
   let res;
+  let createdDbUserId: string | undefined;
+  let inviteEmailJobId: string | undefined;
   try {
     res = await prisma.admin.create({
       data: {
@@ -108,30 +110,55 @@ export default defineEventHandler(async (event) => {
         },
       },
     });
-  } catch {
-    // Likely a unique constraint (email or userId) due to race condition.
-    const {error} = await supabase.auth.admin.deleteUser(createdAuthUserId);
-    if (error) {
-      console.error("Erreur lors de la suppression du compte d'authentification après échec de la création de l'administrateur :", error);
-    }
-    throw createError({statusCode: 400, statusMessage: "Impossible d'ajouter cet administrateur (déjà existant ?)"});
-  }
+    createdDbUserId = res.userId;
 
-  try {
-    const {sendMail} = useNodeMailer();
-
-    await sendMail({
-      to: data.email,
+    const inviteEmailJob = await enqueueEmail({
+      type: "admin_invite",
+      recipient: data.email,
       subject: "Vous avez été ajouté en tant qu'administrateur",
       html: renderAdminInvite(),
       replyTo: "event@cslabs.be",
     });
+    inviteEmailJobId = inviteEmailJob.id;
   } catch {
-    throw createError({
-      statusCode: 500,
-      statusMessage: "L'administrateur a été créé, mais l'email n'a pas pu être envoyé.",
-    });
+    if (createdDbUserId) {
+      try {
+        await prisma.user.delete({
+          where: {
+            id: createdDbUserId,
+          },
+        });
+      } catch (error) {
+        console.error("Erreur lors de la suppression de l'administrateur après échec de création de l'email d'invitation :", error);
+      }
+    }
+    const {error} = await supabase.auth.admin.deleteUser(createdAuthUserId);
+    if (error) {
+      console.error("Erreur lors de la suppression du compte d'authentification après échec de la création de l'administrateur :", error);
+    }
+    throw createError({statusCode: 400, statusMessage: "Impossible d'ajouter cet administrateur ou de planifier son email d'invitation."});
   }
 
-  return res;
+  let emailWarning: string | undefined;
+
+  if (inviteEmailJobId) {
+    try {
+      const emailResult = await processEmailOutboxNow(inviteEmailJobId);
+      if (emailResult.failed > 0) {
+        emailWarning = "L'administrateur a été créé, mais l'email d'invitation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+        console.warn("L'email d'invitation administrateur est planifié pour une nouvelle tentative.", {
+          emailJobId: inviteEmailJobId,
+          email: data.email,
+        });
+      }
+    } catch (error) {
+      emailWarning = "L'administrateur a été créé, mais l'email d'invitation n'a pas pu être envoyé immédiatement. Nous réessaierons automatiquement dans quelques minutes.";
+      console.error("Erreur lors de l'envoi immédiat de l'email d'invitation administrateur :", error);
+    }
+  }
+
+  return {
+    ...res,
+    emailWarning,
+  };
 });

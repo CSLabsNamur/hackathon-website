@@ -36,13 +36,13 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     isSubmitting.value = true;
 
-    await actions.inviteAdmin(event.data);
+    const result = await actions.inviteAdmin(event.data);
 
     toast.add({
       title: "Administrateur ajouté",
-      description: "L'administrateur a été ajouté avec succès.",
-      color: "success",
-      duration: 2000,
+      description: result.emailWarning ?? "L'administrateur a été ajouté avec succès.",
+      color: result.emailWarning ? "warning" : "success",
+      duration: result.emailWarning ? 6000 : 2000,
     });
 
     emit("close", true);
