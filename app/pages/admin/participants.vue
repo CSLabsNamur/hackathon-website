@@ -245,7 +245,7 @@ const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, 
 
 function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
   const canUpdateParticipant = can("updateSensitive", "Participant");
-  const canUpdateCaution = can("update", "Participant");
+  const canUpdateCaution = can("updateCaution", "Participant");
   const canDeleteParticipant = can("delete", "Participant");
   const canPrintBadge = can("print", "Badge");
 

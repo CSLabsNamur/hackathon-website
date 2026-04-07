@@ -9,6 +9,7 @@ export type AppAction =
   | "create"
   | "createOwn"
   | "update"
+  | "updateCaution"
   | "updateOwn"
   | "updateSensitive"
   | "delete"
@@ -59,7 +60,6 @@ const definePermission = (rule: PermissionRule): PermissionDefinition => ({
   apply: ({can}) => can(rule.action, rule.subject),
 });
 
-// TODO: Permission spéciale pour les cautions
 export const PERMISSION_DEFINITIONS = {
   "participants.read.own": definePermission({action: "readOwn", subject: "Participant"}),
   "participants.update.own": definePermission({action: "updateOwn", subject: "Participant"}),
@@ -67,6 +67,7 @@ export const PERMISSION_DEFINITIONS = {
   "participants.read.sensitive": definePermission({action: "readSensitive", subject: "Participant"}),
   "participants.check_in": definePermission({action: "checkIn", subject: "Participant"}),
   "participants.update": definePermission({action: "update", subject: "Participant"}),
+  "participants.update.caution": definePermission({action: "updateCaution", subject: "Participant"}),
   "participants.update.sensitive": definePermission({action: "updateSensitive", subject: "Participant"}),
   "participants.delete": definePermission({action: "delete", subject: "Participant"}),
   "participants.export": definePermission({action: "export", subject: "Participant"}),

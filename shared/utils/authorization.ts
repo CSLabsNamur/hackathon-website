@@ -7,6 +7,7 @@ export const PERMISSION_CATALOG = [
   {key: "participants.read.sensitive", group: "participants", name: "Lire les données sensibles des participants"},
   {key: "participants.check_in", group: "participants", name: "Enregistrer le check-in des participants"},
   {key: "participants.update", group: "participants", name: "Modifier les participants"},
+  {key: "participants.update.caution", group: "participants", name: "Modifier les cautions des participants"},
   {
     key: "participants.update.sensitive",
     group: "participants",
