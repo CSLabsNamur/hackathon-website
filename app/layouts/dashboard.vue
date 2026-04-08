@@ -111,6 +111,53 @@ const topLinks: RestrictedNavigationItem[] = [
       open.value = false;
     },
   },
+  {
+    label: "Paramètres",
+    icon: "i-lucide-settings",
+    to: "/admin/settings",
+    requiredPermissions: ["settings.read"],
+    defaultOpen: true,
+    type: "trigger",
+    onSelect: () => {
+      open.value = false;
+    },
+    children: [
+      {
+        label: "Site",
+        icon: "i-lucide-globe",
+        to: "/admin/settings",
+        exact: true,
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Événement",
+        icon: "i-lucide-calendar-days",
+        to: "/admin/settings/event",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Inscriptions",
+        icon: "i-lucide-clipboard-check",
+        to: "/admin/settings/registrations",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Réseaux sociaux",
+        icon: "i-lucide-share-2",
+        to: "/admin/settings/socials",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      },
+    ],
+  },
 ];
 
 const bottomLinks: NavigationMenuItem[] = [
