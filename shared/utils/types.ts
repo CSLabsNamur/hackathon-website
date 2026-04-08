@@ -3,7 +3,7 @@ import type { SerializeObject } from "nitropack";
 import type { Permission as PermissionKey } from "./authorization";
 
 // Exports every Prisma type for general use in the app with Nuxt's auto-imports
-export { SubmissionType, CautionStatus, GuestType } from "../../server/prisma/generated/prisma/browser";
+export { SubmissionType, CautionStatus, GuestType, RegistrationMode, SocialLinkType } from "../../server/prisma/generated/prisma/browser";
 
 // Custom DTO types for API responses.
 type TeamMember = SerializeObject<Prisma.ParticipantGetPayload<{
@@ -250,3 +250,6 @@ export const translateGuestType = (type: GuestType) => {
       return "Inconnu";
   }
 };
+
+// Utility type to replace specific fields in a type with string, useful for form handling where we want to allow empty strings instead of null/undefined.
+export type WithStringFields<T, K extends keyof T> = Omit<T, K> & Record<K, string>;

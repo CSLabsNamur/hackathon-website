@@ -7,9 +7,6 @@ CREATE TYPE "SocialLinkType" AS ENUM ('DISCORD', 'FACEBOOK', 'GITHUB', 'INSTAGRA
 -- CreateTable
 CREATE TABLE "WebsiteSettings" (
     "id" TEXT NOT NULL DEFAULT 'website-settings',
-    "siteName" TEXT NOT NULL DEFAULT 'Le Hackathon du CSLabs',
-    "siteDescription" TEXT NOT NULL DEFAULT 'Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.',
-    "siteUrl" TEXT NOT NULL DEFAULT 'https://hackathon.cslabs.be',
     "contactEmail" TEXT NOT NULL DEFAULT 'event@cslabs.be',
     "bugReportEmail" TEXT NOT NULL DEFAULT 'it@cslabs.be',
     "bugReportWebhookUrl" TEXT,

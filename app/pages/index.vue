@@ -12,7 +12,7 @@ const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = u
 const siteConfig = useSiteConfig();
 
 const description = computed(() => {
-  const base = siteConfig.description;
+  const base = siteConfig.description || "Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.";
   const dates = eventDateStart && eventDateEnd ? `Dates : ${formatDateRange(eventDateStart, eventDateEnd, true, true)}.` : "";
   const slogan = eventSlogan ? `${eventSlogan}` : "";
   return `${base} ${dates} ${slogan}`.trim();

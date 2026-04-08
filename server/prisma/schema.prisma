@@ -279,9 +279,6 @@ enum SocialLinkType {
 
 model WebsiteSettings {
   id                  String   @id @default("website-settings")
-  siteName            String   @default("Le Hackathon du CSLabs")
-  siteDescription     String   @default("Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.")
-  siteUrl             String   @default("https://hackathon.cslabs.be")
   contactEmail        String   @default("event@cslabs.be")
   bugReportEmail      String   @default("it@cslabs.be")
   bugReportWebhookUrl String?
