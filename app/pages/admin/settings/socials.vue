@@ -165,7 +165,7 @@ function moveLinkDown(index: number) {
 
             <UFormField v-if="isCustomSocialLinkType(link.type)" label="Icône" :name="`socialLinks.${index}.icon`"
                         required class="md:col-span-2">
-              <IconPicker v-model="link.icon"/>
+              <LazyIconPicker v-model="link.icon"/>
             </UFormField>
 
             <UFormField label="URL" :name="`socialLinks.${index}.url`" required

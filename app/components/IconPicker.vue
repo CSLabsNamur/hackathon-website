@@ -50,10 +50,10 @@ const groups = allGroups.filter((group) => props.collections.includes(group.id a
   <UPopover>
     <UButton color="neutral" variant="outline" class="w-full justify-between" :disabled>
       <div class="flex min-w-0 items-center gap-2">
-        <UIcon v-if="model" :name="model" class="size-4"/>
+        <LazyUIcon v-if="model" :name="model" class="size-4"/>
         <span class="truncate">{{ model || placeholder }}</span>
       </div>
-      <UIcon name="i-lucide-chevron-down" class="size-4 text-muted"/>
+      <LazyUIcon name="i-lucide-chevron-down" class="size-4 text-muted"/>
     </UButton>
 
     <template #content>

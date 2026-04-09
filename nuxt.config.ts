@@ -121,6 +121,14 @@ export default defineNuxtConfig({
     "/auth/**": {ssr: false},
     // API routes
     // Mostly file uploads because of a conflict between Formidable and the XSS validator
+    "/api/sponsors": {
+      swr: 300,
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
     "/api/participants/**": {
       security: {
         xssValidator: {

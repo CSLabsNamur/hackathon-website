@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from "vue";
 import type { NavigationMenuItem } from "@nuxt/ui";
 import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavigationMenu.vue";
 import type { ButtonProps } from "#ui/components/Button.vue";
-import LoginModal from "~/components/LoginModal.vue";
 
 const supabaseClient = useSupabaseClient();
 const user = useSupabaseUser();
 const {data: settings, status: settingsStatus} = await useSettings();
-const {data: currentUser, refresh: refreshCurrentUser, clear: clearCurrentUser} = await useCurrentUser();
+const {data: currentUser, refresh: refreshCurrentUser, clear: clearCurrentUser} = await useCurrentUser({
+  immediate: false,
+  lazy: true,
+  server: false,
+});
 
 const overlay = useOverlay();
+const LoginModal = defineAsyncComponent(() => import("~/components/LoginModal.vue"));
 const loginModal = overlay.create(LoginModal);
 const showSettingsWarning = computed(() => settingsStatus.value === "error");
 
@@ -84,11 +89,7 @@ watch(user, async (newUser) => {
   } else {
     clearCurrentUser();
   }
-});
-
-//watchEffect(() => {
-//  console.log("User changed:", user.value);
-//});
+}, {immediate: true});
 </script>
 
 <template>
@@ -117,7 +118,7 @@ watch(user, async (newUser) => {
 
   <UMain>
     <UContainer v-if="showSettingsWarning" class="pt-4">
-      <UAlert color="warning" variant="soft" icon="i-lucide-triangle-alert"
+      <LazyUAlert color="warning" variant="soft" icon="i-lucide-triangle-alert"
               title="Informations temporairement indisponibles"
               description="Le site reste accessible, mais certaines informations liées à l'événement ne peuvent pas être chargées pour le moment."/>
     </UContainer>

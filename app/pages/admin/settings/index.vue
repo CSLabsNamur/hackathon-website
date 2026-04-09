@@ -31,7 +31,7 @@ const canUpdateSettings = computed(() => can("update", "Settings"));
             Gérez les adresses publiques de contact et le point d'entrée pour les signalements techniques.
           </p>
         </div>
-        <UBadge v-if="!canUpdateSettings" color="neutral" variant="soft">Lecture seule</UBadge>
+        <LazyUBadge v-if="!canUpdateSettings" color="neutral" variant="soft">Lecture seule</LazyUBadge>
       </template>
 
       <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
@@ -61,9 +61,9 @@ const canUpdateSettings = computed(() => can("update", "Settings"));
     </UCard>
   </UForm>
   <UCard v-else-if="status === 'pending'" :ui="{body: 'grid gap-4'}">
-    <USkeleton class="h-6 w-48"/>
-    <USkeleton v-for="n in 3" :key="n" class="h-10 w-full"/>
+    <LazyUSkeleton class="h-6 w-48"/>
+    <LazyUSkeleton v-for="n in 3" :key="n" class="h-10 w-full"/>
   </UCard>
-  <UAlert v-else color="error" variant="soft" icon="i-lucide-alert-circle" title="Impossible de charger les paramètres"
+  <LazyUAlert v-else color="error" variant="soft" icon="i-lucide-alert-circle" title="Impossible de charger les paramètres"
           :description="error?.statusMessage || error?.message || 'Vérifiez que la base de données a bien été initialisée.'"/>
 </template>
