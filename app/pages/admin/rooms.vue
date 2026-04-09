@@ -2,11 +2,17 @@
 import { vDraggable } from "vue-draggable-plus";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Salles",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["rooms.read", "teams.read"],
 });
 
+const {setActions} = useDashboardNavbar();
 const toast = useToast();
 
 const {status, data: roomsOriginal, refresh} = await useRooms({lazy: true});
@@ -112,50 +118,49 @@ async function confirm() {
     isSaving.value = false;
   }
 }
+
+setActions(computed(() => [{
+  variant: "ghost",
+  loading: isSaving.value,
+  disabled: isSaving.value || !canAssignTeamsToRooms.value,
+  icon: isModifying.value ? "i-lucide-save" : "i-lucide-edit-2",
+  label: isModifying.value ? "Confirmer" : "Modifier",
+  onClick: () => {
+    if (isModifying.value) {
+      void confirm();
+      return;
+    }
+
+    modify();
+  },
+}]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Salles">
-        <template #right>
-          <UButton variant="ghost"
-                   :loading="isSaving"
-                   :disabled="isSaving || !canAssignTeamsToRooms"
-                   :icon="isModifying ? 'i-lucide-save' : 'i-lucide-edit-2'"
-                   @click="isModifying ? confirm() : modify()">
-            {{ isModifying ? "Confirmer" : "Modifier" }}
-          </UButton>
+  <UContainer>
+    <div v-if="status === 'pending'" class="flex flex-wrap gap-6">
+      <UPageCard v-for="n in 4" :key="n" :ui="{body: 'p-6 md:p-8 w-full'}" class="size-72">
+        <template #header>
+          <USkeleton class="h-6 w-32"/>
         </template>
-      </DashboardNavbar>
-    </template>
-    <template #body>
-      <UContainer>
-        <div v-if="status === 'pending'" class="flex flex-wrap gap-6">
-          <UPageCard v-for="n in 4" :key="n" :ui="{body: 'p-6 md:p-8 w-full'}" class="size-72">
-            <template #header>
-              <USkeleton class="h-6 w-32"/>
-            </template>
-            <template #body>
-              <div class="flex flex-col h-full items-center justify-center gap-2">
-                <USkeleton class="h-12 rounded w-12"/>
-                <USkeleton class="h-4 rounded w-24"/>
-              </div>
-            </template>
-          </UPageCard>
-        </div>
+        <template #body>
+          <div class="flex flex-col h-full items-center justify-center gap-2">
+            <USkeleton class="h-12 rounded w-12"/>
+            <USkeleton class="h-4 rounded w-24"/>
+          </div>
+        </template>
+      </UPageCard>
+    </div>
 
-        <div v-else :key="`rooms-${isModifying}`"
-             v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying || !canAssignTeamsToRooms}]"
-             class="flex flex-wrap gap-6">
-          <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room"
-                         :is-modifying="isModifying && canAssignTeamsToRooms"
-                         @update:teams="updateRoomTeams(room.id, $event)"/>
-          <AdminRoomCard v-if="teams && teams.length > 0 && status === 'success'" :room="unassignedTeamsRoom"
-                         :is-modifying="isModifying && canAssignTeamsToRooms" hide-handle
-                         @update:teams="updateUnassignedTeams"/>
-        </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+    <div v-else :key="`rooms-${isModifying}`"
+         v-draggable="[rooms, {group: 'rooms', animation: 150, handle: '.handle', disabled: !isModifying || !canAssignTeamsToRooms}]"
+         class="flex flex-wrap gap-6">
+      <AdminRoomCard v-for="room in rooms" :key="room.id" :room="room"
+                     :is-modifying="isModifying && canAssignTeamsToRooms"
+                     @update:teams="updateRoomTeams(room.id, $event)"/>
+      <AdminRoomCard v-if="teams && teams.length > 0 && status === 'success'" :room="unassignedTeamsRoom"
+                     :is-modifying="isModifying && canAssignTeamsToRooms" hide-handle
+                     @update:teams="updateUnassignedTeams"/>
+    </div>
+  </UContainer>
 </template>

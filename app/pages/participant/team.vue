@@ -5,11 +5,17 @@ import { AdminTeamsEditModal } from "#components";
 //import { RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
-  layout: "user-dashboard",
+  layout: {
+    name: "user-dashboard",
+    props: {
+      title: "Mon équipe",
+    },
+  },
   middleware: "participant-auth",
   requiredPermissions: ["teams.read.own"],
 });
 
+const {setActions} = useDashboardNavbar();
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 const {can} = useAbility(currentParticipant);
 const canUpdateOwnTeam = computed(() => can("updateOwn", "Team"));
@@ -166,73 +172,64 @@ const openEditTeamModal = async () => {
   const result = await editTeamModal.open({team: currentParticipant.value.team as unknown as Team});
   if (result) await refreshCurrentParticipant();
 };
+
+setActions(computed(() => currentParticipant.value?.team ? [{
+  icon: "i-lucide-edit-2",
+  label: "Modifier",
+  disabled: !canUpdateOwnTeam.value,
+  onClick: openEditTeamModal,
+}] : []));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Mon équipe">
-        <template #right>
-          <UButton v-if="currentParticipant?.team"
-                   icon="i-lucide-edit-2"
-                   :disabled="!canUpdateOwnTeam"
-                   @click="openEditTeamModal">
-            Modifier
-          </UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-    <template #body>
-      <UContainer>
-        <UCard v-if="!currentParticipant">
-          <template #default>
-            <USkeleton class="h-20 w-40"/>
-          </template>
-        </UCard>
+  <UContainer>
+    <UCard v-if="!currentParticipant">
+      <template #default>
+        <USkeleton class="h-20 w-40"/>
+      </template>
+    </UCard>
 
-        <ParticipantNoTeamCTA v-else-if="!currentParticipant!.team"/>
+    <ParticipantNoTeamCTA v-else-if="!currentParticipant!.team"/>
 
-        <UPageGrid v-else>
-          <UCard class="col-span-2 row-span-2" variant="subtle">
-            <div class="grid gap-6">
-              <p class="text-3xl font-semibold text-center">{{ currentParticipant.team.name }}</p>
-              <div class="grid grid-cols-3 gap-3">
-                <UPageCard variant="subtle" title="Description" icon="i-lucide-text">
-                  {{ currentParticipant.team.description || "Aucune description fournie." }}
-                </UPageCard>
-                <UPageCard variant="subtle" title="Idée" icon="i-lucide-lightbulb">
-                  {{ currentParticipant.team.idea || "Aucune idée fournie." }}
-                </UPageCard>
-                <UPageCard variant="subtle" title="Code d'invitation" icon="i-lucide-key">
-                  <div class="flex items-center gap-2">
-                    <p class="font-mono text-lg truncate w-1/4" :title="currentParticipant.team.token">
-                      {{ currentParticipant.team.token }}
-                    </p>
-                    <UButton variant="soft" color="neutral" icon="i-lucide-copy" size="sm"
-                             @click="copyToken">
-                      Copier
-                    </UButton>
-                  </div>
-                </UPageCard>
+    <UPageGrid v-else>
+      <UCard class="col-span-2 row-span-2" variant="subtle">
+        <div class="grid gap-6">
+          <p class="text-3xl font-semibold text-center">{{ currentParticipant.team.name }}</p>
+          <div class="grid grid-cols-3 gap-3">
+            <UPageCard variant="subtle" title="Description" icon="i-lucide-text">
+              {{ currentParticipant.team.description || "Aucune description fournie." }}
+            </UPageCard>
+            <UPageCard variant="subtle" title="Idée" icon="i-lucide-lightbulb">
+              {{ currentParticipant.team.idea || "Aucune idée fournie." }}
+            </UPageCard>
+            <UPageCard variant="subtle" title="Code d'invitation" icon="i-lucide-key">
+              <div class="flex items-center gap-2">
+                <p class="font-mono text-lg truncate w-1/4" :title="currentParticipant.team.token">
+                  {{ currentParticipant.team.token }}
+                </p>
+                <UButton variant="soft" color="neutral" icon="i-lucide-copy" size="sm"
+                         @click="copyToken">
+                  Copier
+                </UButton>
               </div>
-            </div>
-          </UCard>
-          <div class="grid gap-2 row-span-2">
-            <ParticipantTeamStatusCard :participant="currentParticipant"/>
-            <ParticipantScheduleCard/>
+            </UPageCard>
           </div>
-          <UTable :columns :data="currentParticipant.team.members" class="col-span-full">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucun membre dans l'équipe"
-                        description="Ne restez pas solo... Invitez des gens dans votre équipe !"
-                        icon="i-lucide-circle-slash"
-                        :actions="noMembersLinks"/>
-              </div>
-            </template>
-          </UTable>
-        </UPageGrid>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        </div>
+      </UCard>
+      <div class="grid gap-2 row-span-2">
+        <ParticipantTeamStatusCard :participant="currentParticipant"/>
+        <ParticipantScheduleCard/>
+      </div>
+      <UTable :columns :data="currentParticipant.team.members" class="col-span-full">
+        <template #empty>
+          <div class="max-w-1/2 mx-auto">
+            <UEmpty title="Aucun membre dans l'équipe"
+                    description="Ne restez pas solo... Invitez des gens dans votre équipe !"
+                    icon="i-lucide-circle-slash"
+                    :actions="noMembersLinks"/>
+          </div>
+        </template>
+      </UTable>
+    </UPageGrid>
+  </UContainer>
 </template>

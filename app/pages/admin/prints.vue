@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Impressions",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["badges.print", "participants.read", "guests.read", "sponsors.read", "admins.read"],
 });
@@ -79,56 +84,48 @@ async function downloadAllBadges() {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Impressions"/>
-    </template>
-
-    <template #body>
-      <UContainer>
-        <UCard :ui="{body: 'p-6 sm:p-7'}">
-          <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
-            <div class="space-y-5">
-              <div class="flex flex-wrap items-center gap-3">
-                <div class="flex size-11 items-center justify-center
-                            rounded-full bg-primary/10 text-primary ring ring-inset ring-primary/20">
-                  <UIcon name="i-lucide-id-card"/>
-                </div>
-                <h2 class="text-lg font-semibold text-highlighted">
-                  Badges
-                </h2>
-              </div>
-
-              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-lg border border-default bg-elevated/30 p-4">
-                  <UCheckbox v-model="badgeFilters.participants" :label="`Participants (${badgeCounts.participants})`"/>
-                </div>
-                <div class="rounded-lg border border-default bg-elevated/30 p-4">
-                  <UCheckbox v-model="badgeFilters.guests" :label="`Invités (${badgeCounts.guests})`"/>
-                </div>
-                <div class="rounded-lg border border-default bg-elevated/30 p-4">
-                  <UCheckbox v-model="badgeFilters.sponsors" :label="`Sponsors avec badge (${badgeCounts.sponsors})`"/>
-                </div>
-                <div class="rounded-lg border border-default bg-elevated/30 p-4">
-                  <UCheckbox v-model="badgeFilters.admins" :label="`Staff (${badgeCounts.admins})`"/>
-                </div>
-              </div>
+  <UContainer>
+    <UCard :ui="{body: 'p-6 sm:p-7'}">
+      <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start">
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex size-11 items-center justify-center
+                        rounded-full bg-primary/10 text-primary ring ring-inset ring-primary/20">
+              <UIcon name="i-lucide-id-card"/>
             </div>
+            <h2 class="text-lg font-semibold text-highlighted">
+              Badges
+            </h2>
+          </div>
 
-            <div class="flex flex-col gap-3 rounded-xl border border-default bg-elevated/20 p-5 self-end">
-              <UButton block size="lg" icon="i-lucide-download" :loading="isGeneratingBadges"
-                       :disabled="isLoading || selectedBadgeCount === 0 || !canPrintBadges"
-                       @click="downloadAllBadges">
-                Télécharger le PDF
-              </UButton>
-              <p class="text-xs text-muted">
-                {{ selectedBadgeCount }} badge{{ selectedBadgeCount > 1 ? "s" : "" }}
-                sélectionné{{ selectedBadgeCount > 1 ? "s" : "" }}.
-              </p>
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-lg border border-default bg-elevated/30 p-4">
+              <UCheckbox v-model="badgeFilters.participants" :label="`Participants (${badgeCounts.participants})`"/>
+            </div>
+            <div class="rounded-lg border border-default bg-elevated/30 p-4">
+              <UCheckbox v-model="badgeFilters.guests" :label="`Invités (${badgeCounts.guests})`"/>
+            </div>
+            <div class="rounded-lg border border-default bg-elevated/30 p-4">
+              <UCheckbox v-model="badgeFilters.sponsors" :label="`Sponsors avec badge (${badgeCounts.sponsors})`"/>
+            </div>
+            <div class="rounded-lg border border-default bg-elevated/30 p-4">
+              <UCheckbox v-model="badgeFilters.admins" :label="`Staff (${badgeCounts.admins})`"/>
             </div>
           </div>
-        </UCard>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        </div>
+
+        <div class="flex flex-col gap-3 rounded-xl border border-default bg-elevated/20 p-5 self-end">
+          <UButton block size="lg" icon="i-lucide-download" :loading="isGeneratingBadges"
+                   :disabled="isLoading || selectedBadgeCount === 0 || !canPrintBadges"
+                   @click="downloadAllBadges">
+            Télécharger le PDF
+          </UButton>
+          <p class="text-xs text-muted">
+            {{ selectedBadgeCount }} badge{{ selectedBadgeCount > 1 ? "s" : "" }}
+            sélectionné{{ selectedBadgeCount > 1 ? "s" : "" }}.
+          </p>
+        </div>
+      </div>
+    </UCard>
+  </UContainer>
 </template>

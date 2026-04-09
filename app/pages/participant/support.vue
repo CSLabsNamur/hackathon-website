@@ -4,7 +4,12 @@ import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import type { Reactive } from "vue";
 
 definePageMeta({
-  layout: "user-dashboard",
+  layout: {
+    name: "user-dashboard",
+    props: {
+      title: "Aide & Support",
+    },
+  },
   middleware: "participant-auth",
 });
 
@@ -48,34 +53,27 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Aide & Support"/>
-    </template>
-    <template #body>
-      <UContainer class="pb-6 md:pb-8">
-        <ContentCard>
-          <UForm id="support-form" :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit"
-                 @error="onError">
-            <UFormField label="Description du problème" name="description" required>
-              <UInput v-model="state.description" icon="i-lucide-type" class="w-full"
-                      placeholder="par ex. : Arrivée en retard"/>
-            </UFormField>
+  <UContainer class="pb-6 md:pb-8">
+    <ContentCard>
+      <UForm id="support-form" :schema :state class="flex flex-col gap-4 lg:gap-6" @submit="onSubmit"
+             @error="onError">
+        <UFormField label="Description du problème" name="description" required>
+          <UInput v-model="state.description" icon="i-lucide-type" class="w-full"
+                  placeholder="par ex. : Arrivée en retard"/>
+        </UFormField>
 
-            <UFormField label="Message" name="message" required>
-              <UTextarea v-model="state.message" class="w-full" :rows="10"/>
-            </UFormField>
-          </UForm>
+        <UFormField label="Message" name="message" required>
+          <UTextarea v-model="state.message" class="w-full" :rows="10"/>
+        </UFormField>
+      </UForm>
 
-          <template #footer>
-            <div class="flex justify-end">
-              <UButton type="submit" form="support-form" icon="i-lucide-send" :loading="isSubmitting">
-                Envoyer
-              </UButton>
-            </div>
-          </template>
-        </ContentCard>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+      <template #footer>
+        <div class="flex justify-end">
+          <UButton type="submit" form="support-form" icon="i-lucide-send" :loading="isSubmitting">
+            Envoyer
+          </UButton>
+        </div>
+      </template>
+    </ContentCard>
+  </UContainer>
 </template>

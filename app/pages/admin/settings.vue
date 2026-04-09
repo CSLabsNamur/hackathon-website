@@ -2,7 +2,12 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Paramètres",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["settings.read"],
 });
@@ -30,18 +35,11 @@ const links = [
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Paramètres"/>
-      <UDashboardToolbar>
-        <UNavigationMenu :items="links" highlight/>
-      </UDashboardToolbar>
-    </template>
+  <UDashboardToolbar>
+    <UNavigationMenu :items="links" highlight/>
+  </UDashboardToolbar>
 
-    <template #body>
-      <UContainer>
-        <NuxtPage/>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+  <UContainer>
+    <NuxtPage/>
+  </UContainer>
 </template>

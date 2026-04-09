@@ -7,11 +7,17 @@ import EditModal from "~/components/admin/guests/EditModal.vue";
 import RemoveModal from "~/components/admin/guests/RemoveModal.vue";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Invités",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["guests.read"],
 });
 
+const {setActions} = useDashboardNavbar();
 const {status, data: guests, refresh} = await useGuests({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {renderGuestBadge} = useGuestsActions();
@@ -191,54 +197,48 @@ async function openCreateModal() {
 const expanded = ref({});
 const columnVisibility = usePersistentColumnVisibility("admin-guests-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+
+setActions(computed(() => [{
+  icon: "i-lucide-user-plus",
+  label: "Ajouter",
+  onClick: openCreateModal,
+  disabled: !can("create", "Guest"),
+}]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Invités">
-        <template #right>
-          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Guest')" @click="openCreateModal">Ajouter
-          </UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <div class="flex flex-col gap-1 lg:gap-2">
-            <div v-if="status === 'success'" class="flex justify-between">
-              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <TourHelperPopover title="Astuce : colonnes personnalisables"
-                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                                 status-key="admin-table-column-visibility" placement="top">
-                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                               aria-label="Afficher ou masquer les colonnes">
-                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-                </UDropdownMenu>
-              </TourHelperPopover>
-            </div>
-            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                    v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" sticky
-                    :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-              <template #empty>
-                <div class="max-w-1/2 mx-auto">
-                  <UEmpty title="Aucun invité"
-                          description="Aucun invité n'est encore enregistré pour l'événement."
-                          icon="i-lucide-circle-slash"/>
-                </div>
-              </template>
-              <template #expanded="{row}">
-                <div v-if="row.original.imageUrl" class="flex justify-center p-4">
-                  <NuxtImg :src="row.original.imageUrl" :alt="`Image de ${row.original.name}`"
-                           class="max-h-80 w-fit object-contain rounded-lg"/>
-                </div>
-              </template>
-            </UTable>
-          </div>
+  <UContainer>
+    <div class="flex flex-col gap-4 lg:gap-6">
+      <div class="flex flex-col gap-1 lg:gap-2">
+        <div v-if="status === 'success'" class="flex justify-between">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          <TourHelperPopover title="Astuce : colonnes personnalisables"
+                             description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                             status-key="admin-table-column-visibility" placement="top">
+            <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                           aria-label="Afficher ou masquer les colonnes">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
+          </TourHelperPopover>
         </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" sticky
+                :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty title="Aucun invité"
+                      description="Aucun invité n'est encore enregistré pour l'événement."
+                      icon="i-lucide-circle-slash"/>
+            </div>
+          </template>
+          <template #expanded="{row}">
+            <div v-if="row.original.imageUrl" class="flex justify-center p-4">
+              <NuxtImg :src="row.original.imageUrl" :alt="`Image de ${row.original.name}`"
+                       class="max-h-80 w-fit object-contain rounded-lg"/>
+            </div>
+          </template>
+        </UTable>
+      </div>
+    </div>
+  </UContainer>
 </template>

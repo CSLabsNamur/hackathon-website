@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "user-dashboard",
+  layout: {
+    name: "user-dashboard",
+    props: {
+      title: "Soumission de documents",
+    },
+  },
   middleware: "participant-auth",
   requiredPermissions: ["submissionRequests.read", "submissions.read.own"],
 });
@@ -60,52 +65,45 @@ const onSubmit = async (status: boolean) => {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Soumission de documents"/>
-    </template>
-    <template #body>
-      <UContainer>
-        <UCard>
-          <template v-if="!allCompleted || wantToModify">
-            <UStepper v-model="active" :items="stepperItems" :linear="false"/>
-            <div class="relative min-h-56">
-              <Transition name="slide-left" mode="out-in">
-                <ParticipantSubmissionFormText
-                    v-if="submissionsRequests![active]!.type === 'TEXT'"
-                    :key="active"
-                    :participant="currentParticipant!"
-                    :submission-request="submissionsRequests![active]!"
-                    :can-submit="canUpdateSubmission"
-                    class="min-h-56"
-                    @submit="onSubmit"
-                />
-                <ParticipantSubmissionFormFiles
-                    v-else
-                    :key="active"
-                    :participant="currentParticipant!"
-                    :submission-request="submissionsRequests![active]!"
-                    :can-submit="canUpdateSubmission"
-                    :can-delete="canDeleteSubmission"
-                    class="min-h-56"
-                    @delete-file="refreshCurrentParticipant"
-                    @submit="onSubmit"
-                />
-              </Transition>
-            </div>
-          </template>
-          <template v-else>
-            <UPageSection
-                title="Toutes les soumissions sont terminées"
-                description="Vous avez soumis tous les documents requis. Merci !"
-                icon="i-lucide-check-circle"
-                :links="modifySubmissionLinks"
+  <UContainer>
+    <UCard>
+      <template v-if="!allCompleted || wantToModify">
+        <UStepper v-model="active" :items="stepperItems" :linear="false"/>
+        <div class="relative min-h-56">
+          <Transition name="slide-left" mode="out-in">
+            <ParticipantSubmissionFormText
+                v-if="submissionsRequests![active]!.type === 'TEXT'"
+                :key="active"
+                :participant="currentParticipant!"
+                :submission-request="submissionsRequests![active]!"
+                :can-submit="canUpdateSubmission"
+                class="min-h-56"
+                @submit="onSubmit"
             />
-          </template>
-        </UCard>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+            <ParticipantSubmissionFormFiles
+                v-else
+                :key="active"
+                :participant="currentParticipant!"
+                :submission-request="submissionsRequests![active]!"
+                :can-submit="canUpdateSubmission"
+                :can-delete="canDeleteSubmission"
+                class="min-h-56"
+                @delete-file="refreshCurrentParticipant"
+                @submit="onSubmit"
+            />
+          </Transition>
+        </div>
+      </template>
+      <template v-else>
+        <UPageSection
+            title="Toutes les soumissions sont terminées"
+            description="Vous avez soumis tous les documents requis. Merci !"
+            icon="i-lucide-check-circle"
+            :links="modifySubmissionLinks"
+        />
+      </template>
+    </UCard>
+  </UContainer>
 </template>
 
 <style scoped>

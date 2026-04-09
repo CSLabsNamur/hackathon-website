@@ -15,7 +15,12 @@ import {
 import { CautionStatus } from "#shared/utils/types";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Utilisateurs",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["participants.read"],
 });
@@ -326,39 +331,32 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Utilisateurs"/>
-    </template>
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <AdminParticipantStats/>
-          <div class="flex flex-col gap-1 lg:gap-2">
-            <div v-if="status === 'success'" class="flex justify-between">
-              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <TourHelperPopover title="Astuce : colonnes personnalisables"
-                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                                 status-key="admin-table-column-visibility" placement="top">
-                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                               aria-label="Afficher ou masquer les colonnes">
-                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-                </UDropdownMenu>
-              </TourHelperPopover>
-            </div>
-            <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
-                    :data="participants" sticky :loading="status === 'pending'">
-              <template #empty>
-                <div class="max-w-1/2 mx-auto">
-                  <UEmpty title="Aucun participant"
-                          description="Aucun participant ne s'est encore inscrit à l'événement... Mais ça va arriver !"
-                          icon="i-lucide-circle-slash"/>
-                </div>
-              </template>
-            </UTable>
-          </div>
+  <UContainer>
+    <div class="flex flex-col gap-4 lg:gap-6">
+      <AdminParticipantStats/>
+      <div class="flex flex-col gap-1 lg:gap-2">
+        <div v-if="status === 'success'" class="flex justify-between">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          <TourHelperPopover title="Astuce : colonnes personnalisables"
+                             description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                             status-key="admin-table-column-visibility" placement="top">
+            <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                           aria-label="Afficher ou masquer les colonnes">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
+          </TourHelperPopover>
         </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
+                :data="participants" sticky :loading="status === 'pending'">
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty title="Aucun participant"
+                      description="Aucun participant ne s'est encore inscrit à l'événement... Mais ça va arriver !"
+                      icon="i-lucide-circle-slash"/>
+            </div>
+          </template>
+        </UTable>
+      </div>
+    </div>
+  </UContainer>
 </template>

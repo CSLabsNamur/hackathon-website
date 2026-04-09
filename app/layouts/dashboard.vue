@@ -2,6 +2,12 @@
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from "@nuxt/ui";
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
+withDefaults(defineProps<{
+  title?: string;
+}>(), {
+  title: "Tableau de bord",
+});
+
 const {data: currentAdmin} = await useCurrentAdmin();
 const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentAdmin);
@@ -204,6 +210,8 @@ const navigationGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() 
   items: getSearchableNavigationItems(searchableTopLinks.value),
 }]);
 const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
+
+const {actions} = useDashboardNavbar();
 </script>
 
 <template>
@@ -233,7 +241,18 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 
     <UDashboardSearch v-model:search-term="searchTerm" :groups :loading/>
 
-    <slot/>
+    <UDashboardPanel>
+      <template #header>
+        <DashboardNavbar :title>
+          <template #right>
+            <UButton v-for="(action, index) in actions" :key="`navbar-action-${index}`" v-bind="action"/>
+          </template>
+        </DashboardNavbar>
+      </template>
+      <template #body>
+        <slot/>
+      </template>
+    </UDashboardPanel>
   </UDashboardGroup>
 </template>
 

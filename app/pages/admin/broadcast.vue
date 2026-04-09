@@ -12,7 +12,12 @@ import { mapEditorItems } from "@nuxt/ui/utils/editor";
 import type { Editor, JSONContent } from "@tiptap/vue-3";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Annonce",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["broadcasts.send"],
 });
@@ -342,77 +347,70 @@ async function onError(event: FormErrorEvent) {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Annonce"/>
-    </template>
-    <template #body>
-      <UContainer class="pb-6 md:pb-8">
-        <ContentCard>
-          <UForm id="broadcast-form" :schema :state :disabled="isSubmitting || !canSendBroadcast"
-                 class="flex flex-col gap-4 lg:gap-6"
-                 @submit="onSubmit" @error="onError">
-            <UFormField label="Destinataires" name="recipients" required>
-              <URadioGroup v-model="state.recipients" :items="recipientsItems"
-                           :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
-                <template #label="{item}">
-                  <div class="flex justify-center items-center gap-2">
-                    {{ item.label }}
-                    <Icon :name="item.icon" class="size-3.5"/>
-                  </div>
-                </template>
-              </URadioGroup>
-            </UFormField>
+  <UContainer class="pb-6 md:pb-8">
+    <ContentCard>
+      <UForm id="broadcast-form" :schema :state :disabled="isSubmitting || !canSendBroadcast"
+             class="flex flex-col gap-4 lg:gap-6"
+             @submit="onSubmit" @error="onError">
+        <UFormField label="Destinataires" name="recipients" required>
+          <URadioGroup v-model="state.recipients" :items="recipientsItems"
+                       :orientation="$device.isDesktopOrTablet ? 'horizontal' : 'vertical'" variant="table">
+            <template #label="{item}">
+              <div class="flex justify-center items-center gap-2">
+                {{ item.label }}
+                <Icon :name="item.icon" class="size-3.5"/>
+              </div>
+            </template>
+          </URadioGroup>
+        </UFormField>
 
-            <UFormField label="Titre" name="title" required>
-              <UInput v-model="state.title" icon="i-lucide-type" class="w-full" placeholder="Titre de l'annonce"/>
-            </UFormField>
+        <UFormField label="Titre" name="title" required>
+          <UInput v-model="state.title" icon="i-lucide-type" class="w-full" placeholder="Titre de l'annonce"/>
+        </UFormField>
 
-            <UFormField label="Message" name="message" required>
-              <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html"
-                       :editable="!isSubmitting && canSendBroadcast" :starter-kit="starterKit"
-                       :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
-                       :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"
-                       class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
-                <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"
-                                :items="toolbarItems"/>
-                <UEditorToolbar v-else :editor class="sm:px-8 overflow-x-auto" :items="toolbarItemsMobile"
-                                layout="bubble"/>
-                <UEditorEmojiMenu :editor :emojis="gitHubEmojis" :items="emojiItems" :append-to="appendToBody"/>
-                <UEditorSuggestionMenu :editor :items="suggestionItems" :append-to="appendToBody"/>
-                <UEditorDragHandle v-slot="{ ui, onClick }" :editor @node-change="selectedNode = $event">
-                  <UButton icon="i-lucide-plus" variant="ghost" color="neutral" active-variant="soft"
-                           size="sm" :class="ui.handle()" @click="(e: Event) => {
-                               e.stopPropagation();
-                               const selected = onClick();
-                               handlers.suggestion?.execute(editor, {pos: selected?.pos}).run();
-                             }"/>
-                  <UDropdownMenu v-slot="{ open }" :modal="false" :items="dragHandleItems(editor)"
-                                 :content="{side: 'left'}" :ui="{content: 'w-48', label: 'text-xs'}"
-                                 @update:open="editor.chain().setMeta('lockDragHandle', $event).run()">
-                    <UButton icon="i-lucide-grip-vertical" variant="ghost" color="neutral" active-variant="soft"
-                             size="sm" :active="open" :class="ui.handle()"/>
-                  </UDropdownMenu>
-                </UEditorDragHandle>
-              </UEditor>
-            </UFormField>
+        <UFormField label="Message" name="message" required>
+          <UEditor v-slot="{ editor, handlers }" v-model="state.message" content-type="html"
+                   :editable="!isSubmitting && canSendBroadcast" :starter-kit="starterKit"
+                   :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
+                   :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"
+                   class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
+            <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"
+                            :items="toolbarItems"/>
+            <UEditorToolbar v-else :editor class="sm:px-8 overflow-x-auto" :items="toolbarItemsMobile"
+                            layout="bubble"/>
+            <UEditorEmojiMenu :editor :emojis="gitHubEmojis" :items="emojiItems" :append-to="appendToBody"/>
+            <UEditorSuggestionMenu :editor :items="suggestionItems" :append-to="appendToBody"/>
+            <UEditorDragHandle v-slot="{ ui, onClick }" :editor @node-change="selectedNode = $event">
+              <UButton icon="i-lucide-plus" variant="ghost" color="neutral" active-variant="soft"
+                       size="sm" :class="ui.handle()" @click="(e: Event) => {
+                           e.stopPropagation();
+                           const selected = onClick();
+                           handlers.suggestion?.execute(editor, {pos: selected?.pos}).run();
+                         }"/>
+              <UDropdownMenu v-slot="{ open }" :modal="false" :items="dragHandleItems(editor)"
+                             :content="{side: 'left'}" :ui="{content: 'w-48', label: 'text-xs'}"
+                             @update:open="editor.chain().setMeta('lockDragHandle', $event).run()">
+                <UButton icon="i-lucide-grip-vertical" variant="ghost" color="neutral" active-variant="soft"
+                         size="sm" :active="open" :class="ui.handle()"/>
+              </UDropdownMenu>
+            </UEditorDragHandle>
+          </UEditor>
+        </UFormField>
 
-            <UFormField label="Pièce(s) jointe(s)" name="attachments">
-              <UFileUpload v-model="state.attachments" label="Déposez vos fichiers ici" description="Max 5MB chacun"
-                           multiple icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
-            </UFormField>
-          </UForm>
+        <UFormField label="Pièce(s) jointe(s)" name="attachments">
+          <UFileUpload v-model="state.attachments" label="Déposez vos fichiers ici" description="Max 5MB chacun"
+                       multiple icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
+        </UFormField>
+      </UForm>
 
-          <template #footer>
-            <div class="flex justify-end">
-              <UButton type="submit" form="broadcast-form" icon="i-lucide-send" :loading="isSubmitting"
-                       :disabled="!canSendBroadcast">
-                Envoyer
-              </UButton>
-            </div>
-          </template>
-        </ContentCard>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+      <template #footer>
+        <div class="flex justify-end">
+          <UButton type="submit" form="broadcast-form" icon="i-lucide-send" :loading="isSubmitting"
+                   :disabled="!canSendBroadcast">
+            Envoyer
+          </UButton>
+        </div>
+      </template>
+    </ContentCard>
+  </UContainer>
 </template>
