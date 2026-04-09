@@ -5,6 +5,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "admins.create");
+  const settings = await getPublicSettings(event);
 
   const data = await readValidatedBody(event, v.parser(schema));
 
@@ -117,7 +118,7 @@ export default defineEventHandler(async (event) => {
       recipient: data.email,
       subject: "Vous avez été ajouté en tant qu'administrateur",
       html: renderAdminInvite(),
-      replyTo: "event@cslabs.be",
+      replyTo: settings.website.contactEmail,
     });
     inviteEmailJobId = inviteEmailJob.id;
   } catch {

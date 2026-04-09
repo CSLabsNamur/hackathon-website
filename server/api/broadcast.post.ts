@@ -15,6 +15,7 @@ function escapeHtml(value: string) {
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "broadcasts.send");
+  const settings = await getPublicSettings(event);
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,
@@ -98,7 +99,7 @@ export default defineEventHandler(async (event) => {
         title: escapeHtml(data.title),
         body: data.message,
       }),
-      replyTo: "event@cslabs.be",
+      replyTo: settings.website.contactEmail,
     });
   } catch {
     throw createError({

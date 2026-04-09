@@ -4,10 +4,11 @@ import type { SubmissionRequestCreateInput } from "~~/server/prisma/generated/pr
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "submissionRequests.create");
+  const settings = await getPublicSettings(event);
 
   const schema = createSubmissionRequestSchema(
-    useRuntimeConfig(event).public.eventDateStart,
-    useRuntimeConfig(event).public.eventDateEnd,
+    settings.event.startDate,
+    settings.event.endDate,
   );
 
   const data = await readValidatedBody(event, v.parser(schema));

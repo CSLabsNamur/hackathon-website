@@ -11,10 +11,10 @@ const MAX_CV_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_CV_MIME_TYPES = ["application/pdf", "application/acrobat", "application/nappdf", "application/x-pdf", "image/pdf"];
 
 export default defineEventHandler(async (event) => {
-  const {public: {registrationsDateOpen, registrationsDateClose}} = useRuntimeConfig(event);
+  const siteConfig = getSiteConfig(event);
+  const settings = await getPublicSettings(event);
 
-  const now = dayjs();
-  if (!now.isBetween(registrationsDateOpen, registrationsDateClose)) {
+  if (!isRegistrationOpen(settings.event.registrationMode, settings.event.registrationsStartDate, settings.event.registrationsEndDate)) {
     throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
   }
 
@@ -176,9 +176,9 @@ export default defineEventHandler(async (event) => {
       html: renderRegistration({
         firstName,
         lastName,
-        profileUrl: "https://hackathon.cslabs.be/participant/profile",
+        profileUrl: `${siteConfig.url.replace(/\/$/, "")}/participant/profile`,
       }),
-      replyTo: "event@cslabs.be",
+      replyTo: settings.website.contactEmail,
     });
     registrationEmailJobId = registrationEmailJob.id;
   } catch {

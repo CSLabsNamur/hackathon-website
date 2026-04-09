@@ -6,9 +6,8 @@ export default defineEventHandler(async (event) => {
   await requirePermission(event, "submissionRequests.update");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
-  // Get runtime config from event context (server-side)
-  const config = useRuntimeConfig(event);
-  const schema = editSubmissionRequestSchema(config.public.eventDateStart, config.public.eventDateEnd);
+  const settings = await getPublicSettings(event);
+  const schema = editSubmissionRequestSchema(settings.event.startDate, settings.event.endDate);
 
   const data = await readValidatedBody(event, v.parser(schema));
 
