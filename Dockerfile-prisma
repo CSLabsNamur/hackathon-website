@@ -5,7 +5,7 @@ ARG DATABASE_URL
 ENV DATABASE_URL=${DATABASE_URL}
 
 RUN apt-get update -y && apt-get install -y openssl
-RUN corepack enable && pnpm install prisma @prisma/adapter-pg @prisma/client dotenv
+RUN corepack enable && pnpm install prisma @prisma/adapter-pg @prisma/client dotenv dayjs
 
 FROM base AS prisma
 WORKDIR /app
