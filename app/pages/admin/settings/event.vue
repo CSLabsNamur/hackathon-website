@@ -16,7 +16,7 @@ const {
   saveSettings,
   onError,
 } = await useAdminSettingsForm();
-const {data: settings} = await useSettings();
+const supabase = useSupabaseClient();
 
 const canUpdateSettings = computed(() => can("update", "Settings"));
 
@@ -24,7 +24,10 @@ const logoFile = ref<File>();
 const eventLogoAccept = acceptedFormatsToHtmlAccept(ACCEPTED_EVENT_LOGO_EXTS);
 const eventLogoFormatsLabel = acceptedFormatsToLabel(ACCEPTED_EVENT_LOGO_EXTS)?.toUpperCase() ?? "PNG, JPG, JPEG, WEBP";
 const eventLogoDescription = `${eventLogoFormatsLabel}, max 5MB`;
-const currentLogoUrl = computed(() => settings.value?.event.logoUrl);
+const currentLogoUrl = computed(() => {
+  const logoPath = state.value?.event.logoPath;
+  return logoPath ? supabase.storage.from(EVENT_ASSETS_BUCKET).getPublicUrl(logoPath).data.publicUrl : null;
+});
 
 const canSave = computed(() => isModified.value || !!logoFile.value);
 

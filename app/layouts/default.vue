@@ -4,30 +4,30 @@ import type { ConditionalNavigationMenuItem } from "~/components/ConditionalNavi
 import type { ButtonProps } from "#ui/components/Button.vue";
 import LoginModal from "~/components/LoginModal.vue";
 
-const {teaserEnabled} = useRuntimeConfig().public;
-
 const supabaseClient = useSupabaseClient();
 const user = useSupabaseUser();
+const {data: settings, status: settingsStatus} = await useSettings();
 const {data: currentUser, refresh: refreshCurrentUser, clear: clearCurrentUser} = await useCurrentUser();
 
 const overlay = useOverlay();
 const loginModal = overlay.create(LoginModal);
+const showSettingsWarning = computed(() => settingsStatus.value === "error");
 
 const headerItems = computed<ConditionalNavigationMenuItem[]>(() => [
   {
     label: "Inscription",
     to: "/inscription",
-    condition: !teaserEnabled,
+    condition: settings.value?.event.teaserEnabled !== true,
   },
   {
     label: "Partenaires",
     to: "/partenaires",
-    condition: !teaserEnabled,
+    condition: settings.value?.event.teaserEnabled !== true,
   },
   {
     label: "Infos",
     to: "/infos",
-    condition: !teaserEnabled,
+    condition: settings.value?.event.teaserEnabled !== true,
   },
   {
     label: "Historique",
@@ -71,24 +71,12 @@ const footerItems = computed<NavigationMenuItem[]>(() => [
 
 type FooterLogos = ButtonProps & { ariaLabel: string };
 
-// TODO: Add ability to update links globally (settings page?)
-const footerLogos: FooterLogos[] = [{
-  icon: "i-simple-icons-discord",
-  to: "https://discord.gg/Jf2Dht8",
-  ariaLabel: "Discord",
-}, {
-  icon: "i-simple-icons-github",
-  to: "https://github.com/CSLabsNamur",
-  ariaLabel: "GitHub",
-}, {
-  icon: "i-simple-icons-linkedin",
-  to: "https://www.linkedin.com/company/cslabs-namur",
-  ariaLabel: "LinkedIn",
-}, {
-  icon: "i-simple-icons-instagram",
-  to: "https://www.instagram.com/cslabs_namur/",
-  ariaLabel: "Instagram",
-}];
+const footerLogos = computed<FooterLogos[]>(() => settings.value?.socialLinks.map((link) => ({
+  icon: link.icon,
+  to: link.url,
+  target: "_blank",
+  ariaLabel: link.label,
+})) ?? []);
 
 watch(user, async (newUser) => {
   if (newUser) {
@@ -128,6 +116,11 @@ watch(user, async (newUser) => {
   </UHeader>
 
   <UMain>
+    <UContainer v-if="showSettingsWarning" class="pt-4">
+      <UAlert color="warning" variant="soft" icon="i-lucide-triangle-alert"
+              title="Informations temporairement indisponibles"
+              description="Le site reste accessible, mais certaines informations liées à l'événement ne peuvent pas être chargées pour le moment."/>
+    </UContainer>
     <slot/>
   </UMain>
 

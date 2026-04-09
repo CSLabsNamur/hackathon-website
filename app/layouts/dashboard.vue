@@ -3,6 +3,7 @@ import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
 const {data: currentAdmin} = await useCurrentAdmin();
+const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentAdmin);
 
 const colorMode = useColorMode();
@@ -11,6 +12,7 @@ const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
 provide(THEME_KEY, theme);
 
 const open = ref(false);
+const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 
 const topLinks: RestrictedNavigationItem[] = [
   {
@@ -181,10 +183,25 @@ const bottomLinks: NavigationMenuItem[] = [
 
 const searchableTopLinks = computed(() => topLinks.filter((item) => canPermissions(item.requiredPermissions)));
 
+function getSearchableNavigationItems(items: RestrictedNavigationItem[], parentLabel?: string): CommandPaletteItem[] {
+  return items.flatMap((item) => {
+    if (!canPermissions(item.requiredPermissions)) {
+      return [];
+    }
+
+    const {children, requiredPermissions: _requiredPermissions, ...commandItem} = item;
+    const label = parentLabel ? `${parentLabel} · ${item.label}` : item.label;
+    const currentItem = commandItem.to ? [{...commandItem, label} satisfies CommandPaletteItem] : [];
+    const childItems = children ? getSearchableNavigationItems(children, item.label) : [];
+
+    return [...currentItem, ...childItems];
+  });
+}
+
 const navigationGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: searchableTopLinks.value as CommandPaletteItem[],
+  items: getSearchableNavigationItems(searchableTopLinks.value),
 }]);
 const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 </script>
@@ -195,7 +212,7 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
       <template #header>
         <div class="mx-auto">
           <NuxtLink to="/admin">
-            <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
+            <img :src="dashboardLogoUrl" alt="Logo Hackathon" class="size-16 object-contain">
           </NuxtLink>
         </div>
       </template>

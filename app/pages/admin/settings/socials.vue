@@ -21,7 +21,7 @@ const canUpdateSettings = computed(() => can("update", "Settings"));
 
 const canAddSocialLink = computed(() => {
   const usedTypes = new Set(state.value?.socialLinks.map((link) => link.type) ?? []);
-  return SETTINGS_SOCIAL_LINK_TYPES.some((type) => !usedTypes.has(type));
+  return Object.values(SocialLinkType).some((type) => !usedTypes.has(type));
 });
 
 function getSocialTypeItems(index: number) {
@@ -30,7 +30,7 @@ function getSocialTypeItems(index: number) {
       .map((link) => link.type)
       .filter((type) => type !== currentType) ?? []);
 
-  return SETTINGS_SOCIAL_LINK_TYPES.map((type) => ({
+  return Object.values(SocialLinkType).map((type) => ({
     label: settingsSocialLinkTypeLabels[type],
     value: type,
     disabled: usedTypes.has(type),
@@ -41,7 +41,7 @@ function addSocialLink() {
   if (!state.value || !canAddSocialLink.value) return;
 
   const usedTypes = new Set(state.value.socialLinks.map((link) => link.type));
-  const type = SETTINGS_SOCIAL_LINK_TYPES.find((candidate) => !usedTypes.has(candidate));
+  const type = Object.values(SocialLinkType).find((candidate) => !usedTypes.has(candidate));
   if (!type) return;
 
   const sortOrder = Math.max(0, ...state.value.socialLinks.map((link) => link.sortOrder)) + 10;
@@ -62,12 +62,12 @@ function removeSocialLink(index: number) {
 }
 
 function onSocialTypeChange(index: number, type: string) {
-  if (!(SETTINGS_SOCIAL_LINK_TYPES as readonly string[]).includes(type)) return;
+  if (!(Object.values(SocialLinkType) as readonly string[]).includes(type)) return;
 
   const link = state.value?.socialLinks[index];
   if (!link) return;
 
-  link.type = type as typeof SETTINGS_SOCIAL_LINK_TYPES[number];
+  link.type = type as keyof typeof SocialLinkType;
   link.label = settingsSocialLinkTypeLabels[link.type];
 }
 </script>

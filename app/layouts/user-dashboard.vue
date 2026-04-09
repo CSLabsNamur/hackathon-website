@@ -3,9 +3,11 @@ import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
 const {data: currentParticipant, status} = await useCurrentParticipant();
+const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentParticipant);
 
 const open = ref(false);
+const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 
 const links: RestrictedNavigationItem[][] = [[{
   label: "Accueil",
@@ -90,7 +92,7 @@ const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
       <template #header>
         <div class="mx-auto">
           <NuxtLink to="/participant">
-            <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
+            <img :src="dashboardLogoUrl" alt="Logo Hackathon" class="size-16 object-contain">
           </NuxtLink>
         </div>
       </template>

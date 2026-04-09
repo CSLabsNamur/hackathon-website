@@ -11,14 +11,13 @@ const props = withDefaults(defineProps<{
 });
 
 const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
+const {data: settings} = await useSettings();
 
 const participantsFetch = props.includeParticipantDerivedStats ? await useParticipants({lazy: true}) : null;
 const participantsStatus = computed(() => participantsFetch?.status.value ?? "success");
 const participants = computed(() => participantsFetch?.data.value ?? null);
 
 const dayjs = useDayjs();
-
-const {eventDateEnd} = useRuntimeConfig().public;
 
 type TeamStat = {
   title: string;
@@ -54,7 +53,7 @@ const stats = computed(() => {
       return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
     })).length} / ${teams.value.length}`,
     icon: "i-lucide-wallet",
-    condition: dayjs().isBefore(dayjs(eventDateEnd)),
+    condition: dayjs().isBefore(dayjs(settings.value!.event.endDate)),
   }, {
     title: "Teams remboursées",
     value: `${teams.value.filter(team => team.members.every(member => {
@@ -62,7 +61,7 @@ const stats = computed(() => {
       return caution !== CautionStatus.PAID;
     })).length} / ${teams.value.length}`,
     icon: "i-lucide-euro",
-    condition: dayjs().isAfter(dayjs(eventDateEnd)),
+    condition: dayjs().isAfter(dayjs(settings.value!.event.endDate)),
   });
 
   return allStats.filter(stat => stat.condition === undefined || stat.condition);

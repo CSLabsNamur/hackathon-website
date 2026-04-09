@@ -19,7 +19,7 @@ const {
 
 const canUpdateSettings = computed(() => can("update", "Settings"));
 
-const registrationModeItems = SETTINGS_REGISTRATION_MODES.map((mode) => ({
+const registrationModeItems = Object.values(RegistrationMode).map((mode) => ({
   label: settingsRegistrationModeLabels[mode],
   value: mode,
 }));

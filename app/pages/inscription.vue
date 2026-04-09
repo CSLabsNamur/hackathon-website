@@ -6,14 +6,28 @@ import { type CreateParticipantSchema, default as schema } from "#shared/schemas
 const dayjs = useDayjs();
 const toast = useToast();
 const actions = useParticipantsActions();
-const {registrationsDateOpen, registrationsDateClose} = useRuntimeConfig().public;
+const {data: settings, status: settingsStatus} = await useSettings();
 
 const now = dayjs();
-const isBeforeRegistrations = computed(() => now.isBefore(dayjs(registrationsDateOpen)));
-const registrationsOpen = computed(() => {
-  return now.isAfter(dayjs(registrationsDateOpen)) && now.isBefore(dayjs(registrationsDateClose));
+
+const isBeforeRegistrations = computed(() => {
+  if (!settings.value) return false;
+  return settings.value.event.registrationMode === "SCHEDULED"
+      && now.isBefore(dayjs(settings.value.event.registrationsStartDate));
 });
-const isAfterRegistrations = computed(() => now.isAfter(dayjs(registrationsDateClose)));
+const registrationsOpen = computed(() => {
+  if (!settings.value) return false;
+  return isRegistrationOpen(
+      settings.value.event.registrationMode,
+      settings.value.event.registrationsStartDate,
+      settings.value.event.registrationsEndDate,
+  );
+});
+const isAfterRegistrations = computed(() => {
+  if (!settings.value) return false;
+  return settings.value.event.registrationMode === "CLOSED"
+      || (settings.value.event.registrationMode === "SCHEDULED" && now.isAfter(dayjs(settings.value.event.registrationsEndDate)));
+});
 
 const state: Reactive<CreateParticipantSchema> = reactive({
   firstName: "",
@@ -68,19 +82,28 @@ useSeoMeta({
   </UPageHero>
 
   <UContainer class="pb-6 md:pb-8">
-    <ContentCard v-if="isBeforeRegistrations">
+    <ContentCard v-if="settingsStatus === 'error'">
+      <template #header>
+        <h2 class="text-xl md:text-2xl font-semibold">Inscriptions temporairement indisponibles</h2>
+      </template>
+
+      <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
+        Il y a eu une erreur lors du chargement du formulaire d'inscription. Merci de réessayer un peu plus tard.
+      </p>
+    </ContentCard>
+    <ContentCard v-else-if="settings && isBeforeRegistrations">
       <template #header>
         <h2 class="text-xl md:text-2xl font-semibold">Inscriptions bientôt ouvertes</h2>
       </template>
 
       <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
         Les inscriptions pour le hackathon ouvriront le
-        <NuxtTime :datetime="registrationsDateOpen" format="long" locale="fr-FR"/>
+        <NuxtTime :datetime="settings.event.registrationsStartDate" format="long" locale="fr-FR"/>
         .
         Revenez à ce moment‑là pour vous inscrire et rejoindre l'aventure !
       </p>
     </ContentCard>
-    <ContentCard v-else-if="registrationsOpen">
+    <ContentCard v-else-if="settings && registrationsOpen">
       <template #header>
         <h2 class="text-xl md:text-2xl font-semibold">Vos informations</h2>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
@@ -114,22 +137,12 @@ useSeoMeta({
         </UFormField>
 
         <!-- School, Diet & Needs -->
-        <HybridSelectInput
-            v-model="state.school"
-            label="École"
-            name="school"
-            :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
-            icon="i-lucide-graduation-cap"
-            placeholder="Précisez votre école..."
-        />
-        <HybridSelectInput
-            v-model="state.diet"
-            label="Régime alimentaire spécifique"
-            name="diet"
-            :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
-            icon="i-lucide-apple"
-            placeholder="Précisez votre régime alimentaire..."
-        />
+        <HybridSelectInput v-model="state.school" label="École" name="school"
+                           :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
+                           icon="i-lucide-graduation-cap" placeholder="Précisez votre école..."/>
+        <HybridSelectInput v-model="state.diet" label="Régime alimentaire spécifique" name="diet"
+                           :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
+                           icon="i-lucide-apple" placeholder="Précisez votre régime alimentaire..."/>
 
         <UFormField label="Besoins spécifiques" name="needs"
                     hint="(Accessibilité, etc.)">
@@ -139,17 +152,15 @@ useSeoMeta({
         <!-- CV Upload -->
         <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae"
                     hint="Pourrait être rendu disponible aux partenaires de l'événement">
-          <UFileUpload v-model="state.curriculumVitae"
-                       :accept="curriculumVitaeAccept"
-                       hint="Déposez votre CV ici"
-                       label="Déposez votre CV ici" :description="curriculumVitaeDescription"
-                       icon="i-lucide-file-user" size="sm" position="inside" layout="list"/>
+          <UFileUpload v-model="state.curriculumVitae" :accept="curriculumVitaeAccept" hint="Déposez votre CV ici"
+                       label="Déposez votre CV ici" :description="curriculumVitaeDescription" icon="i-lucide-file-user"
+                       size="sm" position="inside" layout="list"/>
         </UFormField>
 
         <!-- Agreements -->
         <UFormField name="caution">
           <UCheckbox v-model="state.cautionAgreement" name="caution" required
-                     label="J'accepte de payer une caution de 20€ qui me sera remboursée si je participe à l'événement."/>
+                     :label="`J'accepte de payer une caution de ${settings.event.cautionAmount}€ qui me sera remboursée si je participe à l'événement.`"/>
         </UFormField>
 
         <UFormField name="codeOfConduct">
@@ -190,7 +201,7 @@ useSeoMeta({
         </div>
       </template>
     </ContentCard>
-    <ContentCard v-else-if="isAfterRegistrations">
+    <ContentCard v-else-if="settings && isAfterRegistrations">
       <template #header>
         <h2 class="text-xl md:text-2xl font-semibold">Inscriptions fermées</h2>
       </template>
@@ -198,6 +209,16 @@ useSeoMeta({
       <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
         Les inscriptions pour le hackathon sont désormais fermées. Restez à l'affût de nos annonces pour les
         prochains événements !
+      </p>
+    </ContentCard>
+    <ContentCard v-else>
+      <template #header>
+        <h2 class="text-xl md:text-2xl font-semibold">Chargement...</h2>
+      </template>
+
+      <p class="mt-4 text-center text-xl text-gray-700 dark:text-gray-300 ">
+        Nous récupérons les informations nécessaires pour afficher le formulaire d'inscription. Veuillez patienter
+        un instant.
       </p>
     </ContentCard>
   </UContainer>

@@ -8,18 +8,20 @@ interface Organizer {
   url?: string;
 }
 
-const {teaserEnabled, eventTitle, eventSlogan, eventDateStart, eventDateEnd} = useRuntimeConfig().public;
+const {data: settings} = await useSettings();
 const siteConfig = useSiteConfig();
 
 const description = computed(() => {
-  const base = siteConfig.description || "Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.";
-  const dates = eventDateStart && eventDateEnd ? `Dates : ${formatDateRange(eventDateStart, eventDateEnd, true, true)}.` : "";
-  const slogan = eventSlogan ? `${eventSlogan}` : "";
+  const base = siteConfig.description;
+  const dates = settings.value
+      ? `Dates : ${formatDateRange(settings.value.event.startDate, settings.value.event.endDate, true, true)}.`
+      : "";
+  const slogan = settings.value?.event.slogan ?? "";
   return `${base} ${dates} ${slogan}`.trim();
 });
 
 useSeoMeta({
-  title: eventTitle || "Le Hackathon du CSLabs",
+  title: () => settings.value?.event.title ?? siteConfig.name,
   description,
 });
 
@@ -57,14 +59,15 @@ const prix: PageFeatureProps[] = [
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero v-if="teaserEnabled"
+    <PageHero v-if="settings?.event.teaserEnabled"
               title="Le Hackathon se prépare !"
-              :subtitle="`Notez déjà la date ${formatDateRange(eventDateStart, eventDateEnd, true, false)} dans vos agendas !`"
+              :subtitle="`Notez déjà la date ${formatDateRange(settings.event.startDate, settings.event.endDate, true, false)} dans vos agendas !`"
               :images="organizers"/>
-    <PageHero v-else
-              :title="eventTitle" :subtitle="eventSlogan"
-              :content="formatDateRange(eventDateStart, eventDateEnd, true, true)"
+    <PageHero v-else-if="settings"
+              :title="settings.event.title" :subtitle="settings.event.slogan"
+              :content="formatDateRange(settings.event.startDate, settings.event.endDate, true, true)"
               :images="organizers"/>
+    <PageHero v-else title="Le Hackathon du CSLabs" :images="organizers"/>
   </UPageHero>
 
   <UContainer>
