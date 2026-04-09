@@ -10,39 +10,32 @@ type SettingsFormState = Omit<UpdateSettingsSchema, "website" | "event"> & {
   event: WithStringFields<UpdateEventSettingsSchema, "iban" | "bic">;
 };
 
-const normalizeNullableField = (value: string | null | undefined) => value ?? "";
-
 function normalizeSettingsForForm(settings: UpdateSettingsSchema): SettingsFormState {
   return {
     website: {
       ...settings.website,
-      bugReportWebhookUrl: normalizeNullableField(settings.website.bugReportWebhookUrl),
+      bugReportWebhookUrl: settings.website.bugReportWebhookUrl ?? "",
     },
     event: {
       ...settings.event,
-      iban: normalizeNullableField(settings.event.iban),
-      bic: normalizeNullableField(settings.event.bic),
+      iban: settings.event.iban ?? "",
+      bic: settings.event.bic ?? "",
     },
     socialLinks: settings.socialLinks.map((link) => ({...link})),
   };
 }
 
-const normalizeNullableForSave = (value: string | null | undefined) => {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
-};
-
 function normalizeSettingsForSave(settings: UpdateSettingsSchema | SettingsFormState): UpdateSettingsSchema {
   return {
     website: {
       ...settings.website,
-      bugReportWebhookUrl: normalizeNullableForSave(settings.website.bugReportWebhookUrl),
+      bugReportWebhookUrl: settings.website.bugReportWebhookUrl,
     },
     event: {
       ...settings.event,
-      iban: normalizeNullableForSave(settings.event.iban),
-      bic: normalizeNullableForSave(settings.event.bic),
-      logoPath: normalizeNullableForSave(settings.event.logoPath),
+      iban: settings.event.iban,
+      bic: settings.event.bic,
+      logoPath: settings.event.logoPath,
     },
     socialLinks: settings.socialLinks.map((link) => ({...link})),
   };

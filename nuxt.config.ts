@@ -154,6 +154,20 @@ export default defineNuxtConfig({
         },
       },
     },
+    "/api/admin/settings": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
+    "/api/admin/settings/**": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
   },
 
   security: {

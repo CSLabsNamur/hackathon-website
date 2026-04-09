@@ -217,6 +217,37 @@ CREATE POLICY "Admin can delete sponsor images"
     );
 -- endregion
 
+-- region -- event assets --
+DROP POLICY IF EXISTS "Everyone can list event assets" ON "storage"."objects";
+CREATE POLICY "Everyone can list event assets"
+    ON "storage"."objects"
+    FOR SELECT
+    TO public
+    USING (
+    bucket_id = 'event-assets'::text
+    );
+
+DROP POLICY IF EXISTS "Admin can upload event assets" ON "storage"."objects";
+CREATE POLICY "Admin can upload event assets"
+    ON "storage"."objects"
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+    bucket_id = 'event-assets'::text
+        AND public.current_app_user_has_permission('settings.update')
+    );
+
+DROP POLICY IF EXISTS "Admin can delete event assets" ON "storage"."objects";
+CREATE POLICY "Admin can delete event assets"
+    ON "storage"."objects"
+    FOR DELETE
+    TO authenticated
+    USING (
+    bucket_id = 'event-assets'::text
+        AND public.current_app_user_has_permission('settings.update')
+    );
+-- endregion
+
 -- region -- guests --
 DROP POLICY IF EXISTS "Everyone can list guest images" ON "storage"."objects";
 CREATE POLICY "Everyone can list guest images"

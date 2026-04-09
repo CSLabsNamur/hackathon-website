@@ -44,7 +44,7 @@ export const defaultEventSettings: Prisma.EventSettingsCreateInput = {
   locationAddress: "Rue Grandgagnage 21, 5000 Namur, Belgique",
 } as const;
 
-export const defaultSocialLinks: readonly Prisma.SocialLinkCreateInput[] = [
+export const defaultSocialLinks: Prisma.SocialLinkCreateManyInput[] = [
   {
     type: SocialLinkType.DISCORD,
     label: "Discord",

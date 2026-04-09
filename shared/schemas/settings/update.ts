@@ -55,7 +55,7 @@ const eventSettingsSchema = v.pipe(v.strictObject({
       v.nonEmpty("La date de fermeture des inscriptions est requise."),
       v.isoDateTime("La date de fermeture des inscriptions doit être une date et heure valide."),
     ),
-    registrationMode: v.picklist(SETTINGS_REGISTRATION_MODES),
+    registrationMode: v.picklist(Object.values(RegistrationMode)),
     cautionAmount: v.pipe(
       v.number(),
       v.integer("La caution doit être un nombre entier."),
@@ -104,7 +104,7 @@ const eventSettingsSchema = v.pipe(v.strictObject({
 
 const socialLinkSchema = v.strictObject({
   id: v.optional(v.string()),
-  type: v.picklist(SETTINGS_SOCIAL_LINK_TYPES),
+  type: v.picklist(Object.values(SocialLinkType)),
   label: v.pipe(
     v.string(),
     v.nonEmpty("Le libellé du lien est requis."),
