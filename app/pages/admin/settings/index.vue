@@ -44,7 +44,8 @@ const canUpdateSettings = computed(() => can("update", "Settings"));
         </UFormField>
 
         <UFormField label="Webhook de bug report" name="website.bugReportWebhookUrl"
-                    description="Optionnel. Laissez vide si aucun webhook n'est utilisé." class="md:col-span-2">
+                    description="Webhook Discord pour communiquer les erreurs ou rapports de bug. (Optionnel)"
+                    class="md:col-span-2">
           <UInput v-model="state.website.bugReportWebhookUrl" icon="i-lucide-webhook" class="w-full"/>
         </UFormField>
       </div>

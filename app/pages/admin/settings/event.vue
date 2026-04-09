@@ -103,7 +103,7 @@ function resetForm() {
         </UFormField>
 
         <UFormField name="event.teaserEnabled" class="md:col-span-2">
-          <UCheckbox v-model="state.event.teaserEnabled" label="Activer le mode teaser"
+          <UCheckbox v-model="state.event.teaserEnabled" color="warning" label="Activer le mode teaser"
                      description="Cache les pages d'inscription, partenaires et informations de l'évènement sur le site public."/>
         </UFormField>
       </div>

@@ -1,4 +1,5 @@
 import * as v from "valibot";
+import * as ibantools from "ibantools";
 
 const websiteSettingsSchema = v.strictObject({
   contactEmail: v.pipe(v.string(), v.nonEmpty("L'email de contact est requis."), v.email("L'email de contact n'est pas valide.")),
@@ -64,13 +65,19 @@ const eventSettingsSchema = v.pipe(v.strictObject({
     ),
     iban: v.pipe(
       v.nullable(
-        v.pipe(v.string(), v.maxLength(64, "L'IBAN ne peut pas dépasser 64 caractères.")),
+        v.pipe(
+          v.string(),
+          v.check((value) => ibantools.isValidIBAN(ibantools.electronicFormatIBAN(value.trim()) ?? ""), "L'IBAN n'est pas valide."),
+        ),
       ),
       v.transform((value) => typeof value === "string" && value.trim() === "" ? null : value),
     ),
     bic: v.pipe(
       v.nullable(
-        v.pipe(v.string(), v.maxLength(32, "Le BIC ne peut pas dépasser 32 caractères.")),
+        v.pipe(
+          v.string(),
+          v.check((value) => ibantools.isValidBIC(value.trim()), "Le BIC n'est pas valide."),
+        ),
       ),
       v.transform((value) => typeof value === "string" && value.trim() === "" ? null : value),
     ),

@@ -23,6 +23,7 @@ const registrationModeItems = Object.values(RegistrationMode).map((mode) => ({
   label: settingsRegistrationModeLabels[mode],
   value: mode,
 }));
+
 </script>
 
 <template>
@@ -42,7 +43,8 @@ const registrationModeItems = Object.values(RegistrationMode).map((mode) => ({
       <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
         <UFormField label="Mode d'inscription" name="event.registrationMode" required class="md:col-span-2">
           <URadioGroup v-model="state.event.registrationMode" :items="registrationModeItems" orientation="horizontal"
-                       variant="table"/>
+                       variant="table"
+                       :color="state.event.registrationMode === RegistrationMode.SCHEDULED ? 'primary' : 'warning'"/>
         </UFormField>
 
         <UFormField label="Ouverture des inscriptions" name="event.registrationsStartDate" required>
@@ -55,17 +57,20 @@ const registrationModeItems = Object.values(RegistrationMode).map((mode) => ({
                   class="w-full"/>
         </UFormField>
 
-        <UFormField label="Montant de la caution" name="event.cautionAmount" required>
-          <UInputNumber v-model="state.event.cautionAmount" :min="0" :max="500" class="w-full"/>
-        </UFormField>
+        <div class="md:col-span-2 grid gap-4 grid-cols-1 md:grid-cols-3">
+          <UFormField label="Montant de la caution" name="event.cautionAmount" required>
+            <UInputNumber v-model="state.event.cautionAmount" :min="0" :max="500" class="w-full" disable-wheel-change
+                          :format-options="{style: 'currency', currency: 'EUR', minimumFractionDigits: 0}"/>
+          </UFormField>
 
-        <UFormField label="IBAN" name="event.iban">
-          <UInput v-model="state.event.iban" icon="i-lucide-credit-card" class="w-full"/>
-        </UFormField>
+          <UFormField label="IBAN" name="event.iban">
+            <UInput v-model="state.event.iban" icon="i-lucide-credit-card" class="w-full"/>
+          </UFormField>
 
-        <UFormField label="BIC" name="event.bic">
-          <UInput v-model="state.event.bic" icon="i-lucide-banknote" class="w-full"/>
-        </UFormField>
+          <UFormField label="BIC" name="event.bic">
+            <UInput v-model="state.event.bic" icon="i-lucide-banknote" class="w-full"/>
+          </UFormField>
+        </div>
       </div>
 
       <template #footer>
