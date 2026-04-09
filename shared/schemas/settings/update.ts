@@ -102,28 +102,54 @@ const eventSettingsSchema = v.pipe(v.strictObject({
     ["registrationsEndDate"],
   ));
 
-const socialLinkSchema = v.strictObject({
-  id: v.optional(v.string()),
-  type: v.picklist(Object.values(SocialLinkType)),
-  label: v.pipe(
-    v.string(),
-    v.nonEmpty("Le libellé du lien est requis."),
-    v.maxLength(40, "Le libellé du lien ne peut pas dépasser 40 caractères."),
+const socialLinkSchema = v.pipe(
+  v.strictObject({
+    id: v.optional(v.string()),
+    type: v.picklist(Object.values(SocialLinkType)),
+    label: v.pipe(
+      v.string(),
+      v.maxLength(40, "Le libellé du lien ne peut pas dépasser 40 caractères."),
+    ),
+    icon: v.pipe(
+      v.string(),
+      v.maxLength(100, "L'icône du lien ne peut pas dépasser 100 caractères."),
+    ),
+    url: v.pipe(v.string(), v.nonEmpty("L'URL du lien est requise."), v.url("L'URL du lien n'est pas valide.")),
+    visible: v.boolean(),
+    sortOrder: v.pipe(
+      v.number(),
+      v.integer("L'ordre doit être un nombre entier."),
+      v.minValue(0, "L'ordre ne peut pas être négatif."),
+      v.maxValue(1000, "L'ordre ne peut pas dépasser 1000."),
+    ),
+  }),
+  v.forward(
+    v.partialCheck(
+      [["type"], ["label"]],
+      (input) => !isCustomSocialLinkType(input.type) || input.label.trim().length > 0,
+      "Le libellé du lien est requis pour un lien personnalisé.",
+    ),
+    ["label"],
   ),
-  icon: v.pipe(
-    v.string(),
-    v.nonEmpty("L'icône du lien est requise."),
-    v.maxLength(100, "L'icône du lien ne peut pas dépasser 100 caractères."),
+  v.forward(
+    v.partialCheck(
+      [["type"], ["icon"]],
+      (input) => !isCustomSocialLinkType(input.type) || input.icon.trim().length > 0,
+      "L'icône du lien est requise pour un lien personnalisé.",
+    ),
+    ["icon"],
   ),
-  url: v.pipe(v.string(), v.nonEmpty("L'URL du lien est requise."), v.url("L'URL du lien n'est pas valide.")),
-  visible: v.boolean(),
-  sortOrder: v.pipe(
-    v.number(),
-    v.integer("L'ordre doit être un nombre entier."),
-    v.minValue(0, "L'ordre ne peut pas être négatif."),
-    v.maxValue(1000, "L'ordre ne peut pas dépasser 1000."),
-  ),
-});
+  v.transform((link) => {
+    const defaults = getDefaultSocialLinkValues(link.type);
+    if (defaults) return normalizeSocialLinkValues(link);
+
+    return {
+      ...link,
+      label: link.label.trim(),
+      icon: link.icon.trim(),
+    };
+  }),
+);
 
 const socialLinksSchema = v.pipe(
   v.array(socialLinkSchema),

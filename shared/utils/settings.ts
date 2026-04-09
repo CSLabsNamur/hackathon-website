@@ -21,6 +21,47 @@ export const settingsSocialLinkTypeLabels: Record<SocialLinkType, string> = {
   [SocialLinkType.OTHER]: "Autre",
 };
 
+export const settingsSocialLinkTypeIcons: Omit<Record<SocialLinkType, string>, "OTHER"> = {
+  [SocialLinkType.DISCORD]: "i-simple-icons-discord",
+  [SocialLinkType.FACEBOOK]: "i-simple-icons-facebook",
+  [SocialLinkType.GITHUB]: "i-simple-icons-github",
+  [SocialLinkType.INSTAGRAM]: "i-simple-icons-instagram",
+  [SocialLinkType.LINKEDIN]: "i-simple-icons-linkedin",
+  [SocialLinkType.X]: "i-simple-icons-x",
+  [SocialLinkType.YOUTUBE]: "i-simple-icons-youtube",
+  [SocialLinkType.WEBSITE]: "i-lucide-globe",
+} as const;
+
+export function isCustomSocialLinkType(type: SocialLinkType) {
+  return type === SocialLinkType.OTHER;
+}
+
+export function getDefaultSocialLinkValues(type: SocialLinkType) {
+  if (isCustomSocialLinkType(type)) return null;
+
+  return {
+    label: settingsSocialLinkTypeLabels[type],
+    icon: settingsSocialLinkTypeIcons[type]!,
+  };
+}
+
+export function normalizeSocialLinkValues<T extends { type: SocialLinkType, label: string, icon: string }>(link: T): T {
+  const defaults = getDefaultSocialLinkValues(link.type);
+  if (!defaults) {
+    return {
+      ...link,
+      label: link.label.trim(),
+      icon: link.icon.trim(),
+    };
+  }
+
+  return {
+    ...link,
+    label: defaults.label,
+    icon: defaults.icon,
+  };
+}
+
 export const defaultWebsiteSettings: Prisma.WebsiteSettingsCreateInput = {
   contactEmail: "event@cslabs.be",
   bugReportEmail: "it@cslabs.be",
@@ -51,7 +92,7 @@ export const defaultSocialLinks: Prisma.SocialLinkCreateManyInput[] = [
     icon: "i-simple-icons-discord",
     url: "https://discord.gg/Jf2Dht8",
     visible: true,
-    sortOrder: 10,
+    sortOrder: 1,
   },
   {
     type: SocialLinkType.GITHUB,
@@ -59,7 +100,7 @@ export const defaultSocialLinks: Prisma.SocialLinkCreateManyInput[] = [
     icon: "i-simple-icons-github",
     url: "https://github.com/CSLabsNamur",
     visible: true,
-    sortOrder: 20,
+    sortOrder: 2,
   },
   {
     type: SocialLinkType.LINKEDIN,
@@ -67,7 +108,7 @@ export const defaultSocialLinks: Prisma.SocialLinkCreateManyInput[] = [
     icon: "i-simple-icons-linkedin",
     url: "https://www.linkedin.com/company/cslabs-namur",
     visible: true,
-    sortOrder: 30,
+    sortOrder: 3,
   },
   {
     type: SocialLinkType.INSTAGRAM,
@@ -75,7 +116,7 @@ export const defaultSocialLinks: Prisma.SocialLinkCreateManyInput[] = [
     icon: "i-simple-icons-instagram",
     url: "https://www.instagram.com/cslabs_namur/",
     visible: true,
-    sortOrder: 40,
+    sortOrder: 4,
   },
 ] as const;
 

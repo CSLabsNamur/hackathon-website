@@ -94,7 +94,7 @@ export async function getEditableSettings(): Promise<UpdateSettingsSchema> {
       registrationsStartDate: toDateTimeInput(event.registrationsStartDate),
       registrationsEndDate: toDateTimeInput(event.registrationsEndDate),
     },
-    socialLinks,
+    socialLinks: socialLinks.map(normalizeSocialLinkValues),
   };
 }
 
@@ -145,7 +145,7 @@ export async function getPublicSettings(event: H3Event): Promise<PublicSettings>
       registrationsEndDate: toDateTimeInput(eventSettings.registrationsEndDate),
       logoUrl: eventSettings.logoPath ? supabase.storage.from(EVENT_ASSETS_BUCKET).getPublicUrl(eventSettings.logoPath).data.publicUrl : null,
     },
-    socialLinks,
+    socialLinks: socialLinks.map(normalizeSocialLinkValues),
   };
 }
 
@@ -185,26 +185,30 @@ export async function updateSettings(settings: UpdateSettingsSchema) {
         },
       },
     }),
-    ...settings.socialLinks.map((link) => prisma.socialLink.upsert({
-      where: {
-        type: link.type,
-      },
-      create: {
-        type: link.type,
-        label: link.label.trim(),
-        icon: link.icon.trim(),
-        url: link.url.trim(),
-        visible: link.visible,
-        sortOrder: link.sortOrder,
-      },
-      update: {
-        label: link.label.trim(),
-        icon: link.icon.trim(),
-        url: link.url.trim(),
-        visible: link.visible,
-        sortOrder: link.sortOrder,
-      },
-    })),
+    ...settings.socialLinks.map((rawLink) => {
+      const link = normalizeSocialLinkValues(rawLink);
+
+      return prisma.socialLink.upsert({
+        where: {
+          type: link.type,
+        },
+        create: {
+          type: link.type,
+          label: link.label.trim(),
+          icon: link.icon.trim(),
+          url: link.url.trim(),
+          visible: link.visible,
+          sortOrder: link.sortOrder,
+        },
+        update: {
+          label: link.label.trim(),
+          icon: link.icon.trim(),
+          url: link.url.trim(),
+          visible: link.visible,
+          sortOrder: link.sortOrder,
+        },
+      });
+    }),
   ]);
 
   return getEditableSettings();

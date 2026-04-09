@@ -100,7 +100,7 @@ watch(user, async (newUser) => {
     <ConditionalNavigationMenu :items="headerItems"/>
 
     <template #right>
-      <UColorModeButton :ui="{base: 'p-0'}">
+      <UColorModeButton class="-mr-2">
         <template #fallback>
           <UButton loading variant="ghost" color="neutral"/>
         </template>

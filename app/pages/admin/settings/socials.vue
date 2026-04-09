@@ -19,45 +19,48 @@ const {
 
 const canUpdateSettings = computed(() => can("update", "Settings"));
 
-const canAddSocialLink = computed(() => {
-  const usedTypes = new Set(state.value?.socialLinks.map((link) => link.type) ?? []);
-  return Object.values(SocialLinkType).some((type) => !usedTypes.has(type));
-});
+const usedTypes = computed(() => new Set(state.value?.socialLinks.map((link) => link.type) ?? []));
+
+const canAddSocialLink = computed(() => Object.values(SocialLinkType).some((type) => !usedTypes.value.has(type)));
 
 function getSocialTypeItems(index: number) {
   const currentType = state.value?.socialLinks[index]?.type;
-  const usedTypes = new Set(state.value?.socialLinks
-      .map((link) => link.type)
-      .filter((type) => type !== currentType) ?? []);
 
   return Object.values(SocialLinkType).map((type) => ({
     label: settingsSocialLinkTypeLabels[type],
+    icon: getDefaultSocialLinkValues(type)?.icon ?? "i-lucide-link",
     value: type,
-    disabled: usedTypes.has(type),
+    disabled: usedTypes.value.has(type) && type !== currentType,
   }));
 }
 
 function addSocialLink() {
   if (!state.value || !canAddSocialLink.value) return;
 
-  const usedTypes = new Set(state.value.socialLinks.map((link) => link.type));
-  const type = Object.values(SocialLinkType).find((candidate) => !usedTypes.has(candidate));
+  const type = Object.values(SocialLinkType).find((candidate) => !usedTypes.value.has(candidate));
   if (!type) return;
 
+  const defaults = getDefaultSocialLinkValues(type);
   const sortOrder = Math.max(0, ...state.value.socialLinks.map((link) => link.sortOrder)) + 10;
   state.value.socialLinks.push({
     type,
-    label: settingsSocialLinkTypeLabels[type],
-    icon: "i-lucide-link",
+    label: defaults?.label ?? "",
+    icon: defaults?.icon ?? "i-lucide-link",
     url: "https://example.com",
     visible: false,
     sortOrder,
+  });
+
+  // Focus the label input of the newly added link for better UX.
+  nextTick(() => {
+    const fieldName = type === SocialLinkType.OTHER ? "label" : "url";
+    const input = document.querySelector<HTMLInputElement>(`#settings-socials-form [name="socialLinks.${state.value!.socialLinks.length - 1}.${fieldName}"]`);
+    input?.focus();
   });
 }
 
 function removeSocialLink(index: number) {
   if (!state.value) return;
-
   state.value.socialLinks.splice(index, 1);
 }
 
@@ -68,7 +71,35 @@ function onSocialTypeChange(index: number, type: string) {
   if (!link) return;
 
   link.type = type as keyof typeof SocialLinkType;
-  link.label = settingsSocialLinkTypeLabels[link.type];
+  const defaults = getDefaultSocialLinkValues(link.type);
+  link.label = defaults?.label ?? "";
+  link.icon = defaults?.icon ?? "i-lucide-link";
+}
+
+function reorderSocialLinks(from: number, to: number) {
+  if (!state.value || from === to) return;
+
+  const links = [...state.value.socialLinks];
+  const [movedLink] = links.splice(from, 1);
+  if (!movedLink) return;
+
+  links.splice(to, 0, movedLink);
+
+  // Reassign a new array so form state observers reliably detect reorder changes.
+  state.value.socialLinks = links.map((link, index) => ({
+    ...link,
+    sortOrder: index + 1,
+  }));
+}
+
+function moveLinkUp(index: number) {
+  if (!state.value || index === 0) return;
+  reorderSocialLinks(index, index - 1);
+}
+
+function moveLinkDown(index: number) {
+  if (!state.value || index === state.value.socialLinks.length - 1) return;
+  reorderSocialLinks(index, index + 1);
 }
 </script>
 
@@ -80,7 +111,7 @@ function onSocialTypeChange(index: number, type: string) {
         <div class="flex flex-col gap-1">
           <h2 class="text-lg font-semibold text-highlighted">Réseaux sociaux</h2>
           <p class="text-sm text-muted">
-            Ces liens sont utilisés dans le footer, les appels à l'action et les pages d'information publiques.
+            Ces liens sont utilisés dans le footer, les CTA et certaines pages du site.
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -101,30 +132,44 @@ function onSocialTypeChange(index: number, type: string) {
               <span class="font-medium text-highlighted">{{ link.label }}</span>
               <UBadge v-if="!link.visible" color="neutral" variant="soft">Masqué</UBadge>
             </div>
-            <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="sm"
-                     :disabled="!canUpdateSettings || isSaving" :aria-label="`Supprimer le lien ${link.label}`"
-                     @click="removeSocialLink(index)"/>
+
+            <div class="flex gap-2 items-center">
+              <div class="flex">
+                <UButton icon="i-lucide-arrow-up" color="neutral" variant="ghost" size="sm"
+                         :disabled="index === 0 || isSaving" :aria-label="`Déplacer le lien ${link.label} vers le haut`"
+                         @click="moveLinkUp(index)"/>
+                <UButton icon="i-lucide-arrow-down" color="neutral" variant="ghost" size="sm"
+                         :disabled="index === state.socialLinks.length - 1 || isSaving"
+                         :aria-label="`Déplacer le lien ${link.label} vers le bas`" @click="moveLinkDown(index)"/>
+              </div>
+
+              <USeparator orientation="vertical" class="h-6"/>
+
+              <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="sm"
+                       :disabled="!canUpdateSettings || isSaving" :aria-label="`Supprimer le lien ${link.label}`"
+                       @click="removeSocialLink(index)"/>
+            </div>
           </template>
 
           <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
             <UFormField label="Type" :name="`socialLinks.${index}.type`" required>
-              <USelectMenu :model-value="link.type" :items="getSocialTypeItems(index)" value-key="value" class="w-full"
+              <USelectMenu :model-value="link.type" :items="getSocialTypeItems(index)" value-key="value"
+                           :leading-icon="getDefaultSocialLinkValues(link.type)?.icon || link.icon || 'i-lucide-link'"
+                           class="w-full"
                            @update:model-value="onSocialTypeChange(index, $event)"/>
             </UFormField>
 
-            <UFormField label="Libellé" :name="`socialLinks.${index}.label`" required>
+            <UFormField v-if="isCustomSocialLinkType(link.type)" label="Libellé" :name="`socialLinks.${index}.label`" required>
               <UInput v-model="link.label" icon="i-lucide-type" class="w-full"/>
             </UFormField>
 
-            <UFormField label="Icône" :name="`socialLinks.${index}.icon`" required>
-              <UInput v-model="link.icon" :icon="state.socialLinks[index]?.icon" class="w-full"/>
+            <UFormField v-if="isCustomSocialLinkType(link.type)" label="Icône" :name="`socialLinks.${index}.icon`"
+                        required class="md:col-span-2">
+              <IconPicker v-model="link.icon"/>
             </UFormField>
 
-            <UFormField label="Ordre" :name="`socialLinks.${index}.sortOrder`" required>
-              <UInputNumber v-model="link.sortOrder" :min="0" :max="1000" class="w-full"/>
-            </UFormField>
-
-            <UFormField label="URL" :name="`socialLinks.${index}.url`" required class="md:col-span-2">
+            <UFormField label="URL" :name="`socialLinks.${index}.url`" required
+                        :class="isCustomSocialLinkType(link.type) ? 'md:col-span-2' : undefined">
               <UInput v-model="link.url" icon="i-lucide-link" class="w-full"/>
             </UFormField>
 
