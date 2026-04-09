@@ -9,11 +9,17 @@ import { UBadge, UButton, UDropdownMenu } from "#components";
 import { submissionTypeTranslateMap } from "#shared/utils/types";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Demandes de soumissions",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["submissionRequests.read", "participants.read"],
 });
 
+const {setActions} = useDashboardNavbar();
 const {
   status: submissionsStatus,
   data: submissionRequests,
@@ -178,48 +184,40 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     },
   ];
 }
+
+setActions(computed(() => [{
+  icon: "i-lucide-plus",
+  label: "Nouvelle demande",
+  onClick: openCreateModal,
+  disabled: !can("create", "SubmissionRequest"),
+}]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Demandes de soumissions">
-        <template #right>
-          <UButton variant="ghost" icon="i-lucide-plus" :disabled="!can('create', 'SubmissionRequest')"
-                   :ui="{base: !$device.isDesktopOrTablet ? '!px-1.5' : undefined}"
-                   @click="openCreateModal">
-            <template v-if="$device.isDesktopOrTablet">Nouvelle demande</template>
-          </UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-1 lg:gap-2">
-          <div v-if="submissionsStatus === 'success' && participantsStatus === 'success'" class="flex justify-between">
-            <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-            <TourHelperPopover title="Astuce : colonnes personnalisables"
-                               description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                               status-key="admin-table-column-visibility" placement="top">
-              <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                             aria-label="Afficher ou masquer les colonnes">
-                <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-              </UDropdownMenu>
-            </TourHelperPopover>
+  <UContainer>
+    <div class="flex flex-col gap-1 lg:gap-2">
+      <div v-if="submissionsStatus === 'success' && participantsStatus === 'success'" class="flex justify-between">
+        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <TourHelperPopover title="Astuce : colonnes personnalisables"
+                           description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                           status-key="admin-table-column-visibility" placement="top">
+          <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                         aria-label="Afficher ou masquer les colonnes">
+            <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+          </UDropdownMenu>
+        </TourHelperPopover>
+      </div>
+      <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
+              :data="submissionRequests" sticky
+              :loading="submissionsStatus === 'pending' || participantsStatus === 'pending'">
+        <template #empty>
+          <div class="max-w-1/2 mx-auto">
+            <UEmpty title="Aucune demande de soumission"
+                    description="Aucune demande de soumission n'a encore été créée."
+                    icon="i-lucide-circle-slash"/>
           </div>
-          <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
-                  :data="submissionRequests" sticky
-                  :loading="submissionsStatus === 'pending' || participantsStatus === 'pending'">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucune demande de soumission"
-                        description="Aucune demande de soumission n'a encore été créée."
-                        icon="i-lucide-circle-slash"/>
-              </div>
-            </template>
-          </UTable>
-        </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        </template>
+      </UTable>
+    </div>
+  </UContainer>
 </template>

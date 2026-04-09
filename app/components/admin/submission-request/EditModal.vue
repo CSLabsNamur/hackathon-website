@@ -9,10 +9,12 @@ const emit = defineEmits<{ close: [boolean] }>();
 
 const dayjs = useDayjs();
 const toast = useToast();
-const {eventDateStart, eventDateEnd} = useRuntimeConfig().public;
+const {data: settings} = await useSettings();
 
 const {editSubmissionRequest} = useSubmissionsRequestsActions();
 
+const eventDateStart = settings.value!.event.startDate;
+const eventDateEnd = settings.value!.event.endDate;
 // Create the schema with composables (safe here in setup)
 const schema = editSubmissionRequestSchema(eventDateStart, eventDateEnd);
 

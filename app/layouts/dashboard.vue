@@ -2,7 +2,14 @@
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from "@nuxt/ui";
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
+withDefaults(defineProps<{
+  title?: string;
+}>(), {
+  title: "Tableau de bord",
+});
+
 const {data: currentAdmin} = await useCurrentAdmin();
+const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentAdmin);
 
 const colorMode = useColorMode();
@@ -11,6 +18,7 @@ const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
 provide(THEME_KEY, theme);
 
 const open = ref(false);
+const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 
 const topLinks: RestrictedNavigationItem[] = [
   {
@@ -111,6 +119,53 @@ const topLinks: RestrictedNavigationItem[] = [
       open.value = false;
     },
   },
+  {
+    label: "Paramètres",
+    icon: "i-lucide-settings",
+    to: "/admin/settings",
+    requiredPermissions: ["settings.read"],
+    defaultOpen: true,
+    type: "trigger",
+    onSelect: () => {
+      open.value = false;
+    },
+    children: [
+      {
+        label: "Site",
+        icon: "i-lucide-globe",
+        to: "/admin/settings",
+        exact: true,
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Événement",
+        icon: "i-lucide-calendar-days",
+        to: "/admin/settings/event",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Inscriptions",
+        icon: "i-lucide-clipboard-check",
+        to: "/admin/settings/registrations",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }, {
+        label: "Réseaux sociaux",
+        icon: "i-lucide-share-2",
+        to: "/admin/settings/socials",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      },
+    ],
+  },
 ];
 
 const bottomLinks: NavigationMenuItem[] = [
@@ -134,12 +189,29 @@ const bottomLinks: NavigationMenuItem[] = [
 
 const searchableTopLinks = computed(() => topLinks.filter((item) => canPermissions(item.requiredPermissions)));
 
+function getSearchableNavigationItems(items: RestrictedNavigationItem[], parentLabel?: string): CommandPaletteItem[] {
+  return items.flatMap((item) => {
+    if (!canPermissions(item.requiredPermissions)) {
+      return [];
+    }
+
+    const {children, requiredPermissions: _requiredPermissions, ...commandItem} = item;
+    const label = parentLabel ? `${parentLabel} · ${item.label}` : item.label;
+    const currentItem = commandItem.to ? [{...commandItem, label} satisfies CommandPaletteItem] : [];
+    const childItems = children ? getSearchableNavigationItems(children, item.label) : [];
+
+    return [...currentItem, ...childItems];
+  });
+}
+
 const navigationGroups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: searchableTopLinks.value as CommandPaletteItem[],
+  items: getSearchableNavigationItems(searchableTopLinks.value),
 }]);
 const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
+
+const {actions} = useDashboardNavbar();
 </script>
 
 <template>
@@ -148,7 +220,7 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
       <template #header>
         <div class="mx-auto">
           <NuxtLink to="/admin">
-            <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
+            <img :src="dashboardLogoUrl" alt="Logo Hackathon" class="size-16 object-contain">
           </NuxtLink>
         </div>
       </template>
@@ -169,7 +241,18 @@ const {searchTerm, groups, loading} = useAdminSearch(navigationGroups);
 
     <UDashboardSearch v-model:search-term="searchTerm" :groups :loading/>
 
-    <slot/>
+    <UDashboardPanel>
+      <template #header>
+        <DashboardNavbar :title>
+          <template #right>
+            <UButton v-for="(action, index) in actions" :key="`navbar-action-${index}`" v-bind="action"/>
+          </template>
+        </DashboardNavbar>
+      </template>
+      <template #body>
+        <slot/>
+      </template>
+    </UDashboardPanel>
   </UDashboardGroup>
 </template>
 

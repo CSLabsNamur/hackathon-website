@@ -67,6 +67,8 @@ export default defineNuxtConfig({
 
   site: {
     url: process.env.NUXT_SITE_URL || "https://hackathon.cslabs.be",
+    name: process.env.NUXT_SITE_NAME || "Le Hackathon du CSLabs",
+    description: process.env.NUXT_SITE_DESCRIPTION || "Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.",
     defaultLocale: "fr-BE",
   },
 
@@ -100,16 +102,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    public: {
-      teaserEnabled: false,
-      eventDateStart: "",
-      eventDateEnd: "",
-      registrationsDateOpen: "",
-      registrationsDateClose: "",
-      eventTitle: "Le Hackathon du CSLabs",
-      eventSlogan: "",
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || "https://hackathon.cslabs.be",
-    },
     turnstile: {
       secretKey: "",
     },
@@ -129,6 +121,14 @@ export default defineNuxtConfig({
     "/auth/**": {ssr: false},
     // API routes
     // Mostly file uploads because of a conflict between Formidable and the XSS validator
+    "/api/sponsors": {
+      swr: 300,
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
     "/api/participants/**": {
       security: {
         xssValidator: {
@@ -156,6 +156,20 @@ export default defineNuxtConfig({
       },
     },
     "/api/guests/**": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
+    "/api/admin/settings": {
+      security: {
+        xssValidator: {
+          methods: ["GET"],
+        },
+      },
+    },
+    "/api/admin/settings/**": {
       security: {
         xssValidator: {
           methods: ["GET"],

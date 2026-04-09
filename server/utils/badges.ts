@@ -4,6 +4,7 @@
 import PDFDocument from "pdfkit";
 import qr from "qrcode";
 import type { Prisma } from "#server/prisma/generated/prisma/browser";
+import { getEditableSettings } from "./settings";
 
 type Participant = Prisma.ParticipantGetPayload<{
   include: {
@@ -172,6 +173,13 @@ async function loadStorageImage(path: string, bucket: string): Promise<Buffer | 
 
   remoteImageCache.set(publicUrl, request);
   return request;
+}
+
+async function loadEventBadgeLogoSource(): Promise<Buffer | null> {
+  const settings = await getEditableSettings();
+  if (!settings.event.logoPath) return null;
+
+  return loadStorageImage(settings.event.logoPath, EVENT_ASSETS_BUCKET);
 }
 
 function getOrderedParticipants(participants: Participant[]): Participant[] {
@@ -520,23 +528,27 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
   const circleCenter = addCoordinates(origin, circle.pos);
   doc.circle(circleCenter[0], circleCenter[1], circle.radius).fill();
 
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const logo = (doc as any).openImage("./public/images/logo.png");
-  const logoWidth = circle.radius * .9;
-  const logoHeight = logoWidth * (logo.height / logo.width);
-  const [logoCenterX, logoCenterY] = visibleCircleCentroid(
-    size,
-    circle.pos,
-    circle.radius,
-  );
-  const logoPos: Coordinates = [
-    logoCenterX - logoWidth / 2,
-    logoCenterY - logoHeight / 2,
-  ];
-  const absoluteLogoPos = addCoordinates(origin, logoPos);
-  doc.image(logo, absoluteLogoPos[0], absoluteLogoPos[1], {
-    width: logoWidth,
-  });
+  const eventLogoSource = await loadEventBadgeLogoSource();
+
+  if (eventLogoSource) {
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const logo = (doc as any).openImage(eventLogoSource);
+    const logoWidth = circle.radius * .9;
+    const logoHeight = logoWidth * (logo.height / logo.width);
+    const [logoCenterX, logoCenterY] = visibleCircleCentroid(
+      size,
+      circle.pos,
+      circle.radius,
+    );
+    const logoPos: Coordinates = [
+      logoCenterX - logoWidth / 2,
+      logoCenterY - logoHeight / 2,
+    ];
+    const absoluteLogoPos = addCoordinates(origin, logoPos);
+    doc.image(logo, absoluteLogoPos[0], absoluteLogoPos[1], {
+      width: logoWidth,
+    });
+  }
   //endregion
 }
 

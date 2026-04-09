@@ -8,7 +8,7 @@ interface UseSubmissionsParams {
 }
 
 export const useSubmissionsRequests = async (params?: UseSubmissionsParams) => {
-  return useFetch("/api/submissions/requests", {
+  return useAPI("/api/submissions/requests", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });
@@ -45,7 +45,7 @@ export const useSubmissionsRequestsActions = () => {
 };
 
 export const useSubmissions = async (params?: UseSubmissionsParams) => {
-  return useFetch("/api/submissions/me", {
+  return useAPI("/api/submissions/me", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });

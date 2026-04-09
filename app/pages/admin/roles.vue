@@ -7,11 +7,17 @@ import EditModal from "~/components/admin/roles/EditModal.vue";
 import RemoveModal from "~/components/admin/roles/RemoveModal.vue";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Rôles",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["roles.read"],
 });
 
+const {setActions} = useDashboardNavbar();
 const {status, data: roles, refresh} = await useRoles({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {data: permissions} = await usePermissions();
@@ -177,63 +183,58 @@ async function openCreateModal() {
 }
 
 const expanded = ref({});
+
+setActions(computed(() => [{
+  icon: "i-lucide-plus",
+  label: "Nouveau",
+  onClick: openCreateModal,
+  disabled: !can("create", "Role"),
+}]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Rôles">
-        <template #right>
-          <UButton icon="i-lucide-plus" :disabled="!can('create', 'Role')" @click="openCreateModal">Nouveau</UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <div class="flex flex-col gap-1 lg:gap-2">
-            <div v-if="status === 'success'" class="flex justify-between">
-              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <TourHelperPopover title="Astuce : colonnes personnalisables"
-                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                                 status-key="admin-table-column-visibility" placement="top">
-                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                               aria-label="Afficher ou masquer les colonnes">
-                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-                </UDropdownMenu>
-              </TourHelperPopover>
-            </div>
-
-            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                    v-model:column-visibility="columnVisibility" :columns="columns" :data="roles"
-                    sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-              <template #empty>
-                <div class="max-w-1/2 mx-auto">
-                  <UEmpty title="Aucun rôle"
-                          description="Aucun rôle n'est encore configuré."
-                          icon="i-lucide-circle-slash"/>
-                </div>
-              </template>
-              <template #expanded="{row}">
-                <div class="grid gap-4 md:grid-cols-2">
-                  <UCard v-for="(groupPermissions, group) in groupedPermissions(row.original.permissions)" :key="group">
-                    <p class="text-sm font-semibold uppercase mb-2 text-highlighted">{{ group }}</p>
-
-                    <div class="grid gap-3 md:grid-cols-2">
-                      <div v-for="permission in groupPermissions" :key="permission.id"
-                           class="flex flex-col gap-1">
-                        <span class="font-medium truncate" :title="permission.name">{{ permission.name }}</span>
-                        <LazyUBadge variant="soft" color="neutral" class="max-w-fit">{{ permission.key }}</LazyUBadge>
-                      </div>
-                    </div>
-                  </UCard>
-                </div>
-              </template>
-            </UTable>
-          </div>
+  <UContainer>
+    <div class="flex flex-col gap-4 lg:gap-6">
+      <div class="flex flex-col gap-1 lg:gap-2">
+        <div v-if="status === 'success'" class="flex justify-between">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          <TourHelperPopover title="Astuce : colonnes personnalisables"
+                             description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                             status-key="admin-table-column-visibility" placement="top">
+            <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                           aria-label="Afficher ou masquer les colonnes">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
+          </TourHelperPopover>
         </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+
+        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="roles"
+                sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty title="Aucun rôle"
+                      description="Aucun rôle n'est encore configuré."
+                      icon="i-lucide-circle-slash"/>
+            </div>
+          </template>
+          <template #expanded="{row}">
+            <div class="grid gap-4 md:grid-cols-2">
+              <UCard v-for="(groupPermissions, group) in groupedPermissions(row.original.permissions)" :key="group">
+                <p class="text-sm font-semibold uppercase mb-2 text-highlighted">{{ group }}</p>
+
+                <div class="grid gap-3 md:grid-cols-2">
+                  <div v-for="permission in groupPermissions" :key="permission.id"
+                       class="flex flex-col gap-1">
+                    <span class="font-medium truncate" :title="permission.name">{{ permission.name }}</span>
+                    <LazyUBadge variant="soft" color="neutral" class="max-w-fit">{{ permission.key }}</LazyUBadge>
+                  </div>
+                </div>
+              </UCard>
+            </div>
+          </template>
+        </UTable>
+      </div>
+    </div>
+  </UContainer>
 </template>

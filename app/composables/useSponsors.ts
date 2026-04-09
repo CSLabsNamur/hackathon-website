@@ -6,7 +6,7 @@ interface UseSponsorsParams {
 }
 
 export const useSponsors = async (params?: UseSponsorsParams) => {
-  return useFetch("/api/sponsors", {
+  return useAPI("/api/sponsors", {
     lazy: params?.lazy ?? false,
   });
 };

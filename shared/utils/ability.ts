@@ -32,6 +32,7 @@ export type AppSubjectName =
   | "Role"
   | "Room"
   | "ScheduleItem"
+  | "Settings"
   | "Sponsor"
   | "Submission"
   | "SubmissionFile"
@@ -117,6 +118,8 @@ export const PERMISSION_DEFINITIONS = {
   "roles.create": definePermission({action: "create", subject: "Role"}),
   "roles.update": definePermission({action: "update", subject: "Role"}),
   "roles.delete": definePermission({action: "delete", subject: "Role"}),
+  "settings.read": definePermission({action: "read", subject: "Settings"}),
+  "settings.update": definePermission({action: "update", subject: "Settings"}),
 } satisfies Record<Permission, PermissionDefinition>;
 
 export function getPermissionDefinition(permission: Permission): PermissionDefinition {

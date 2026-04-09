@@ -3,6 +3,14 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import type { AdminCreateManyInput, RoomCreateInput, ScheduleItemCreateInput } from "./generated/prisma/models";
 import "dotenv/config";
 import { PERMISSION_CATALOG } from "../../shared/utils/authorization";
+import {
+  defaultEventSettings,
+  defaultSocialLinks,
+  defaultWebsiteSettings,
+  EVENT_SETTINGS_ID,
+  WEBSITE_SETTINGS_ID,
+} from "../../shared/utils/settings";
+import dayjs from "../utils/dayjs";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -299,6 +307,8 @@ const rooms: RoomCreateInput[] = [
   },
 ];
 
+const toDateTime = (value: string | Date) => dayjs.tz(value, "Europe/Brussels").toDate();
+
 async function main() {
   //region Permissions and roles
   // Upsert permissions to ensure they exist and are updated if the catalog changes
@@ -482,6 +492,66 @@ async function main() {
         userId: admin.userId,
         roleId: superAdminRole.id,
       })),
+      skipDuplicates: true,
+    });
+  }
+  //endregion
+
+  //region Settings
+  const [websiteSettings, eventSettings, socialLinksCount] = await prisma.$transaction([
+    prisma.websiteSettings.findUnique({
+      where: {
+        id: WEBSITE_SETTINGS_ID,
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.eventSettings.findUnique({
+      where: {
+        id: EVENT_SETTINGS_ID,
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.socialLink.count(),
+  ]);
+
+  if (!websiteSettings) {
+    await prisma.websiteSettings.create({
+      data: {
+        id: WEBSITE_SETTINGS_ID,
+        ...defaultWebsiteSettings,
+      },
+    });
+  }
+
+  if (!eventSettings) {
+    await prisma.eventSettings.create({
+      data: {
+        id: EVENT_SETTINGS_ID,
+        title: defaultEventSettings.title,
+        slogan: defaultEventSettings.slogan,
+        logoPath: defaultEventSettings.logoPath,
+        teaserEnabled: defaultEventSettings.teaserEnabled,
+        startDate: toDateTime(defaultEventSettings.startDate),
+        endDate: toDateTime(defaultEventSettings.endDate),
+        registrationsStartDate: toDateTime(defaultEventSettings.registrationsStartDate),
+        registrationsEndDate: toDateTime(defaultEventSettings.registrationsEndDate),
+        registrationMode: defaultEventSettings.registrationMode,
+        cautionAmount: defaultEventSettings.cautionAmount,
+        iban: defaultEventSettings.iban,
+        bic: defaultEventSettings.bic,
+        locationName: defaultEventSettings.locationName,
+        locationAddress: defaultEventSettings.locationAddress,
+      },
+    });
+  }
+
+  if (socialLinksCount === 0) {
+    await prisma.socialLink.createMany({
+      data: defaultSocialLinks,
       skipDuplicates: true,
     });
   }

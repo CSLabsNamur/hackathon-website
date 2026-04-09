@@ -2,10 +2,19 @@
 import type { CommandPaletteGroup, CommandPaletteItem } from "@nuxt/ui";
 import RestrictedNavigationMenu, { type RestrictedNavigationItem } from "~/components/RestrictedNavigationMenu.vue";
 
+withDefaults(defineProps<{
+  title?: string;
+}>(), {
+  title: "Tableau de bord",
+});
+
 const {data: currentParticipant, status} = await useCurrentParticipant();
+const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentParticipant);
+const {actions} = useDashboardNavbar();
 
 const open = ref(false);
+const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 
 const links: RestrictedNavigationItem[][] = [[{
   label: "Accueil",
@@ -90,7 +99,7 @@ const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
       <template #header>
         <div class="mx-auto">
           <NuxtLink to="/participant">
-            <NuxtImg src="/images/logo-vide.png" alt="Logo Hackathon" sizes="64px"/>
+            <img :src="dashboardLogoUrl" alt="Logo Hackathon" class="size-16 object-contain">
           </NuxtLink>
         </div>
       </template>
@@ -115,7 +124,18 @@ const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
 
     <UDashboardSearch :groups/>
 
-    <slot/>
+    <UDashboardPanel>
+      <template #header>
+        <DashboardNavbar :title>
+          <template #right>
+            <UButton v-for="(action, index) in actions" :key="`navbar-action-${index}`" v-bind="action"/>
+          </template>
+        </DashboardNavbar>
+      </template>
+      <template #body>
+        <slot/>
+      </template>
+    </UDashboardPanel>
   </UDashboardGroup>
 </template>
 

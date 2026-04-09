@@ -7,7 +7,12 @@ import EditModal from "~/components/admin/teams/EditModal.vue";
 import RemoveModal from "~/components/admin/teams/RemoveModal.vue";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Équipes",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["teams.read", "participants.read"],
 });
@@ -182,39 +187,32 @@ function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Équipes"/>
-    </template>
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <AdminTeamStats/>
-          <div class="flex flex-col gap-1 lg:gap-2">
-            <div v-if="status === 'success'" class="flex justify-between">
-              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <TourHelperPopover title="Astuce : colonnes personnalisables"
-                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                                 status-key="admin-table-column-visibility" placement="top">
-                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                               aria-label="Afficher ou masquer les colonnes">
-                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-                </UDropdownMenu>
-              </TourHelperPopover>
-            </div>
-            <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
-                    :columns="columns" :data="teams" sticky :loading="status === 'pending'">
-              <template #empty>
-                <div class="max-w-1/2 mx-auto">
-                  <UEmpty title="Aucune équipe"
-                          description="Aucun équipe ne s'est encore formée."
-                          icon="i-lucide-circle-slash"/>
-                </div>
-              </template>
-            </UTable>
-          </div>
+  <UContainer>
+    <div class="flex flex-col gap-4 lg:gap-6">
+      <AdminTeamStats/>
+      <div class="flex flex-col gap-1 lg:gap-2">
+        <div v-if="status === 'success'" class="flex justify-between">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          <TourHelperPopover title="Astuce : colonnes personnalisables"
+                             description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                             status-key="admin-table-column-visibility" placement="top">
+            <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                           aria-label="Afficher ou masquer les colonnes">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
+          </TourHelperPopover>
         </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
+                :columns="columns" :data="teams" sticky :loading="status === 'pending'">
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty title="Aucune équipe"
+                      description="Aucun équipe ne s'est encore formée."
+                      icon="i-lucide-circle-slash"/>
+            </div>
+          </template>
+        </UTable>
+      </div>
+    </div>
+  </UContainer>
 </template>

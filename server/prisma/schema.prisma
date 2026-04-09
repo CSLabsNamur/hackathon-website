@@ -256,3 +256,66 @@ model EmailOutbox {
 
   @@index([status, scheduledAt])
 }
+
+// ==== Settings and event configuration ====
+// TODO: Move EventSettings to a versioned Event model when historical event pages need database-backed editions.
+enum RegistrationMode {
+  SCHEDULED
+  OPEN
+  CLOSED
+}
+
+enum SocialLinkType {
+  DISCORD
+  FACEBOOK
+  GITHUB
+  INSTAGRAM
+  LINKEDIN
+  X
+  YOUTUBE
+  WEBSITE
+  OTHER
+}
+
+model WebsiteSettings {
+  id                  String   @id @default("website-settings")
+  contactEmail        String   @default("event@cslabs.be")
+  bugReportEmail      String   @default("it@cslabs.be")
+  bugReportWebhookUrl String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model EventSettings {
+  id                     String           @id @default("event-settings")
+  title                  String           @default("Le Hackathon du CSLabs")
+  slogan                 String           @default("")
+  logoPath               String?
+  teaserEnabled          Boolean          @default(false)
+  startDate              DateTime
+  endDate                DateTime
+  registrationsStartDate DateTime
+  registrationsEndDate   DateTime
+  registrationMode       RegistrationMode @default(SCHEDULED)
+  cautionAmount          Int              @default(20)
+  iban                   String?
+  bic                    String?
+  locationName           String           @default("Faculté d'informatique de l'Université de Namur")
+  locationAddress        String           @default("Rue Grandgagnage 21, 5000 Namur, Belgique")
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+}
+
+model SocialLink {
+  id        String         @id @default(cuid(2))
+  type      SocialLinkType @unique
+  label     String
+  icon      String         @default("i-lucide-link")
+  url       String
+  visible   Boolean        @default(true)
+  sortOrder Int            @default(0) @db.SmallInt
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([visible, sortOrder])
+}

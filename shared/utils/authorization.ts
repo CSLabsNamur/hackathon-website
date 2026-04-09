@@ -65,6 +65,8 @@ export const PERMISSION_CATALOG = [
   {key: "roles.create", group: "roles", name: "Créer des rôles"},
   {key: "roles.update", group: "roles", name: "Modifier les rôles"},
   {key: "roles.delete", group: "roles", name: "Supprimer des rôles"},
+  {key: "settings.read", group: "settings", name: "Lire les paramètres"},
+  {key: "settings.update", group: "settings", name: "Modifier les paramètres"},
 ] as const;
 
 export type Permission = typeof PERMISSION_CATALOG[number]["key"];

@@ -6,10 +6,17 @@ import EditRolesModal from "~/components/admin/admins/EditRolesModal.vue";
 import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Administrateurs",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["admins.read", "roles.read"],
 });
+
+const {setActions} = useDashboardNavbar();
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
@@ -152,37 +159,32 @@ async function openInviteModal() {
     await refresh();
   }
 }
+
+setActions(computed(() => [
+  {
+    icon: "i-lucide-user-plus",
+    label: "Ajouter",
+    onClick: openInviteModal,
+    disabled: !can("create", "Admin"),
+  },
+]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Administrateurs">
-        <template #right>
-          <UButton icon="i-lucide-user-plus" :disabled="!can('create', 'Admin')" @click="openInviteModal">
-            Ajouter
-          </UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-1 lg:gap-2">
-          <div v-if="status === 'success'" class="flex justify-between">
-            <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+  <UContainer>
+    <div class="flex flex-col gap-1 lg:gap-2">
+      <div v-if="status === 'success'" class="flex justify-between">
+        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+      </div>
+      <UTable v-model:global-filter="globalFilter" :columns="columns" :data="admins" sticky
+              :loading="status === 'pending'">
+        <template #empty>
+          <div class="max-w-1/2 mx-auto">
+            <UEmpty title="Aucun admin" description="Aucun administrateur n'est encore enregistré."
+                    icon="i-lucide-circle-slash"/>
           </div>
-          <UTable v-model:global-filter="globalFilter" :columns="columns" :data="admins" sticky
-                  :loading="status === 'pending'">
-            <template #empty>
-              <div class="max-w-1/2 mx-auto">
-                <UEmpty title="Aucun admin" description="Aucun administrateur n'est encore enregistré."
-                        icon="i-lucide-circle-slash"/>
-              </div>
-            </template>
-          </UTable>
-        </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        </template>
+      </UTable>
+    </div>
+  </UContainer>
 </template>

@@ -7,11 +7,17 @@ import EditModal from "~/components/admin/sponsors/EditModal.vue";
 import RemoveModal from "~/components/admin/sponsors/RemoveModal.vue";
 
 definePageMeta({
-  layout: "dashboard",
+  layout: {
+    name: "dashboard",
+    props: {
+      title: "Sponsors",
+    },
+  },
   middleware: "admin-auth",
   requiredPermissions: ["sponsors.read"],
 });
 
+const {setActions} = useDashboardNavbar();
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {renderSponsorBadge} = useSponsorsActions();
@@ -180,57 +186,52 @@ async function openCreateModal() {
 const expanded = ref({});
 const columnVisibility = usePersistentColumnVisibility("admin-sponsors-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+
+setActions(computed(() => [{
+  icon: "i-lucide-plus",
+  label: "Nouveau",
+  onClick: openCreateModal,
+  disabled: !can("create", "Sponsor"),
+}]));
 </script>
 
 <template>
-  <UDashboardPanel>
-    <template #header>
-      <DashboardNavbar title="Sponsors">
-        <template #right>
-          <UButton icon="i-lucide-plus" :disabled="!can('create', 'Sponsor')" @click="openCreateModal">Nouveau</UButton>
-        </template>
-      </DashboardNavbar>
-    </template>
-
-    <template #body>
-      <UContainer>
-        <div class="flex flex-col gap-4 lg:gap-6">
-          <div class="flex flex-col gap-1 lg:gap-2">
-            <div v-if="status === 'success'" class="flex justify-between">
-              <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-              <TourHelperPopover title="Astuce : colonnes personnalisables"
-                                 description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                                 status-key="admin-table-column-visibility" placement="top">
-                <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                               aria-label="Afficher ou masquer les colonnes">
-                  <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-                </UDropdownMenu>
-              </TourHelperPopover>
-            </div>
-            <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                    v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" sticky
-                    :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-              <template #empty>
-                <div class="max-w-1/2 mx-auto">
-                  <UEmpty title="Aucun sponsor"
-                          description="Aucun sponsor n'est encore enregistré pour l'événement."
-                          icon="i-lucide-circle-slash"/>
-                </div>
-              </template>
-              <template #expanded="{row}">
-                <div class="flex flex-col gap-2">
-                  <LazyNuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
-                               class="max-h-48 w-fit object-contain self-center"/>
-                  <USeparator orientation="horizontal"/>
-                  <!--eslint-disable vue/no-v-html -->
-                  <article class="text-white max-h-96 overflow-auto p-4"
-                           v-html="getSponsorHTMLDescription(row.original)"/>
-                </div>
-              </template>
-            </UTable>
-          </div>
+  <UContainer>
+    <div class="flex flex-col gap-4 lg:gap-6">
+      <div class="flex flex-col gap-1 lg:gap-2">
+        <div v-if="status === 'success'" class="flex justify-between">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+          <TourHelperPopover title="Astuce : colonnes personnalisables"
+                             description="Vous pouvez choisir les colonnes à afficher dans le tableau."
+                             status-key="admin-table-column-visibility" placement="top">
+            <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
+                           aria-label="Afficher ou masquer les colonnes">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
+          </TourHelperPopover>
         </div>
-      </UContainer>
-    </template>
-  </UDashboardPanel>
+        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" sticky
+                :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty title="Aucun sponsor"
+                      description="Aucun sponsor n'est encore enregistré pour l'événement."
+                      icon="i-lucide-circle-slash"/>
+            </div>
+          </template>
+          <template #expanded="{row}">
+            <div class="flex flex-col gap-2">
+              <LazyNuxtImg v-if="row.original.logo" :src="row.original.logo" alt="Logo du sponsor"
+                           class="max-h-48 w-fit object-contain self-center"/>
+              <USeparator orientation="horizontal"/>
+              <!--eslint-disable vue/no-v-html -->
+              <article class="text-white max-h-96 overflow-auto p-4"
+                       v-html="getSponsorHTMLDescription(row.original)"/>
+            </div>
+          </template>
+        </UTable>
+      </div>
+    </div>
+  </UContainer>
 </template>

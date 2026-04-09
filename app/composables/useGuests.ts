@@ -6,7 +6,7 @@ interface UseGuestsParams {
 }
 
 export const useGuests = async (params?: UseGuestsParams) => {
-  return useFetch("/api/guests", {
+  return useAPI("/api/guests", {
     lazy: params?.lazy ?? false,
   });
 };

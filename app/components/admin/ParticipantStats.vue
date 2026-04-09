@@ -7,10 +7,9 @@ withDefaults(defineProps<{
 }>(), {rounded: true});
 
 const {status, data: participants} = await useParticipants({lazy: true});
+const {data: settings} = await useSettings();
 
 const dayjs = useDayjs();
-
-const {eventDateEnd} = useRuntimeConfig().public;
 
 const stats = computed(() => {
   if (!participants.value) {
@@ -29,12 +28,12 @@ const stats = computed(() => {
     title: "Cautions payées",
     value: `${participants.value.filter(participant => participant.caution === CautionStatus.PAID).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.REFUNDED && participant.caution !== CautionStatus.WAIVED).length}`,
     icon: "i-lucide-wallet",
-    condition: dayjs().isBefore(dayjs(eventDateEnd)),
+    condition: dayjs().isBefore(dayjs(settings.value!.event.endDate)),
   }, {
     title: "Cautions remboursées",
     value: `${participants.value.filter(participant => participant.caution === CautionStatus.REFUNDED).length} / ${participants.value.filter(participant => participant.caution !== CautionStatus.WAIVED && participant.caution !== CautionStatus.NOT_PAID).length}`,
     icon: "i-lucide-euro",
-    condition: dayjs().isAfter(dayjs(eventDateEnd)),
+    condition: dayjs().isAfter(dayjs(settings.value!.event.endDate)),
   }];
 
   return allStats.filter(stat => stat.condition === undefined || stat.condition);

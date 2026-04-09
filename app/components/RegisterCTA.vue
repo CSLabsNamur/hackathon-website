@@ -1,20 +1,28 @@
 <script setup lang="ts">
 import type { ButtonProps } from "#ui/components/Button.vue";
 
-const links: ButtonProps[] = [
-  {
+const {data: settings} = await useSettings();
+
+const discordLink = computed(() => settings.value?.socialLinks.find((link) => link.type === "DISCORD"));
+const links = computed<ButtonProps[]>(() => {
+  const items: ButtonProps[] = [{
     label: "S'inscrire",
     to: "/inscription",
     icon: "i-lucide-pen-line",
-  },
-  {
-    label: "Discord",
-    to: "https://discord.gg/Jf2Dht8",
-    icon: "i-simple-icons-discord",
-    target: "_blank",
-    color: "secondary",
-  },
-];
+  }];
+
+  if (discordLink.value) {
+    items.push({
+      label: discordLink.value.label,
+      to: discordLink.value.url,
+      icon: discordLink.value.icon,
+      target: "_blank",
+      color: "secondary",
+    });
+  }
+
+  return items;
+});
 </script>
 
 <template>
