@@ -1,4 +1,4 @@
-import { type Prisma, RegistrationMode, SocialLinkType } from "#server/prisma/generated/prisma/browser";
+import { type Prisma, RegistrationMode, SocialLinkType } from "../../server/prisma/generated/prisma/browser";
 
 export const WEBSITE_SETTINGS_ID = "website-settings";
 export const EVENT_SETTINGS_ID = "event-settings";
