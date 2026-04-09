@@ -2,22 +2,9 @@
  * This file is 80% AI generated.
  */
 import type { GuestType, SubmissionType } from "#shared/utils/types";
-import type { Permission } from "#shared/utils/authorization";
 
-export type SearchValue =
-  | string
-  | number
-  | boolean
-  | Date
-  | null
-  | undefined
-  | SearchRecord
-  | SearchValue[];
-
-export interface SearchRecord {
+export interface SearchRecord extends PrismaRecord {
   id: string;
-
-  [key: string]: SearchValue;
 }
 
 export type AdminSearchModelName =
@@ -78,7 +65,7 @@ export interface AdminSearchModelConfig {
   buildTo?: (record: SearchRecord) => string;
 }
 
-const getString = (value: SearchValue): string | undefined => {
+const getString = (value: PrismaRecordValue): string | undefined => {
   return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 };
 

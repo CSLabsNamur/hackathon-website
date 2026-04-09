@@ -3,19 +3,10 @@
  * The logic made by AI was heavily refactored and simplified by hand.
  */
 import Fuse, { type FuseOptionKey } from "fuse.js";
-import {
-  ADMIN_SEARCH_MODEL_CONFIGS,
-  type AdminSearchModelConfig,
-  type AdminSearchModelName,
-  type AdminSearchPathConfig,
-  type SearchRecord,
-  type SearchValue,
-} from "./adminSearch.config";
 import prisma from "./prisma";
-import type { Permission } from "#shared/utils/authorization";
 
 type SearchWhere = Record<string, unknown>;
-type SearchSelectTree = Record<string, true | { select: SearchSelectTree }>;
+type SearchSelectTree = PrismaSelectTree;
 type SearchFieldDefinition = AdminSearchPathConfig & { weight: number };
 
 /**
@@ -92,111 +83,6 @@ const cachedDefinitionsByPermissions = new Map<string, SearchModelDefinition[]>(
 const truncate = (value: string, maxLength = DESCRIPTION_MAX_LENGTH) => {
   const normalized = value.replace(/\s+/g, " ").trim();
   return normalized.length <= maxLength ? normalized : `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
-};
-
-/**
- * Stringifies a search value for indexing and comparison.
- * Handles strings, numbers, booleans, dates, arrays, and objects.
- *
- * @param value The value to stringify.
- * @returns A trimmed string representation of the value, or undefined if the value is null or undefined.
- */
-const stringifyValue = (value: SearchValue): string | undefined => {
-  if (value === null || value === undefined) return undefined;
-
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-
-  if (value instanceof Date) return value.toISOString();
-
-  if (Array.isArray(value)) {
-    return value.map((item) => stringifyValue(item)).filter(Boolean).join(" ");
-  }
-
-  return JSON.stringify(value);
-};
-
-/**
- * Reads values from a Prisma record based on a dot-separated path.
- * Since a path might point to multiple values, this function returns an array.
- *
- * @param record The Prisma record to read from
- * @param path The dot-separated path to read (e.g., "author.name" or "comments.text")
- * @returns An array of string values found at the specified path, or an empty array if no values are found
- */
-const readPathValues = (record: SearchRecord, path: string): string[] => {
-  let values: SearchValue[] = [record];
-
-  for (const segment of path.split(".")) {
-    if (!segment) return [];
-
-    // Traversal step
-    values = values
-      // Flatten arrays at each step to handle "many" relations, and filter out null/undefined values
-      .flatMap((value) => Array.isArray(value) ? value : [value])
-      .flatMap((value) => {
-        // If the current value is not an object (or is null/undefined), we can't read further, so return an empty array to exclude this path.
-        if (Array.isArray(value) || value === null || value === undefined || typeof value !== "object" || value instanceof Date) {
-          return [];
-        }
-
-        return [value[segment]];
-      });
-  }
-
-  // If the final values are arrays, flatten them and stringify all values.
-  return [...new Set(values
-    .flatMap((value) => Array.isArray(value) ? value : [value])
-    .map(stringifyValue)
-    .filter((value): value is string => Boolean(value)))];
-};
-
-/**
- * Builds a Prisma select tree from a set of dot-separated paths.
- *
- * For example, given paths ["author.name", "author.email", "comments.text"], it will build:
- * ```{
- *  select: {
- *    author: {
- *      select: {
- *        name: true,
- *        email: true,
- *      }
- *    },
- *    comments: {
- *      select: {
- *        text: true,
- *      }
- *    }
- *  }
- * }
- * ```
- *
- * @param paths An iterable of dot-separated paths to include in the select tree.
- * @returns A Prisma select tree object that can be used in a findMany query to select the specified paths.
- */
-const buildSelect = (paths: Iterable<string>): SearchSelectTree => {
-  const select: SearchSelectTree = {id: true};
-
-  for (const path of paths) {
-    const segments = path.split(".");
-    let cursor = select;
-
-    for (const [index, segment] of segments.entries()) {
-      if (index === segments.length - 1) {
-        cursor[segment] = true;
-        continue;
-      }
-
-      if (!cursor[segment] || cursor[segment] === true) {
-        cursor[segment] = {select: {}};
-      }
-
-      cursor = (cursor[segment] as { select: SearchSelectTree }).select;
-    }
-  }
-
-  return select;
 };
 
 /**
@@ -300,6 +186,7 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
       const searchTermPath = config.searchTermPath ?? config.titlePaths[0] ?? "id";
       const rankWithSearchTerm = Boolean(config.searchTermPath);
       const selectPaths = new Set<string>([
+        "id",
         ...config.titlePaths,
         ...(config.descriptionPaths ?? []),
         searchTermPath,
@@ -330,7 +217,7 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
         buildDescription: config.buildDescription,
         buildTo: config.buildTo,
         searchFields,
-        select: buildSelect(selectPaths),
+        select: buildPrismaSelect(selectPaths),
         fuseKeys: rawFuseKeys.map((key) => ({
           ...key,
           weight: key.weight / totalFuseWeight,
@@ -389,7 +276,7 @@ export const searchAdminIndex = async (query: string, limit: number, allowedPerm
       .map<SearchCandidate | null>((record) => {
         const title = truncate(
           definition.buildTitle?.(record)
-          || definition.titlePaths.flatMap((path) => readPathValues(record, path)).join(" "),
+          || definition.titlePaths.flatMap((path) => readPrismaRecordPathValues(record, path)).join(" "),
           80,
         );
 
@@ -399,9 +286,9 @@ export const searchAdminIndex = async (query: string, limit: number, allowedPerm
 
         const description = truncate(
           definition.buildDescription?.(record)
-          || definition.descriptionPaths.flatMap((path) => readPathValues(record, path)).join(" · "),
+          || definition.descriptionPaths.flatMap((path) => readPrismaRecordPathValues(record, path)).join(" · "),
         );
-        const navigationSearchTerm = readPathValues(record, definition.searchTermPath)[0] || title;
+        const navigationSearchTerm = readPrismaRecordPathValues(record, definition.searchTermPath)[0] || title;
 
         const item: AdminSearchItem = {
           id: `${definition.modelName}:${record.id}`,
@@ -477,6 +364,6 @@ export const searchAdminIndex = async (query: string, limit: number, allowedPerm
 
 const searchFieldsToEntries = (record: SearchRecord, searchFields: SearchFieldDefinition[]) => {
   return searchFields
-    .map((field, index) => [`f${index}`, readPathValues(record, field.path).join(" ")] as const)
+    .map((field, index) => [`f${index}`, readPrismaRecordPathValues(record, field.path).join(" ")] as const)
     .filter(([, value]) => Boolean(value));
 };
