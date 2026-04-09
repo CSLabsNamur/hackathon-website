@@ -12,7 +12,8 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
 COPY server/prisma/ ./server/prisma/
-COPY shared/utils/authorization.ts ./shared/utils/authorization.ts
+COPY shared/utils/ ./shared/utils/
+COPY server/utils/dayjs.ts ./server/utils/dayjs.ts
 COPY --chmod=0755 docker-entrypoint.sh .
 
 RUN pnpm prisma generate
