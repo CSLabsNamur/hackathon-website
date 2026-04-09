@@ -7,7 +7,7 @@ interface UseParticipantsParams {
 }
 
 export const useParticipants = async (params?: UseParticipantsParams) => {
-  return useFetch<AdminParticipant[]>("/api/participants", {
+  return useAPI<AdminParticipant[]>("/api/participants", {
     lazy: params?.lazy ?? false,
     //cache: "force-cache",
   });

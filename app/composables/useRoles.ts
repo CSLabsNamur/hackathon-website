@@ -6,13 +6,13 @@ interface UseRolesParams {
 }
 
 export const useRoles = async (params?: UseRolesParams) => {
-  return useFetch("/api/roles", {
+  return useAPI("/api/roles", {
     lazy: params?.lazy ?? false,
   });
 };
 
 export const usePermissions = async () => {
-  return useFetch("/api/permissions");
+  return useAPI("/api/permissions");
 };
 
 export const useRolesActions = () => {

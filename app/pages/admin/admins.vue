@@ -12,6 +12,9 @@ definePageMeta({
 });
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
+watchEffect(() => {
+  console.log(status.value);
+});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {data: roles} = await useRoles();
 const {renderAdminBadge} = useAdminsActions();

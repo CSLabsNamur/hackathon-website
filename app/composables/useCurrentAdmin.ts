@@ -1,5 +1,5 @@
 export const useCurrentAdmin = async () => {
-  const res = await useFetch<CurrentAdmin>("/api/admins/me", {
+  const res = await useAPI<CurrentAdmin>("/api/admins/me", {
     key: "current-admin",
     credentials: "same-origin",
     dedupe: "defer",

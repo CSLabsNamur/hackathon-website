@@ -5,14 +5,14 @@ interface UseSettingsParams {
 }
 
 export const useSettings = async (params?: UseSettingsParams) => {
-  return useFetch("/api/settings", {
+  return useAPI("/api/settings", {
     key: "settings",
     lazy: params?.lazy ?? false,
   });
 };
 
 export const useAdminSettings = async (params?: UseSettingsParams) => {
-  return useFetch("/api/admin/settings", {
+  return useAPI("/api/admin/settings", {
     key: "admin-settings",
     lazy: params?.lazy ?? false,
   });
