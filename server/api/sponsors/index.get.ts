@@ -1,8 +1,6 @@
 import { serverSupabaseServiceRole } from "#supabase/server";
-import { SPONSORS_BUCKET } from "#shared/utils/sponsorsFiles";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "sponsors.read");
   const supabase = serverSupabaseServiceRole(event);
   const sponsors = await prisma.sponsor.findMany({
     orderBy: {
