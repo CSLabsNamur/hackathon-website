@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { UBadge, UButton, UDropdownMenu } from "#components";
+import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
 import CreateModal from "~/components/admin/sponsors/CreateModal.vue";
 import EditModal from "~/components/admin/sponsors/EditModal.vue";
 import RemoveModal from "~/components/admin/sponsors/RemoveModal.vue";
@@ -30,6 +30,7 @@ const toast = useToast();
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
+const exportModal = overlay.create(AdminExportModal);
 
 const globalFilter = useSearchQuery();
 const badgeItems = [
@@ -183,6 +184,11 @@ async function openCreateModal() {
   }
 }
 
+async function openExportModal() {
+  if (!can("export", "Sponsor")) return;
+  await exportModal.open({resource: "sponsors"});
+}
+
 const expanded = ref({});
 const columnVisibility = usePersistentColumnVisibility("admin-sponsors-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
@@ -192,6 +198,11 @@ setActions(computed(() => [{
   label: "Nouveau",
   onClick: openCreateModal,
   disabled: !can("create", "Sponsor"),
+}, {
+  icon: "i-lucide-download",
+  label: "Exporter",
+  onClick: openExportModal,
+  disabled: !can("export", "Sponsor"),
 }]));
 </script>
 

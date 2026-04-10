@@ -5,7 +5,7 @@ import RemoveSubmissionRequestModal from "~/components/admin/submission-request/
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Row } from "@tanstack/vue-table";
-import { UBadge, UButton, UDropdownMenu } from "#components";
+import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
 import { submissionTypeTranslateMap } from "#shared/utils/types";
 
 definePageMeta({
@@ -34,6 +34,7 @@ const overlay = useOverlay();
 const createModal = overlay.create(CreateSubmissionRequestModal);
 const editModal = overlay.create(EditSubmissionRequestModal);
 const removeModal = overlay.create(RemoveSubmissionRequestModal);
+const exportModal = overlay.create(AdminExportModal);
 
 const globalFilter = useSearchQuery();
 const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
@@ -141,6 +142,11 @@ const openCreateModal = async () => {
   if (result) await refreshSubmissionRequests();
 };
 
+const openExportModal = async () => {
+  if (!can("export", "SubmissionRequest")) return;
+  await exportModal.open({resource: "submissionRequests"});
+};
+
 function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
   const canUpdateSubmissionRequest = can("update", "SubmissionRequest");
   const canDeleteSubmissionRequest = can("delete", "SubmissionRequest");
@@ -190,6 +196,11 @@ setActions(computed(() => [{
   label: "Nouvelle demande",
   onClick: openCreateModal,
   disabled: !can("create", "SubmissionRequest"),
+}, {
+  icon: "i-lucide-download",
+  label: "Exporter",
+  onClick: openExportModal,
+  disabled: !can("export", "SubmissionRequest"),
 }]));
 </script>
 

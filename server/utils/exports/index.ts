@@ -203,7 +203,7 @@ const sanitizeWorksheetName = (name: string) => {
 };
 
 const buildFilename = <Schema extends AdminExportSchema>(schema: Schema, format: AdminExportFormat) => {
-  const timestamp = new Date().toISOString().replaceAll(":", "-").replace(/\.\d{3}Z$/, "Z").replace("T", "_");
+  const timestamp = dayjs().format("YYYY-MM-DD_HH-mm-ss");
   return sanitizeFilename(`${schema.fileBaseName}_${timestamp}.${format}`);
 };
 

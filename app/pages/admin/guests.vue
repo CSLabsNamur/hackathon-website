@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { UBadge, UButton, UDropdownMenu } from "#components";
+import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
 import CreateModal from "~/components/admin/guests/CreateModal.vue";
 import EditModal from "~/components/admin/guests/EditModal.vue";
 import RemoveModal from "~/components/admin/guests/RemoveModal.vue";
@@ -30,6 +30,7 @@ const toast = useToast();
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
+const exportModal = overlay.create(AdminExportModal);
 
 const globalFilter = useSearchQuery();
 
@@ -194,6 +195,11 @@ async function openCreateModal() {
   }
 }
 
+async function openExportModal() {
+  if (!can("export", "Guest")) return;
+  await exportModal.open({resource: "guests"});
+}
+
 const expanded = ref({});
 const columnVisibility = usePersistentColumnVisibility("admin-guests-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
@@ -203,6 +209,11 @@ setActions(computed(() => [{
   label: "Ajouter",
   onClick: openCreateModal,
   disabled: !can("create", "Guest"),
+}, {
+  icon: "i-lucide-download",
+  label: "Exporter",
+  onClick: openExportModal,
+  disabled: !can("export", "Guest"),
 }]));
 </script>
 
