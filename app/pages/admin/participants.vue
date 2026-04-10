@@ -4,6 +4,7 @@ import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 // TODO: uniformize import paths throughout modals
 import {
+  AdminExportModal,
   AdminParticipantCautionModal,
   AdminParticipantsRemoveModal,
   ParticipantEditModal,
@@ -28,6 +29,7 @@ definePageMeta({
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {renderParticipantBadge} = useParticipantsActions();
+const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
 
@@ -39,6 +41,7 @@ const overlay = useOverlay();
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
+const exportModal = overlay.create(AdminExportModal);
 
 const downloadCV = async (participant: AdminParticipant) => {
   if (!participant.curriculumVitae) {
@@ -247,6 +250,19 @@ const columnVisibility = usePersistentColumnVisibility("admin-participants-table
   agreements: false,
 });
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+
+async function openExportModal() {
+  if (!can("export", "Participant")) return;
+  await exportModal.open({resource: "participants"});
+}
+
+setActions(computed(() => [{
+  icon: "i-lucide-download",
+  label: "Exporter",
+  color: "secondary",
+  onClick: openExportModal,
+  disabled: !can("export", "Participant"),
+}]));
 
 function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
   const canUpdateParticipant = can("updateSensitive", "Participant");

@@ -68,6 +68,7 @@
     "dayjs-nuxt": "2.1.11",
     "echarts": "^6.0.0",
     "eslint": "^10.2.0",
+    "exceljs": "^4.4.0",
     "file-type": "^22.0.0",
     "formidable": "^3.5.4",
     "fuse.js": "^7.3.0",

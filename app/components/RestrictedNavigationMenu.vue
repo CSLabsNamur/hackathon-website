@@ -6,9 +6,10 @@ const props = defineProps<{
   user?: CurrentAuthorizedUser | null;
   items?: RestrictedNavigationItem[] | RestrictedNavigationItem[][];
 } & Omit<NavigationMenuProps, "items" | "class">>();
+const modelValue = defineModel<NavigationMenuProps["modelValue"]>();
 
 const navigationMenuProps = computed(() => {
-  const {user: _user, items: _items, ...forwardedProps} = props;
+  const {user: _user, items: _items, modelValue: _modelValue, ...forwardedProps} = props;
   return forwardedProps;
 });
 const {canPermissions} = useAbility(() => props.user);
@@ -43,5 +44,6 @@ const links: ComputedRef<NavigationMenuItem[][]> = computed(() => groupedItems.v
 </script>
 
 <template>
-  <UNavigationMenu v-bind="{...$attrs, ...navigationMenuProps}" :items="links" orientation="vertical" tooltip popover/>
+  <UNavigationMenu v-model="modelValue" v-bind="{...$attrs, ...navigationMenuProps}" :items="links"
+                   orientation="vertical" tooltip popover/>
 </template>

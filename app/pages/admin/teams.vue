@@ -2,7 +2,7 @@
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import { UBadge, UButton, UDropdownMenu } from "#components";
+import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
 import EditModal from "~/components/admin/teams/EditModal.vue";
 import RemoveModal from "~/components/admin/teams/RemoveModal.vue";
 
@@ -19,6 +19,7 @@ definePageMeta({
 
 const {status, data: teams, refresh} = await useTeams({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
+const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 
 const toast = useToast();
@@ -28,6 +29,7 @@ const {copy} = useClipboard();
 
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
+const exportModal = overlay.create(AdminExportModal);
 
 const globalFilter = useSearchQuery();
 const validityItems = [
@@ -125,6 +127,19 @@ const columns: NamedTableColumn<Team>[] = [
 
 const columnVisibility = usePersistentColumnVisibility("admin-teams-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+
+async function openExportModal() {
+  if (!can("export", "Team")) return;
+  await exportModal.open({resource: "teams"});
+}
+
+setActions(computed(() => [{
+  icon: "i-lucide-download",
+  label: "Exporter",
+  color: "secondary",
+  onClick: openExportModal,
+  disabled: !can("export", "Team"),
+}]));
 
 function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
   const canUpdateTeam = can("update", "Team");

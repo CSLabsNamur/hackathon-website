@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { vDraggable } from "vue-draggable-plus";
+import AdminExportModal from "~/components/admin/ExportModal.vue";
 
 definePageMeta({
   layout: {
@@ -14,12 +15,14 @@ definePageMeta({
 
 const {setActions} = useDashboardNavbar();
 const toast = useToast();
+const overlay = useOverlay();
 
 const {status, data: roomsOriginal, refresh} = await useRooms({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
 const {reorderRooms} = useRoomsActions();
 const {data: teams} = await useTeams({lazy: false});
 const {can} = useAbility(currentAdmin);
+const exportModal = overlay.create(AdminExportModal);
 
 const {cloned: rooms, isModified} = useCloned(() => roomsOriginal.value ?? []);
 const isSaving = ref(false);
@@ -119,6 +122,11 @@ async function confirm() {
   }
 }
 
+async function openExportModal() {
+  if (!can("export", "Room")) return;
+  await exportModal.open({resource: "rooms"});
+}
+
 setActions(computed(() => [{
   variant: "ghost",
   loading: isSaving.value,
@@ -133,6 +141,12 @@ setActions(computed(() => [{
 
     modify();
   },
+}, {
+  icon: "i-lucide-download",
+  label: "Exporter",
+  color: "secondary",
+  onClick: openExportModal,
+  disabled: !can("export", "Room"),
 }]));
 </script>
 
