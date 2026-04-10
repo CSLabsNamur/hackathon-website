@@ -142,10 +142,9 @@ setActions(computed(() => [{
     modify();
   },
 }, {
-  variant: "outline",
-  color: "neutral",
   icon: "i-lucide-download",
   label: "Exporter",
+  color: "secondary",
   onClick: openExportModal,
   disabled: !can("export", "Room"),
 }]));

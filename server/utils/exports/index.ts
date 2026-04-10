@@ -156,8 +156,8 @@ const CSV_GENERATOR: AdminExportGenerator = {
   extension: "csv",
   async generate(matrix) {
     const lines = [
-      matrix.columns.map((column) => escapeCsvCell(column.name)).join(","),
-      ...matrix.rows.map((row) => row.map((value) => escapeCsvCell(value)).join(",")),
+      matrix.columns.map((column) => escapeCsvCell(column.name)).join(";"),
+      ...matrix.rows.map((row) => row.map((value) => escapeCsvCell(value)).join(";")),
     ];
 
     return Buffer.from(`\uFEFF${lines.join("\r\n")}`, "utf-8");

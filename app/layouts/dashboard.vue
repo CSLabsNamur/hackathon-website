@@ -20,6 +20,7 @@ provide(THEME_KEY, theme);
 const open = ref(false);
 const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 
+const openItems = useLocalStorage<string[]>("admin-dashboard-open-navigation-items", ["settings"]);
 const topLinks: RestrictedNavigationItem[] = [
   {
     label: "Accueil",
@@ -121,6 +122,7 @@ const topLinks: RestrictedNavigationItem[] = [
   },
   {
     label: "Paramètres",
+    value: "settings",
     icon: "i-lucide-settings",
     to: "/admin/settings",
     requiredPermissions: ["settings.read"],
@@ -228,7 +230,7 @@ const {actions} = useDashboardNavbar();
       <template #default="{collapsed}">
         <UDashboardSearchButton :collapsed class="bg-transparent ring-default"/>
 
-        <RestrictedNavigationMenu :collapsed :items="topLinks" :user="currentAdmin"/>
+        <RestrictedNavigationMenu v-model="openItems" :collapsed :items="topLinks" :user="currentAdmin"/>
         <RestrictedNavigationMenu :collapsed :items="bottomLinks" :user="currentAdmin" class="mt-auto"/>
       </template>
 

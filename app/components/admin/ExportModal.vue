@@ -122,12 +122,12 @@ watchImmediate(() => props.resource, async () => {
             <URadioGroup v-model="format" :items="formatItems" orientation="vertical" variant="table"/>
           </div>
 
-          <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-2">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div class="text-sm font-medium">
                 Colonnes
               </div>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-wrap gap-1">
                 <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-list-checks"
                          @click="applyDefaultSelection">
                   Par défaut
@@ -139,7 +139,7 @@ watchImmediate(() => props.resource, async () => {
               </div>
             </div>
 
-            <p class="text-sm text-muted">
+            <p class="text-sm text-muted md:-mt-2">
               {{ selectedCount }} colonne{{ selectedCount > 1 ? "s" : "" }} sélectionnée{{
                 selectedCount > 1 ? "s" : ""
               }}
