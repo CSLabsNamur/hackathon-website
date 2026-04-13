@@ -19,7 +19,7 @@
   "scripts": {
     "postinstall": "nuxt prepare && pnpm run db:generate",
     "predev": "pnpm run mail:generate && pnpm run db:generate && pnpm run db:permission-sync",
-    "prebuild": "pnpm run mail:generate && pnpm run db:generate && pnpm run db:permission-sync",
+    "prebuild": "pnpm run mail:generate && pnpm run db:generate",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
