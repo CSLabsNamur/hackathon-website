@@ -46,7 +46,7 @@ const overlappingSpecialItem = computed(() => {
 
   const start = dayjs(formState.value.startTime);
   const end = dayjs(formState.value.endTime);
-  if (!start.isValid() || !end.isValid() || !start.isBefore(end)) return null;
+  if (!start.isBefore(end)) return null;
 
   return props.sortedSchedule.find((item) =>
     item.id !== props.selectedScheduleItem?.id &&
@@ -59,19 +59,17 @@ const overlappingSpecialItem = computed(() => {
 function validateScheduleForm(state: Partial<CreateScheduleItemInput>): FormError[] {
   const errors: FormError[] = [];
 
-  const duplicate = duplicateTitle.value;
-  if (duplicate && state.title) {
+  if (duplicateTitle.value && state.title) {
     errors.push({
       name: "title",
-      message: `Un créneau nommé "${duplicate.title}" existe déjà.`,
+      message: `Un créneau nommé "${duplicateTitle.value.title}" existe déjà.`,
     });
   }
 
-  const overlappingItem = overlappingSpecialItem.value;
-  if (overlappingItem && state.special) {
+  if (overlappingSpecialItem.value && state.special) {
     errors.push({
       name: "special",
-      message: `Ce temps fort chevauche déjà "${overlappingItem.title}".`,
+      message: `Ce temps fort chevauche déjà "${overlappingSpecialItem.value.title}".`,
     });
   }
 

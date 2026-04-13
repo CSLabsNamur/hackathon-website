@@ -37,7 +37,6 @@ export function buildSuggestedScheduleDateString(startTime: string | Date, endTi
   const start = dayjs(startTime);
   const end = dayjs(endTime);
 
-  if (!start.isValid() || !end.isValid()) return "";
   if (start.isSame(end, "day")) {
     return capitalize(start.format("dddd H[h]mm"));
   }

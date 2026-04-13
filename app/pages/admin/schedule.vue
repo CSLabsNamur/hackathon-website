@@ -89,28 +89,22 @@ const timelineItems = computed<TimelineScheduleItem[]>(() =>
 
 // We want to ensure the UI never points to an item that disappeared after data change, and that creation mode has a valid "base" item to derive defaults from.
 watchImmediate(sortedSchedule, (items: ScheduleItem[]) => {
-  const firstItemId = items[0]?.id;
-
-  if (!firstItemId) {
+  if (items.length === 0) {
     editingItemId.value = "new";
     createBaseItemId.value = null;
     return;
   }
 
-  const editingId = editingItemId.value;
-  if (editingId === "new") {
-    if (!createBaseItemId.value) createBaseItemId.value = firstItemId;
-    return;
+  const itemIds = new Set(items.map(item => item.id));
+
+  // Validate and reset the currently edited item if it no longer exists
+  if (editingItemId.value !== "new" && !itemIds.has(editingItemId.value)) {
+    editingItemId.value = items[0]!.id;
   }
 
-  if (!items.some((item) => item.id === editingId)) {
-    editingItemId.value = firstItemId;
-    createBaseItemId.value = firstItemId;
-    return;
-  }
-
-  if (!createBaseItemId.value || !items.some((item) => item.id === createBaseItemId.value)) {
-    createBaseItemId.value = editingId;
+  // Ensure the creation base is always valid
+  if (!createBaseItemId.value || !itemIds.has(createBaseItemId.value)) {
+    createBaseItemId.value = editingItemId.value === "new" ? items[0]!.id : editingItemId.value;
   }
 });
 
