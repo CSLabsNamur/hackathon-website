@@ -32,6 +32,8 @@ type PublicSettings = {
   socialLinks: Array<Pick<UpdateSocialLinkSchema, "type" | "label" | "icon" | "url">>;
 };
 
+const SETTINGS_CACHE_MAX_AGE_SECONDS = 60;
+
 export async function getEditableSettings(): Promise<UpdateSettingsSchema> {
   const [website, event, socialLinks] = await prisma.$transaction([
     prisma.websiteSettings.findUnique({
@@ -97,6 +99,28 @@ export async function getEditableSettings(): Promise<UpdateSettingsSchema> {
     socialLinks: socialLinks.map(normalizeSocialLinkValues),
   };
 }
+
+export const getEventBadgeLogoPath = defineCachedFunction(async (): Promise<string | null> => {
+  const eventSettings = await prisma.eventSettings.findUnique({
+    where: {id: EVENT_SETTINGS_ID},
+    select: {
+      logoPath: true,
+    },
+  });
+
+  if (!eventSettings) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Les paramètres n'ont pas été trouvés dans la base de données.",
+    });
+  }
+
+  return eventSettings.logoPath;
+}, {
+  maxAge: SETTINGS_CACHE_MAX_AGE_SECONDS,
+  name: "event-badge-logo-path",
+  getKey: () => "event-badge-logo-path",
+});
 
 export async function getPublicSettings(event: H3Event): Promise<PublicSettings> {
   const [website, eventSettings, socialLinks] = await prisma.$transaction([

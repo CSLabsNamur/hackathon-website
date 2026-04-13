@@ -4,7 +4,7 @@
 import PDFDocument from "pdfkit";
 import qr from "qrcode";
 import type { Prisma } from "#server/prisma/generated/prisma/browser";
-import { getEditableSettings } from "./settings";
+import { getEventBadgeLogoPath } from "./settings";
 
 type Participant = Prisma.ParticipantGetPayload<{
   include: {
@@ -28,6 +28,18 @@ type LayoutCircleOptions = {
 };
 
 type Coordinates = [x: number, y: number];
+type LoadedStorageImage = {
+  cacheKey: string;
+  buffer: Buffer;
+};
+type OpenedPdfImage = {
+  width: number;
+  height: number;
+  label: string;
+  obj?: unknown;
+  orientation?: number;
+  embed: (doc: PDFKit.PDFDocument) => void;
+};
 
 interface TextLine {
   text: string;
@@ -62,7 +74,7 @@ const A4_BADGE_GRID = {
 const BADGE_PRIMARY_COLOR = "#227d50";
 const BADGE_BACKGROUND_COLOR = "#ecfff4";
 
-const remoteImageCache = new Map<string, Promise<Buffer | null>>();
+const remoteImageCache = new Map<string, Promise<LoadedStorageImage | null>>();
 
 //const rolesColors = {
 //  "Participant": "#227d50",
@@ -148,12 +160,11 @@ function resolvePublicStorageUrl(path: string, bucket: string) {
     console.error("SUPABASE_URL is not defined in the environment variables.");
     return null;
   }
-  ;
 
   return new URL(`/storage/v1/object/public/${bucket}/${path}`, supabaseUrl).toString();
 }
 
-async function loadStorageImage(path: string, bucket: string): Promise<Buffer | null> {
+async function loadStorageImage(path: string, bucket: string): Promise<LoadedStorageImage | null> {
   const publicUrl = resolvePublicStorageUrl(path, bucket);
   if (!publicUrl) return null;
 
@@ -163,10 +174,18 @@ async function loadStorageImage(path: string, bucket: string): Promise<Buffer | 
   const request = (async () => {
     try {
       const response = await fetch(publicUrl);
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.error(`Failed to load image from storage: ${response.status} ${response.statusText}`);
+        remoteImageCache.delete(publicUrl);
+        return null;
+      }
 
-      return Buffer.from(await response.arrayBuffer());
+      return {
+        cacheKey: publicUrl,
+        buffer: Buffer.from(await response.arrayBuffer()),
+      };
     } catch {
+      remoteImageCache.delete(publicUrl);
       return null;
     }
   })();
@@ -175,11 +194,24 @@ async function loadStorageImage(path: string, bucket: string): Promise<Buffer | 
   return request;
 }
 
-async function loadEventBadgeLogoSource(): Promise<Buffer | null> {
-  const settings = await getEditableSettings();
-  if (!settings.event.logoPath) return null;
+async function loadEventBadgeLogoSource(): Promise<LoadedStorageImage | null> {
+  const logoPath = await getEventBadgeLogoPath();
+  if (!logoPath) return null;
 
-  return loadStorageImage(settings.event.logoPath, EVENT_ASSETS_BUCKET);
+  return loadStorageImage(logoPath, EVENT_ASSETS_BUCKET);
+}
+
+function openCachedPdfImage(doc: PDFKit.PDFDocument, imageSource: LoadedStorageImage): OpenedPdfImage {
+  const pdfDoc = doc as any;
+  const imageRegistry = (pdfDoc._imageRegistry ??= {}) as Record<string, OpenedPdfImage | undefined>;
+  const cachedImage = imageRegistry[imageSource.cacheKey];
+
+  if (cachedImage) return cachedImage;
+
+  const openedImage = pdfDoc.openImage(imageSource.buffer) as OpenedPdfImage;
+  imageRegistry[imageSource.cacheKey] = openedImage;
+
+  return openedImage;
 }
 
 function getOrderedParticipants(participants: Participant[]): Participant[] {
@@ -208,7 +240,7 @@ function toBadgeGridEntries<T>(items: T[], drawBadge: (doc: PDFKit.PDFDocument, 
  * @param steps The number of vertical strips to divide the circle into for numerical integration (higher = more accurate but slower)
  * @returns The coordinates of the centroid of the visible area of the circle, adjusted for page boundaries
  */
-function visibleCircleCentroid(pageSize: Coordinates, circleCenter: Coordinates, radius: number, steps = 2000): Coordinates {
+const visibleCircleCentroid = defineCachedFunction(async (pageSize: Coordinates, circleCenter: Coordinates, radius: number, steps = 2000): Promise<Coordinates> => {
   const [pageWidth, pageHeight] = pageSize;
   const [cx, cy] = circleCenter;
   const r = radius;
@@ -239,7 +271,12 @@ function visibleCircleCentroid(pageSize: Coordinates, circleCenter: Coordinates,
   }
 
   return [momentX / area, momentY / area];
-}
+}, {
+  maxAge: 60 * 60,
+  name: "badge-visible-circle-centroid",
+  getKey: (pageSize: Coordinates, circleCenter: Coordinates, radius: number, steps = 2000) =>
+    `${pageSize[0]}:${pageSize[1]}:${circleCenter[0]}:${circleCenter[1]}:${radius}:${steps}`,
+});
 
 /**
  * Draws a block of text centered horizontally between fromX and toX at the specified y coordinate.
@@ -424,6 +461,7 @@ function drawBadgeTextBlock(doc: PDFKit.PDFDocument, size: Coordinates, lines: T
 async function renderBadgeGridEntries(entries: BadgeGridEntry[], title: string): Promise<PDFKit.PDFDocument> {
   const doc = createBadgesDocument(A4_SIZE, title);
   const badgesPerPage = A4_BADGE_GRID.columns * A4_BADGE_GRID.rows;
+  await loadEventBadgeLogoSource();
 
   for (const [index, drawBadge] of entries.entries()) {
     const slotIndex = index % badgesPerPage;
@@ -442,6 +480,7 @@ async function renderBadgeGridEntries(entries: BadgeGridEntry[], title: string):
 
 async function renderSingleBadge(title: string, drawBadge: (doc: PDFKit.PDFDocument) => Promise<void>): Promise<PDFKit.PDFDocument> {
   const doc = createBadgesDocument(BADGE_SIZE, title);
+  await loadEventBadgeLogoSource();
 
   doc.addPage({size: BADGE_SIZE, margin: 0});
   await drawBadge(doc);
@@ -463,9 +502,8 @@ function drawBadgeCutGuide(doc: PDFKit.PDFDocument, size: Coordinates = BADGE_SI
   doc.restore();
 }
 
-function drawCircularImage(doc: PDFKit.PDFDocument, imageSource: Buffer, circle: LayoutCircleOptions, origin: Coordinates = [0, 0]) {
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const image = (doc as any).openImage(imageSource);
+function drawCircularImage(doc: PDFKit.PDFDocument, imageSource: LoadedStorageImage, circle: LayoutCircleOptions, origin: Coordinates = [0, 0]) {
+  const image = openCachedPdfImage(doc, imageSource);
   const center = addCoordinates(origin, circle.pos);
   const imagePadding = cmToPoints(.3);
   const [imageWidth, imageHeight] = fitImageWithinBox(
@@ -479,7 +517,7 @@ function drawCircularImage(doc: PDFKit.PDFDocument, imageSource: Buffer, circle:
   doc.fillColor("#ffffff");
   doc.circle(center[0], center[1], circle.radius).fill();
   doc.circle(center[0], center[1], circle.radius - cmToPoints(.03)).clip();
-  doc.image(image, center[0] - (imageWidth / 2), center[1] - (imageHeight / 2), {
+  doc.image(image as any, center[0] - (imageWidth / 2), center[1] - (imageHeight / 2), {
     width: imageWidth,
     height: imageHeight,
   });
@@ -531,11 +569,10 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
   const eventLogoSource = await loadEventBadgeLogoSource();
 
   if (eventLogoSource) {
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const logo = (doc as any).openImage(eventLogoSource);
+    const logo = openCachedPdfImage(doc, eventLogoSource);
     const logoWidth = circle.radius * .9;
     const logoHeight = logoWidth * (logo.height / logo.width);
-    const [logoCenterX, logoCenterY] = visibleCircleCentroid(
+    const [logoCenterX, logoCenterY] = await visibleCircleCentroid(
       size,
       circle.pos,
       circle.radius,
@@ -545,7 +582,7 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
       logoCenterY - logoHeight / 2,
     ];
     const absoluteLogoPos = addCoordinates(origin, logoPos);
-    doc.image(logo, absoluteLogoPos[0], absoluteLogoPos[1], {
+    doc.image(logo as any, absoluteLogoPos[0], absoluteLogoPos[1], {
       width: logoWidth,
     });
   }
