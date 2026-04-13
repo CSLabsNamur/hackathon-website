@@ -78,7 +78,7 @@ function clearSelection() {
                @update:model-value="handleSelectChange">
         <template #trailing>
           <UButton v-if="selectedOption" aria-label="Effacer la sélection" icon="i-lucide-x" color="neutral" size="xs"
-                   variant="ghost" class="text-muted" @pointerdown.stop.prevent
+                   variant="ghost" class="text-muted z-50 transition hover:ring hover:ring-accented" @pointerdown.stop.prevent
                    @keydown.enter.stop.prevent="clearSelection" @keydown.space.stop.prevent="clearSelection"
                    @click.stop="clearSelection"/>
         </template>
