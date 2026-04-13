@@ -1,6 +1,11 @@
 import type { CreateScheduleItemSchema } from "#shared/schemas/schedule/create";
 
-export async function assertScheduleItemCanBeSaved(data: CreateScheduleItemSchema, ignoredScheduleItemId?: string) {
+export type ScheduleItemWithDates = Omit<CreateScheduleItemSchema, "startTime" | "endTime"> & {
+  startTime: Date;
+  endTime: Date;
+};
+
+export async function scheduleItemCanBeSaved(data: ScheduleItemWithDates, ignoredScheduleItemId?: string) {
   if (dayjs(data.startTime).isSameOrAfter(dayjs(data.endTime))) {
     throw createError({
       statusCode: 400,

@@ -1,13 +1,17 @@
 import schema from "#shared/schemas/schedule/create";
 import * as v from "valibot";
-import { assertScheduleItemCanBeSaved } from "#server/utils/scheduleItems";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "schedule.create");
+  await requirePermission(event, "schedule.update");
 
-  const data = await readValidatedBody(event, v.parser(schema));
+  const body = await readValidatedBody(event, v.parser(schema));
+  const data: ScheduleItemWithDates = {
+    ...body,
+    startTime: dayjs.tz(body.startTime, "Europe/Brussels").toDate(),
+    endTime: dayjs.tz(body.endTime, "Europe/Brussels").toDate(),
+  };
 
-  await assertScheduleItemCanBeSaved(data);
+  await scheduleItemCanBeSaved(data);
 
   return prisma.scheduleItem.create({data});
 });
