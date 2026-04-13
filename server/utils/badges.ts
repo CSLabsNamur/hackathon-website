@@ -41,6 +41,11 @@ type OpenedPdfImage = {
   embed: (doc: PDFKit.PDFDocument) => void;
 };
 
+interface DocumentWithImageCache extends PDFKit.PDFDocument {
+  _imageRegistry?: Record<string, OpenedPdfImage | undefined>;
+  openImage: (buffer: Buffer) => OpenedPdfImage;
+}
+
 interface TextLine {
   text: string;
   fontSize: number;
@@ -202,7 +207,7 @@ async function loadEventBadgeLogoSource(): Promise<LoadedStorageImage | null> {
 }
 
 function openCachedPdfImage(doc: PDFKit.PDFDocument, imageSource: LoadedStorageImage): OpenedPdfImage {
-  const pdfDoc = doc as any;
+  const pdfDoc = doc as DocumentWithImageCache;
   const imageRegistry = (pdfDoc._imageRegistry ??= {}) as Record<string, OpenedPdfImage | undefined>;
   const cachedImage = imageRegistry[imageSource.cacheKey];
 
@@ -517,7 +522,7 @@ function drawCircularImage(doc: PDFKit.PDFDocument, imageSource: LoadedStorageIm
   doc.fillColor("#ffffff");
   doc.circle(center[0], center[1], circle.radius).fill();
   doc.circle(center[0], center[1], circle.radius - cmToPoints(.03)).clip();
-  doc.image(image as any, center[0] - (imageWidth / 2), center[1] - (imageHeight / 2), {
+  doc.image(image as unknown as PDFKit.Mixins.ImageSrc, center[0] - (imageWidth / 2), center[1] - (imageHeight / 2), {
     width: imageWidth,
     height: imageHeight,
   });
@@ -582,7 +587,7 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
       logoCenterY - logoHeight / 2,
     ];
     const absoluteLogoPos = addCoordinates(origin, logoPos);
-    doc.image(logo as any, absoluteLogoPos[0], absoluteLogoPos[1], {
+    doc.image(logo as unknown as PDFKit.Mixins.ImageSrc, absoluteLogoPos[0], absoluteLogoPos[1], {
       width: logoWidth,
     });
   }
