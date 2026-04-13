@@ -18,8 +18,8 @@
   },
   "scripts": {
     "postinstall": "nuxt prepare && pnpm run db:generate",
-    "predev": "pnpm run mail:generate",
-    "prebuild": "pnpm run mail:generate",
+    "predev": "pnpm run mail:generate && pnpm run db:generate && pnpm run db:permission-sync",
+    "prebuild": "pnpm run mail:generate && pnpm run db:generate && pnpm run db:permission-sync",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -28,6 +28,7 @@
     "typecheck": "nuxi typecheck",
     "mail:generate": "tsx scripts/generate-mail-templates.ts",
     "start": "node .output/server/index.mjs",
+    "db:permission-sync": "tsx scripts/permission-sync.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

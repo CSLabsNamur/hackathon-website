@@ -94,6 +94,15 @@ const topLinks: RestrictedNavigationItem[] = [
     },
   },
   {
+    label: "Planning",
+    icon: "i-lucide-calendar-days",
+    to: "/admin/schedule",
+    requiredPermissions: ["schedule.update"],
+    onSelect: () => {
+      open.value = false;
+    },
+  },
+  {
     label: "Impressions",
     icon: "i-lucide-printer",
     to: "/admin/prints",

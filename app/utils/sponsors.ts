@@ -25,7 +25,6 @@ export function getSponsorHTMLDescription(sponsor: Sponsor) {
   }
 }
 
-
 export const sponsorDescriptionToolbarItems: EditorToolbarItem[][] = [
   [{
     label: "Annuler",
