@@ -224,7 +224,8 @@ async function onCodeSubmit(payload: FormSubmitEvent<CodeFormData>) {
                 :disabled="!resendCountdown.isActive.value">
               <UButton variant="link" color="neutral" :disabled="resendCountdown.isActive.value"
                        @click="didNotReceiveCode()">
-                Je n'ai pas reçu de code ({{ resendCountdown.remaining.value }}s)
+                Je n'ai pas reçu de code
+                {{ resendCountdown.isActive.value ? `(${resendCountdown.remaining.value}s)` : undefined }}
               </UButton>
             </UTooltip>
             <USeparator v-if="pendingOtpEmail && alreadyHaveCode" orientation="vertical" class="h-6"/>
