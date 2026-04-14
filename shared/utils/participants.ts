@@ -22,7 +22,7 @@ export async function generateEpcQrcode(participant: ParticipantName, settings: 
 SCT
 ${settings.bic}
 CSLabs
-${settings.iban}
+${settings.iban.replaceAll(" ", "")}
 EUR${settings.amount.toFixed(2)}
 DEP0
 
