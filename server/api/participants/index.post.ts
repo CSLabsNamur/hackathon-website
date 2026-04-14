@@ -4,6 +4,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 import { CautionStatus } from "~~/server/prisma/generated/prisma/enums";
 import formidable from "formidable";
 import { fileTypeFromFile } from "file-type";
+import { generateEpcQrcode, getParticipantCautionReference } from "#shared/utils/participants";
 import renderRegistration from "~~/server/mail/generated/registration";
 import fs from "fs";
 
@@ -169,6 +170,15 @@ export default defineEventHandler(async (event) => {
       });
     }
 
+    const paymentIban = settings.event.iban ?? "BEXX XXXX XXXX XXXX";
+    const paymentBic = settings.event.bic ?? "XXXXXXXX";
+    const paymentReference = getParticipantCautionReference({firstName, lastName});
+    const qrcodeUri = await generateEpcQrcode({firstName, lastName}, {
+      amount: settings.event.cautionAmount,
+      iban: paymentIban,
+      bic: paymentBic,
+    });
+
     const registrationEmailJob = await enqueueEmail({
       type: "participant_registration",
       recipient: email,
@@ -177,6 +187,11 @@ export default defineEventHandler(async (event) => {
         firstName,
         lastName,
         profileUrl: `${siteConfig.url.replace(/\/$/, "")}/participant/profile`,
+        cautionAmount: settings.event.cautionAmount,
+        iban: paymentIban,
+        bic: paymentBic,
+        paymentReference,
+        qrcodeUri,
       }),
       replyTo: settings.website.contactEmail,
     });

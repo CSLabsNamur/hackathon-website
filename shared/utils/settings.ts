@@ -80,7 +80,7 @@ export const defaultEventSettings: Prisma.EventSettingsCreateInput = {
   registrationMode: RegistrationMode.SCHEDULED,
   cautionAmount: 20,
   iban: "BEXX XXXX XXXX XXXX",
-  bic: null,
+  bic: "XXXXXXXX",
   locationName: "Faculté d'informatique de l'Université de Namur",
   locationAddress: "Rue Grandgagnage 21, 5000 Namur, Belgique",
 } as const;
