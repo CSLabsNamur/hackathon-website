@@ -11,6 +11,18 @@ interface Organizer {
 const {data: settings} = await useSettings();
 const siteConfig = useSiteConfig();
 
+const heroTitle = computed(() => {
+  if (settings.value?.event.teaserEnabled) return "Le Hackathon se prépare !";
+  return settings.value?.event.title ?? "Le Hackathon du CSLabs";
+});
+
+const heroSubtitle = computed(() => {
+  if (settings.value?.event.teaserEnabled) {
+    return `Notez déjà la date ${formatDateRange(settings.value!.event.startDate, settings.value!.event.endDate, true, false)} dans vos agendas !`;
+  }
+  return settings.value?.event.slogan;
+});
+
 const description = computed(() => {
   const base = siteConfig.description;
   const dates = settings.value
@@ -59,15 +71,12 @@ const prix: PageFeatureProps[] = [
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero v-if="settings?.event.teaserEnabled"
-              title="Le Hackathon se prépare !"
-              :subtitle="`Notez déjà la date ${formatDateRange(settings.event.startDate, settings.event.endDate, true, false)} dans vos agendas !`"
+    <PageHero :title="heroTitle"
+              :subtitle="heroSubtitle"
+              :content="!settings?.event.teaserEnabled
+                ? formatDateRange(settings!.event.startDate, settings!.event.endDate, true, true)
+                : undefined"
               :images="organizers"/>
-    <PageHero v-else-if="settings"
-              :title="settings.event.title" :subtitle="settings.event.slogan"
-              :content="formatDateRange(settings.event.startDate, settings.event.endDate, true, true)"
-              :images="organizers"/>
-    <PageHero v-else title="Le Hackathon du CSLabs" :images="organizers"/>
   </UPageHero>
 
   <UContainer>
