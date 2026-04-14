@@ -26,6 +26,8 @@ const state: Reactive<Schema> = reactive({
   type: "text",
   title: "",
   acceptedFormats: [...DEFAULT_ACCEPTED_FORMATS_EXTS],
+  required: false,
+  teamRequest: false,
   deadline: eventDateEndParsed.subtract(1, "minute").format("YYYY-MM-DDTHH:mm"),
 });
 
@@ -125,6 +127,15 @@ async function onError(event: FormErrorEvent) {
 
         <UFormField label="Obligatoire" name="required">
           <UCheckbox v-model="state.required" label="Cette soumission est obligatoire"/>
+        </UFormField>
+
+        <UFormField label="Portée de la soumission" name="teamRequest">
+          <UCheckbox v-model="state.teamRequest" label="Une seule soumission par équipe"/>
+          <template #hint>
+            <span class="text-xs text-muted">
+              Désactivé : chaque participant soumet individuellement. Activé : une seule soumission est partagée par toute l'équipe.
+            </span>
+          </template>
         </UFormField>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -1,10 +1,6 @@
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "submissions.read.own");
+  const participant = await getSubmissionActor(dbUser.id);
 
-  return prisma.participant.findUnique({
-    where: {userId: dbUser.id},
-    include: {
-      submissions: {include: {files: true, request: true}},
-    },
-  });
+  return getAccessibleSubmissionsForParticipant(participant);
 });

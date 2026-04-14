@@ -14,13 +14,10 @@ export default defineEventHandler(async (event) => {
   const data = await readValidatedBody(event, v.parser(schema));
 
   const payload: SubmissionRequestCreateInput = {
+    ...data,
     type: data.type === "text" ? SubmissionType.TEXT : SubmissionType.FILE,
     multiple: data.type === "files",
-    title: data.title,
-    description: data.description,
     deadline: new Date(data.deadline),
-    acceptedFormats: data.acceptedFormats,
-    required: data.required ?? false,
   };
 
   return prisma.submissionRequest.create({data: payload});

@@ -41,12 +41,21 @@ const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
   label: submissionTypeTranslateMap[type],
   value: type,
 }));
+const submissionScopeItems = [{
+  label: "Participant",
+  value: "participant",
+}, {
+  label: "Équipe",
+  value: "team",
+}];
+const totalTeams = computed(() => new Set((participants.value ?? []).flatMap((participant) => participant.teamId ? [participant.teamId] : [])).size);
 
 const getSubmissionRate = (submissionRequest: SubmissionRequest) => {
   const totalParticipants = participants.value?.length || 0;
+  const totalTargets = submissionRequest.teamRequest ? totalTeams.value : totalParticipants;
   const submissionsCount = submissionRequest.submissions.length;
 
-  return totalParticipants === 0 ? 0 : (submissionsCount / totalParticipants) * 100;
+  return totalTargets === 0 ? 0 : (submissionsCount / totalTargets) * 100;
 };
 
 const columns: NamedTableColumn<SubmissionRequest>[] = [
@@ -79,6 +88,19 @@ const columns: NamedTableColumn<SubmissionRequest>[] = [
         color,
       }, () => submissionTypeTranslateMap[row.original.type]);
     },
+  },
+  {
+    id: "scope",
+    name: "Portée",
+    header: ({column}) => getSingleSelectFilterHeader(column, "Portée", submissionScopeItems),
+    accessorFn: (row) => row.teamRequest ? "Équipe" : "Participant",
+    filterFn: (row, _columnId, filterValue) => {
+      return filterValue === "team" ? row.original.teamRequest : !row.original.teamRequest;
+    },
+    cell: ({row}) => h(UBadge, {
+      variant: "subtle",
+      color: row.original.teamRequest ? "secondary" : "neutral",
+    }, () => row.original.teamRequest ? "Équipe" : "Participant"),
   },
   {
     id: "deadline",

@@ -18,16 +18,19 @@ const canUpdateSubmission = computed(() => can("updateOwn", "Submission"));
 const canDeleteSubmission = computed(() => can("deleteOwn", "Submission"));
 
 const active = ref(0);
+const activeRequest = computed(() => submissionsRequests.value?.[active.value] ?? null);
 
 const submittedRequestIds = computed(() => new Set((currentParticipant.value?.submissions ?? []).map(s => s.requestId)));
 
 const stepperItems = computed(() => (submissionsRequests.value ?? []).map((submission) => ({
   title: submission.title,
   icon: submittedRequestIds.value.has(submission.id)
-      ? "i-lucide-check"
+    ? "i-lucide-check"
+    : submission.teamRequest
+      ? "i-lucide-users"
       : submission.type === "TEXT"
-          ? "i-lucide-text"
-          : "i-lucide-file",
+        ? "i-lucide-text"
+        : "i-lucide-file",
 })));
 
 const allCompleted = computed(() =>
@@ -71,9 +74,14 @@ const onSubmit = async (status: boolean) => {
         <UStepper v-model="active" :items="stepperItems" :linear="false"/>
         <div class="relative min-h-56">
           <Transition name="slide-left" mode="out-in">
+            <ParticipantNoTeamCTA
+                v-if="activeRequest?.teamRequest && !currentParticipant?.team"
+                :key="`${active}-no-team`"
+                class="min-h-56"
+            />
             <ParticipantSubmissionFormText
-                v-if="submissionsRequests![active]!.type === 'TEXT'"
-                :key="active"
+                v-else-if="submissionsRequests![active]!.type === 'TEXT'"
+                :key="`${active}-text`"
                 :participant="currentParticipant!"
                 :submission-request="submissionsRequests![active]!"
                 :can-submit="canUpdateSubmission"
@@ -82,7 +90,7 @@ const onSubmit = async (status: boolean) => {
             />
             <ParticipantSubmissionFormFiles
                 v-else
-                :key="active"
+                :key="`${active}-files`"
                 :participant="currentParticipant!"
                 :submission-request="submissionsRequests![active]!"
                 :can-submit="canUpdateSubmission"

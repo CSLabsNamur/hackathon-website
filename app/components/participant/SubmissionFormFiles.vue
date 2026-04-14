@@ -15,13 +15,31 @@ const toast = useToast();
 const actions = useSubmissionsActions();
 
 const participantSubmission = computed(() => props.participant.submissions.find(s => s.requestId === props.submissionRequest.id));
-
 const existingFiles = computed(() => participantSubmission.value?.files ?? []);
+
+const canSubmitThisRequest = computed(() => Boolean(props.canSubmit));
+const canDeleteThisRequest = computed(() => Boolean(props.canDelete));
+
+const scopeDescription = computed(() => {
+  if (!props.submissionRequest.teamRequest) {
+    return "Chaque participant doit envoyer son propre fichier.";
+  }
+
+  const user = participantSubmission.value?.participant.user;
+  return user
+      ? `Une seule soumission est attendue pour toute l'équipe. La version actuelle a été déposée par ${user.firstName} ${user.lastName}.`
+      : "Une seule soumission est attendue pour toute l'équipe.";
+});
 
 const state = reactive<UploadSchema>({
   skipped: participantSubmission.value?.skipped ?? false,
   files: undefined,
 });
+
+watch(participantSubmission, (submission) => {
+  state.skipped = submission?.skipped ?? false;
+  state.files = undefined;
+}, {immediate: true});
 
 const isSubmitting = ref(false);
 const isDeletingFileId = ref<string | null>(null);
@@ -32,7 +50,7 @@ const acceptedLabel = computed(() => acceptedFormatsToLabel(props.submissionRequ
 const formSchema = computed(() => createUploadSchema(props.submissionRequest.acceptedFormats));
 
 async function onSubmit() {
-  if (!props.canSubmit) return;
+  if (!canSubmitThisRequest.value) return;
 
   try {
     isSubmitting.value = true;
@@ -53,14 +71,14 @@ async function onSubmit() {
 }
 
 async function onSkip() {
-  if (!props.canSubmit) return;
+  if (!canSubmitThisRequest.value) return;
 
   await actions.uploadFiles(props.submissionRequest.id, {files: undefined, skipped: true});
   emit("submit", true);
 }
 
 async function onDeleteFile(fileId: string) {
-  if (!props.canDelete) return;
+  if (!canDeleteThisRequest.value) return;
 
   try {
     isDeletingFileId.value = fileId;
@@ -88,10 +106,19 @@ async function onError(event: FormErrorEvent) {
 
 <template>
   <UForm :schema="formSchema" :state class="grid gap-6" @submit="onSubmit" @error="onError">
+    <UAlert
+        :title="submissionRequest.teamRequest ? 'Soumission d’équipe' : 'Soumission individuelle'"
+        :description="scopeDescription"
+        color="info"
+        variant="soft"
+        :icon="submissionRequest.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
+    />
+
     <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined" name="files"
                 :error-pattern="/files\.\d*/" :required="submissionRequest.required">
       <div class="grid gap-2">
-        <UFileUpload v-model="state.files" :disabled="isSubmitting || !canSubmit" description="Choisir un fichier..."
+        <UFileUpload v-model="state.files" :disabled="isSubmitting || !canSubmitThisRequest"
+                     description="Choisir un fichier..."
                      :accept="acceptAttr" layout="list"
                      :required="submissionRequest.required" class="w-full" :multiple="!!submissionRequest.multiple"/>
 
@@ -102,7 +129,7 @@ async function onError(event: FormErrorEvent) {
               <span class="truncate" :title="f.originalName">{{ f.originalName }}</span>
               <UButton size="xs" color="error" variant="ghost"
                        :loading="isDeletingFileId === f.id"
-                       :disabled="isSubmitting || !canDelete"
+                       :disabled="isSubmitting || !canDeleteThisRequest"
                        @click="onDeleteFile(f.id)">
                 Supprimer
               </UButton>
@@ -118,11 +145,11 @@ async function onError(event: FormErrorEvent) {
 
     <div class="flex gap-1.5 place-self-end">
       <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary"
-               :disabled="isSubmitting || !canSubmit"
+               :disabled="isSubmitting || !canSubmitThisRequest"
                loading-auto @click="onSkip">
         Passer
       </UButton>
-      <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmit">
+      <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmitThisRequest">
         Soumettre
       </UButton>
     </div>

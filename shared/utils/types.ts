@@ -77,6 +77,18 @@ type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetPayload<
   include: {
     request: true;
     files: true;
+    participant: {
+      select: {
+        id: true;
+        user: {
+          select: {
+            id: true;
+            firstName: true;
+            lastName: true;
+          };
+        };
+      };
+    };
   };
 }>>;
 export type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
@@ -100,6 +112,11 @@ export type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
           select: {
             id: true;
             requestId: true;
+            request: {
+              select: {
+                teamRequest: true;
+              };
+            };
           };
         };
       };

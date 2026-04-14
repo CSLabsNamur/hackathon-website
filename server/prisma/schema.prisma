@@ -121,6 +121,7 @@ model SubmissionRequest {
   acceptedFormats String[]       @default(["pdf", "docx", "txt", "jpg", "png", "zip"])
   multiple        Boolean?
   required        Boolean        @default(false)
+  teamRequest     Boolean        @default(false) // true if the submission is required at the team level (one submission per team), false if it's at the participant level (one submission per participant)
   submissions     Submission[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -159,7 +160,6 @@ model SubmissionFile {
 }
 
 // ==== Program Schedule ====
-// TODO: Add a check to ensure no overlapping exactDateTime ranges when the event is noted as special.
 model ScheduleItem {
   id          String   @id @default(cuid(2))
   title       String   @unique

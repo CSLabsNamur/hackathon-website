@@ -27,6 +27,7 @@ const state: Reactive<Schema> = reactive({
   title: props.submissionRequest.title,
   description: props.submissionRequest.description || "",
   required: props.submissionRequest.required,
+  teamRequest: props.submissionRequest.teamRequest,
   deadline: dayjs(props.submissionRequest.deadline).format("YYYY-MM-DDTHH:mm"),
   acceptedFormats: props.submissionRequest.acceptedFormats ?? [],
 });
@@ -97,6 +98,19 @@ async function onError(event: FormErrorEvent) {
                     :max="eventDateEndParsed.format('YYYY-MM-DDTHH:mm')"/>
           </UFormField>
         </div>
+
+        <UFormField label="Obligatoire" name="required">
+          <UCheckbox v-model="state.required" label="Cette soumission est obligatoire"/>
+        </UFormField>
+
+        <UFormField label="Portée de la soumission" name="teamRequest">
+          <UCheckbox v-model="state.teamRequest" label="Une seule soumission par équipe"/>
+          <template #hint>
+            <span class="text-xs text-muted">
+              Désactivé : chaque participant soumet individuellement. Activé : une seule soumission est partagée par toute l'équipe.
+            </span>
+          </template>
+        </UFormField>
 
         <UFormField v-if="props.submissionRequest.type === SubmissionType.FILE" label="Formats acceptés"
                     name="acceptedFormats">

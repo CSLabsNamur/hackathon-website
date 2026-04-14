@@ -48,6 +48,7 @@ type SubmissionRequestExportRow = Prisma.SubmissionRequestGetPayload<{
   select: {
     type: true;
     required: true;
+    teamRequest: true;
     acceptedFormats: true;
     multiple: true;
     submissions: {
@@ -251,6 +252,12 @@ const submissionRequestsExportSchema = defineExportSchema<SubmissionRequestExpor
       selectPaths: ["type"],
       value: (row) => submissionTypeTranslateMap[row.type] ?? row.type,
     },
+    {
+      id: "scope",
+      name: "Portée",
+      selectPaths: ["teamRequest"],
+      value: (row) => row.teamRequest ? "Équipe" : "Participant",
+    },
     {id: "deadline", name: "Date limite", path: "deadline"},
     {
       id: "required",
@@ -258,6 +265,13 @@ const submissionRequestsExportSchema = defineExportSchema<SubmissionRequestExpor
       enabledByDefault: false,
       selectPaths: ["required"],
       value: (row) => translateBoolean(row.required),
+    },
+    {
+      id: "teamRequest",
+      name: "Soumission d'équipe",
+      enabledByDefault: false,
+      selectPaths: ["teamRequest"],
+      value: (row) => translateBoolean(row.teamRequest),
     },
     {
       id: "acceptedFormats",

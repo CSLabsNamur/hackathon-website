@@ -41,6 +41,7 @@ export const editSubmissionRequestSchema = (
       ),
     ),
     required: v.optional(v.boolean()),
+    teamRequest: v.optional(v.boolean()),
   });
 };
 
@@ -64,5 +65,6 @@ const _tempSchema = v.strictObject({
   ),
   acceptedFormats: v.optional(v.array(v.string())),
   required: v.optional(v.boolean()),
+  teamRequest: v.optional(v.boolean()),
 });
 export type EditSubmissionRequestSchema = v.InferOutput<typeof _tempSchema>;

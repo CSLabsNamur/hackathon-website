@@ -1,4 +1,4 @@
-import type { CurrentParticipantTeam, ReadableTeam, ReadableTeamMember, SubmissionRequest } from "#shared/utils/types";
+import type { CurrentParticipantTeam, ReadableTeam, SubmissionRequest } from "#shared/utils/types";
 import { CautionStatus } from "#shared/utils/types";
 
 export const TEAM_MINIMUM_MEMBERS = 2;
@@ -40,16 +40,6 @@ export type TeamValidationResult = {
 const isCurrentParticipantTeam = (team: ReadableTeam): team is CurrentParticipantTeam => {
   const firstMember = team.members[0];
   return !firstMember || "submissions" in firstMember;
-};
-
-const formatMemberNames = (members: ReadableTeamMember[]) => {
-  const names = members.map((member) => `${member.user.firstName} ${member.user.lastName}`);
-
-  if (names.length <= 3) {
-    return names.join(", ");
-  }
-
-  return `${names.slice(0, 3).join(", ")} et ${names.length - 3} autre(s)`;
 };
 
 export const isTeamRefunded = (team: ReadableTeam) => {
@@ -96,21 +86,36 @@ const validateTeamRequiredSubmissions: TeamValidationCheck = ({team, submissionR
     return;
   }
 
-  // TODO: Add a "team submission request" to avoid every member having to submit the same deliverable, and to simplify this check
+  const teamLevelRequiredRequests = requiredSubmissionRequests.filter((request) => request.teamRequest);
+  const participantLevelRequiredRequests = requiredSubmissionRequests.filter((request) => !request.teamRequest);
+
+  const missingTeamRequiredRequests = teamLevelRequiredRequests.filter((request) =>
+    !team.members.some((member) => member.submissions.some((submission) => submission.requestId === request.id)),
+  );
+
   const membersMissingRequiredSubmissions = team.members.filter((member) => {
     const submissionRequestIds = new Set(member.submissions.map((submission) => submission.requestId));
-    return requiredSubmissionRequests.some((request) => !submissionRequestIds.has(request.id));
+    return participantLevelRequiredRequests.some((request) => !submissionRequestIds.has(request.id));
   });
 
-  if (!membersMissingRequiredSubmissions.length) {
+  if (!missingTeamRequiredRequests.length && !membersMissingRequiredSubmissions.length) {
     return;
   }
+
+  const details = [
+    missingTeamRequiredRequests.length
+      ? `Livrables d'équipe manquants : ${(formatArray(missingTeamRequiredRequests, (request) => request.title))}.`
+      : undefined,
+    membersMissingRequiredSubmissions.length
+      ? `Membres concernés : ${(formatArray(membersMissingRequiredSubmissions, (member) => `${member.user.firstName} ${member.user.lastName}`))}.`
+      : undefined,
+  ].filter(Boolean).join(" ");
 
   addIssue({
     code: "missing_required_submissions",
     severity: "warning",
-    message: "Certains membres n'ont pas encore soumis tous les livrables requis.",
-    description: `Membres concernés : ${formatMemberNames(membersMissingRequiredSubmissions)}.`,
+    message: "Tous les livrables requis n'ont pas encore été soumis.",
+    description: details,
   });
 };
 

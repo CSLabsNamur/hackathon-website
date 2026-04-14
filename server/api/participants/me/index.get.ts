@@ -25,16 +25,15 @@ export default defineEventHandler(async (event) => {
                 select: {
                   id: true,
                   requestId: true,
+                  request: {
+                    select: {
+                      teamRequest: true,
+                    },
+                  },
                 },
               },
             },
           },
-        },
-      },
-      submissions: {
-        include: {
-          request: true,
-          files: true,
         },
       },
       user: {
@@ -52,8 +51,19 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 404, statusMessage: "Participant introuvable"});
   }
 
+  const accessibleSubmissions = await getAccessibleSubmissionsForParticipant({
+    id: participant.id,
+    team: participant.team
+      ? {
+        id: participant.team.id,
+        members: participant.team.members.map((member) => ({id: member.id})),
+      }
+      : null,
+  });
+
   return {
     ...participant,
+    submissions: accessibleSubmissions,
     authorization: {
       roleKeys: getGrantedRoleKeys(dbUser),
       permissionKeys: getGrantedPermissionKeys(dbUser),

@@ -186,9 +186,11 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     ],
     buildDescription: (record) => {
       const type = getString(record.type) as SubmissionType | undefined;
+      const scope = record.teamRequest ? "Équipe" : "Participant";
 
       return joinText(
         type ? submissionTypeTranslateMap[type] : undefined,
+        scope,
         record.deadline instanceof Date || typeof record.deadline === "string"
           ? new Intl.DateTimeFormat("fr-BE", {
             dateStyle: "medium",

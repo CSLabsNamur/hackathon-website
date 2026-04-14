@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "submissions.delete.own");
   const {id: requestId, fileId} = await getValidatedRouterParams(event, v.parser(deleteSubmissionFileParamsSchema));
 
-  const participant = await getParticipantForDbUser(dbUser);
+  const participant = await getSubmissionActor(dbUser.id);
 
   const request = await prisma.submissionRequest.findUnique({where: {id: requestId}});
   if (!request) {
@@ -22,16 +22,14 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 403, statusMessage: "La date limite de soumission est dépassée."});
   }
 
-  const submission = await prisma.submission.findUnique({
-    where: {
-      requestId_participantId: {
-        requestId,
-        participantId: participant.id,
-      },
-    },
-    include: {
-      files: true,
-    },
+  const team = request.teamRequest ? participant.team : null;
+  if (request.teamRequest && !team) {
+    throw createError({statusCode: 400, statusMessage: "Cette demande doit être soumise au niveau de l'équipe."});
+  }
+
+  const submission = await findAccessibleSubmission({
+    requestId,
+    participantIds: team?.members.map((member) => member.id) ?? [participant.id],
   });
 
   if (!submission) {
@@ -61,6 +59,6 @@ export default defineEventHandler(async (event) => {
 
   return prisma.submission.findUnique({
     where: {id: submission.id},
-    include: {files: true, request: true},
+    include: accessibleSubmissionInclude,
   });
 });

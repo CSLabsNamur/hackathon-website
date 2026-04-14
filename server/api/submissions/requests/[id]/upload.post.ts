@@ -9,7 +9,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "submissions.update.own");
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
-  const participant = await getParticipantForDbUser(dbUser);
+  const participant = await getSubmissionActor(dbUser.id);
 
   const request = await prisma.submissionRequest.findUnique({where: {id}});
   if (!request) {
@@ -22,6 +22,11 @@ export default defineEventHandler(async (event) => {
 
   if (request.type !== SubmissionType.FILE) {
     throw createError({statusCode: 400, statusMessage: "Cette demande attend une réponse texte."});
+  }
+
+  const team = request.teamRequest ? participant.team : null;
+  if (request.teamRequest && !team) {
+    throw createError({statusCode: 400, statusMessage: "Cette demande doit être soumise au niveau de l'équipe."});
   }
 
   const acceptedExts = normalizeAcceptedFormats(request.acceptedFormats);
@@ -46,25 +51,30 @@ export default defineEventHandler(async (event) => {
       throw createError({statusCode: 400, statusMessage: "Cette soumission est obligatoire."});
     }
 
-    const upserted = await prisma.submission.upsert({
-      where: {
-        requestId_participantId: {
-          requestId: id,
-          participantId: participant.id,
-        },
-      },
-      create: {
-        skipped: true,
-        content: null,
-        request: {connect: {id}},
-        participant: {connect: {id: participant.id}},
-      },
-      update: {
-        skipped: true,
-        content: null,
-      },
-      include: {files: true},
+    const existingSubmission = await findAccessibleSubmission({
+      requestId: id,
+      participantIds: team?.members.map((member) => member.id) ?? [participant.id],
     });
+
+    const upserted = existingSubmission
+      ? await prisma.submission.update({
+        where: {id: existingSubmission.id},
+        data: {
+          skipped: true,
+          content: null,
+          participant: {connect: {id: participant.id}},
+        },
+        include: {files: true},
+      })
+      : await prisma.submission.create({
+        data: {
+          skipped: true,
+          content: null,
+          request: {connect: {id}},
+          participant: {connect: {id: participant.id}},
+        },
+        include: {files: true},
+      });
 
     // Delete DB records and storage objects
     if (upserted.files.length) {
@@ -76,7 +86,7 @@ export default defineEventHandler(async (event) => {
       await prisma.submissionFile.deleteMany({where: {submissionId: upserted.id}});
     }
 
-    return prisma.submission.findUnique({where: {id: upserted.id}, include: {files: true, request: true}});
+    return prisma.submission.findUnique({where: {id: upserted.id}, include: accessibleSubmissionInclude});
   }
 
   const fileList = (files.files ?? []) as formidable.File[];
@@ -89,14 +99,9 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 400, statusMessage: "Un seul fichier est autorisé."});
   }
 
-  const existingSubmission = await prisma.submission.findUnique({
-    where: {
-      requestId_participantId: {
-        requestId: id,
-        participantId: participant.id,
-      },
-    },
-    include: {files: true},
+  const existingSubmission = await findAccessibleSubmission({
+    requestId: id,
+    participantIds: team?.members.map((member) => member.id) ?? [participant.id],
   });
   const existingFilePaths = new Set(existingSubmission?.files.map((file) => file.path) ?? []);
 
@@ -138,7 +143,7 @@ export default defineEventHandler(async (event) => {
 
       // Deterministic-ish path to avoid collisions and allow upsert
       // TODO: change this to use UUID
-      const storagePath = `${participant.id}/${id}/${sha256}_${safeName}`;
+      const storagePath = `${team ? `team/${team.id}/${id}` : `${participant.id}/${id}`}/${sha256}_${safeName}`;
 
       if (uploadedFiles.some((file) => file.path === storagePath) || (request.multiple && existingFilePaths.has(storagePath))) {
         throw createError({
@@ -192,36 +197,36 @@ export default defineEventHandler(async (event) => {
   const replacedFilePaths = request.multiple ? [] : existingSubmission?.files.map((file) => file.path) ?? [];
 
   try {
-    const submission = await prisma.submission.upsert({
-      where: {
-        requestId_participantId: {
-          requestId: id,
-          participantId: participant.id,
-        },
-      },
-      create: {
-        skipped: false,
-        content: null,
-        request: {connect: {id}},
-        participant: {connect: {id: participant.id}},
-        files: {
-          createMany: {
-            data: uploadedFiles,
+    const submission = existingSubmission
+      ? await prisma.submission.update({
+        where: {id: existingSubmission.id},
+        data: {
+          skipped: false,
+          content: null,
+          participant: {connect: {id: participant.id}},
+          files: {
+            ...(request.multiple ? {} : {deleteMany: {}}),
+            createMany: {
+              data: uploadedFiles,
+            },
           },
         },
-      },
-      update: {
-        skipped: false,
-        content: null,
-        files: {
-          ...(request.multiple ? {} : {deleteMany: {}}),
-          createMany: {
-            data: uploadedFiles,
+        include: accessibleSubmissionInclude,
+      })
+      : await prisma.submission.create({
+        data: {
+          skipped: false,
+          content: null,
+          request: {connect: {id}},
+          participant: {connect: {id: participant.id}},
+          files: {
+            createMany: {
+              data: uploadedFiles,
+            },
           },
         },
-      },
-      include: {files: true, request: true},
-    });
+        include: accessibleSubmissionInclude,
+      });
 
     const replacedStoragePaths = replacedFilePaths.filter((path) => !uploadedFilePaths.includes(path));
     if (replacedStoragePaths.length > 0) {
