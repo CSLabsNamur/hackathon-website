@@ -64,22 +64,14 @@ const eventSettingsSchema = v.pipe(v.strictObject({
       v.maxValue(500, "La caution ne peut pas dépasser 500 €."),
     ),
     iban: v.pipe(
-      v.nullable(
-        v.pipe(
-          v.string(),
-          v.check((value) => ibantools.isValidIBAN(ibantools.electronicFormatIBAN(value.trim()) ?? ""), "L'IBAN n'est pas valide."),
-        ),
-      ),
-      v.transform((value) => typeof value === "string" && value.trim() === "" ? null : value),
+      v.string(),
+      v.nonEmpty("L'IBAN est requis."),
+      v.check((value) => ibantools.isValidIBAN(ibantools.electronicFormatIBAN(value.trim()) ?? ""), "L'IBAN n'est pas valide."),
     ),
     bic: v.pipe(
-      v.nullable(
-        v.pipe(
-          v.string(),
-          v.check((value) => ibantools.isValidBIC(value.trim()), "Le BIC n'est pas valide."),
-        ),
-      ),
-      v.transform((value) => typeof value === "string" && value.trim() === "" ? null : value),
+      v.string(),
+      v.nonEmpty("Le BIC est requis."),
+      v.check((value) => ibantools.isValidBIC(value.trim()), "Le BIC n'est pas valide."),
     ),
     locationName: v.pipe(
       v.string(),

@@ -5,9 +5,14 @@
 import Handlebars from "handlebars";
 
 export type RegistrationTemplateData = {
+  cautionAmount: number;
   firstName?: string;
+  iban: string;
+  bic: string;
   lastName?: string;
+  paymentReference: string;
   profileUrl: string;
+  qrcodeUri: string;
 };
 
 
@@ -99,7 +104,7 @@ const templateSource = `<!doctype html>
       >
         <tbody>
           <tr>
-            <td  style="background-color:white;border-radius:20px;vertical-align:top;border-collapse:separate;padding-bottom:10px;">
+            <td  style="background-color:white;border-radius:20px;vertical-align:top;border-collapse:separate;padding-top:20px;padding-bottom:10px;">
               
       <table
          border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
@@ -159,21 +164,28 @@ const templateSource = `<!doctype html>
       ><h2 align="center">Informations utiles</h2>
                     <p>
                         Votre participation au Hackathon n'est effective qu'à partir du moment où votre caution est
-                        payée. Vous pourrez (bientôt) vérifier la validation de votre caution sur
+                        payée. Vous pourrez vérifier la validation de votre caution sur
                         <a href="{{profileUrl}}" style="text-decoration: none">votre profil</a>.
+                        Notez que la validation de celle-ci sur le site n'est pas automatique&nbsp;: elle peut prendre
+                        jusqu'à 48h pour être validée par notre équipe.
                     </p>
 
                     <ul>
-                        <li>Montant : 20€</li>
+                        <li>Montant : {{cautionAmount}}€</li>
                         <li>Compte :
-                            <b>BE56068907916488</b>
+                            <b>{{iban}}</b>
+                        </li>
+                        <li>BIC :
+                            <b>{{bic}}</b>
                         </li>
                         <li>Communication :
-                            <b>{{#if lastName}}{{uppercase lastName}}{{else}}NOM{{/if}}
-                                {{#if firstName}}{{firstName}}{{else}}Prénom{{/if}}
-                            </b>
+                            <b>{{paymentReference}}</b>
                         </li>
                     </ul>
+
+                    <img src="{{qrcodeUri}}"
+                         alt="Code QR pour le paiement de la caution"
+                         style="display: block; margin: 10px auto; max-width: 150px;"/>
 
                     <p>
                         Il vous est possible de créer une équipe, si vous le souhaitez, et d'y inviter vos amis.

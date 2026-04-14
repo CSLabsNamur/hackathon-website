@@ -8,7 +8,7 @@
 
     <mj-body background-color="#1bb17a">
         <mj-section padding-top="30px">
-            <mj-column background-color="white" border-radius="20px" padding-bottom="10px">
+            <mj-column background-color="white" border-radius="20px" padding-bottom="10px" padding-top="20px">
                 <mj-image width="100px" src="https://cslabs.be/wp-content/uploads/2024/01/logo-CSLabs.png"/>
 
                 <mj-text align="center">
@@ -26,21 +26,28 @@
                     <h2 align="center">Informations utiles</h2>
                     <p>
                         Votre participation au Hackathon n'est effective qu'à partir du moment où votre caution est
-                        payée. Vous pourrez (bientôt) vérifier la validation de votre caution sur
+                        payée. Vous pourrez vérifier la validation de votre caution sur
                         <a href="{{profileUrl}}" style="text-decoration: none">votre profil</a>.
+                        Notez que la validation de celle-ci sur le site n'est pas automatique&nbsp;: elle peut prendre
+                        jusqu'à 48h pour être validée par notre équipe.
                     </p>
 
                     <ul>
-                        <li>Montant : 20€</li>
+                        <li>Montant : {{cautionAmount}}€</li>
                         <li>Compte :
-                            <b>BE56068907916488</b>
+                            <b>{{iban}}</b>
+                        </li>
+                        <li>BIC :
+                            <b>{{bic}}</b>
                         </li>
                         <li>Communication :
-                            <b>{{#if lastName}}{{uppercase lastName}}{{else}}NOM{{/if}}
-                                {{#if firstName}}{{firstName}}{{else}}Prénom{{/if}}
-                            </b>
+                            <b>{{paymentReference}}</b>
                         </li>
                     </ul>
+
+                    <img src="{{qrcodeUri}}"
+                         alt="Code QR pour le paiement de la caution"
+                         style="display: block; margin: 10px auto; max-width: 150px;"/>
 
                     <p>
                         Il vous est possible de créer une équipe, si vous le souhaitez, et d'y inviter vos amis.

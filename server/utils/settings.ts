@@ -24,6 +24,8 @@ type PublicSettings = {
     | "registrationsEndDate"
     | "registrationMode"
     | "cautionAmount"
+    | "iban"
+    | "bic"
     | "locationName"
     | "locationAddress"
   > & {
@@ -133,6 +135,22 @@ export async function getPublicSettings(event: H3Event): Promise<PublicSettings>
     }),
     prisma.eventSettings.findUnique({
       where: {id: EVENT_SETTINGS_ID},
+      select: {
+        title: true,
+        slogan: true,
+        logoPath: true,
+        teaserEnabled: true,
+        startDate: true,
+        endDate: true,
+        registrationsStartDate: true,
+        registrationsEndDate: true,
+        registrationMode: true,
+        cautionAmount: true,
+        iban: true,
+        bic: true,
+        locationName: true,
+        locationAddress: true,
+      },
     }),
     prisma.socialLink.findMany({
       where: {visible: true},
@@ -162,11 +180,19 @@ export async function getPublicSettings(event: H3Event): Promise<PublicSettings>
     website,
     event: {
       // TODO: When the teaser is enabled, hide important event details like the title, slogan and dates
-      ...eventSettings,
+      title: eventSettings.title,
+      slogan: eventSettings.slogan,
+      teaserEnabled: eventSettings.teaserEnabled,
       startDate: toDateTimeInput(eventSettings.startDate),
       endDate: toDateTimeInput(eventSettings.endDate),
       registrationsStartDate: toDateTimeInput(eventSettings.registrationsStartDate),
       registrationsEndDate: toDateTimeInput(eventSettings.registrationsEndDate),
+      registrationMode: eventSettings.registrationMode,
+      cautionAmount: eventSettings.cautionAmount,
+      iban: eventSettings.iban,
+      bic: eventSettings.bic,
+      locationName: eventSettings.locationName,
+      locationAddress: eventSettings.locationAddress,
       logoUrl: eventSettings.logoPath ? supabase.storage.from(EVENT_ASSETS_BUCKET).getPublicUrl(eventSettings.logoPath).data.publicUrl : null,
     },
     socialLinks: socialLinks.map(normalizeSocialLinkValues),

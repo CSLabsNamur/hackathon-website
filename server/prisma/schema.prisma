@@ -298,8 +298,8 @@ model EventSettings {
   registrationsEndDate   DateTime
   registrationMode       RegistrationMode @default(SCHEDULED)
   cautionAmount          Int              @default(20)
-  iban                   String?
-  bic                    String?
+  iban                   String
+  bic                    String
   locationName           String           @default("Faculté d'informatique de l'Université de Namur")
   locationAddress        String           @default("Rue Grandgagnage 21, 5000 Namur, Belgique")
   createdAt              DateTime         @default(now())
