@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{ team: Team }>();
+const props = defineProps<{ team: AdminTeam }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

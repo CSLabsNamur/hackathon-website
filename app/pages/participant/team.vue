@@ -169,7 +169,7 @@ const copyToken = () => {
 const openEditTeamModal = async () => {
   if (!currentParticipant.value?.team || !canUpdateOwnTeam.value) return;
 
-  const result = await editTeamModal.open({team: currentParticipant.value.team as unknown as Team});
+  const result = await editTeamModal.open({team: currentParticipant.value.team});
   if (result) await refreshCurrentParticipant();
 };
 
@@ -217,7 +217,7 @@ setActions(computed(() => currentParticipant.value?.team ? [{
         </div>
       </UCard>
       <div class="grid gap-2 row-span-2">
-        <ParticipantTeamStatusCard :participant="currentParticipant"/>
+        <ParticipantTeamStatusCard :team="currentParticipant.team"/>
         <ParticipantScheduleCard/>
       </div>
       <UTable :columns :data="currentParticipant.team.members" class="col-span-full">

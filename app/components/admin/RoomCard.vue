@@ -6,7 +6,7 @@ const props = defineProps<{
   isModifying: boolean,
   hideHandle?: boolean
 }>();
-const emit = defineEmits<{ "update:teams": [teams: TeamWithoutRelations[]] }>();
+const emit = defineEmits<{ "update:teams": [teams: AdminTeamWithoutRelations[]] }>();
 
 const teamsModel = computed({
   get: () => props.room.teams,

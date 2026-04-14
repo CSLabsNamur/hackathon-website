@@ -6,7 +6,7 @@ import type { Permission as PermissionKey } from "./authorization";
 export { SubmissionType, CautionStatus, GuestType, RegistrationMode, SocialLinkType } from "../../server/prisma/generated/prisma/browser";
 
 // Custom DTO types for API responses.
-type TeamMember = SerializeObject<Prisma.ParticipantGetPayload<{
+export type AdminTeamMember = SerializeObject<Prisma.ParticipantGetPayload<{
   select: {
     id: true,
     caution: true,
@@ -19,12 +19,12 @@ type TeamMember = SerializeObject<Prisma.ParticipantGetPayload<{
     },
   },
 }>>;
-export type Team = SerializeObject<Prisma.TeamGetPayload<{
+export type AdminTeam = SerializeObject<Prisma.TeamGetPayload<{
   include: { room: true }
 }>> & {
-  members: TeamMember[];
+  members: AdminTeamMember[];
 };
-export type TeamWithoutRelations = Omit<Team, "members" | "room">;
+export type AdminTeamWithoutRelations = Omit<AdminTeam, "members" | "room">;
 export type DbUser = Prisma.UserGetPayload<{
   select: {
     id: true;
@@ -79,7 +79,7 @@ type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetPayload<
     files: true;
   };
 }>>;
-type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
+export type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
   include: {
     members: {
       select: {
@@ -106,13 +106,15 @@ type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
     };
   };
 }>>;
+export type CurrentParticipantTeamMember = CurrentParticipantTeam["members"][number];
+export type ReadableTeam = AdminTeam | CurrentParticipantTeam;
+export type ReadableTeamMember = ReadableTeam["members"][number];
 
 export type CurrentParticipant = ParticipantScalar & {
   team: CurrentParticipantTeam | null;
   submissions: CurrentParticipantSubmission[];
   user: ParticipantUser;
 } & AuthorizationInfo;
-export type CurrentParticipantTeamMember = CurrentParticipantTeam["members"][number];
 
 type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
   select: {

@@ -52,7 +52,7 @@ const unassignedTeamsRoom = computed<Room>(() => ({
  * @param roomId the id of the room to update
  * @param nextTeams the new teams of the room, which will replace the current teams of the room, and be removed from other rooms
  */
-function updateRoomTeams(roomId: string, nextTeams: TeamWithoutRelations[]) {
+function updateRoomTeams(roomId: string, nextTeams: AdminTeamWithoutRelations[]) {
   const nextTeamIds = new Set(nextTeams.map((team) => team.id));
 
   rooms.value = rooms.value.map((room) => ({
@@ -69,7 +69,7 @@ function updateRoomTeams(roomId: string, nextTeams: TeamWithoutRelations[]) {
  *
  * @param nextTeams the new unassigned teams, which will replace the current unassigned teams, and be removed from all rooms
  */
-function updateUnassignedTeams(nextTeams: TeamWithoutRelations[]) {
+function updateUnassignedTeams(nextTeams: AdminTeamWithoutRelations[]) {
   const unassignedTeamIds = new Set(nextTeams.map((team) => team.id));
 
   rooms.value = rooms.value.map((room) => ({

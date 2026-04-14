@@ -14,7 +14,7 @@ definePageMeta({
     },
   },
   middleware: "admin-auth",
-  requiredPermissions: ["teams.read", "participants.read"],
+  requiredPermissions: ["teams.read"],
 });
 
 const {status, data: teams, refresh} = await useTeams({lazy: true});
@@ -37,15 +37,11 @@ const validityItems = [
   {label: "Invalide", value: "Invalide"},
 ] as const;
 
-// TODO: Centralize validity check logic, which is currently duplicated and not the same between admin and participant views.
-const getTeamValidity = (team: Team) => {
-  return team.members.every((member) => {
-    const caution = member.caution;
-    return caution !== CautionStatus.NOT_PAID;
-  }) ? "Valide" : "Invalide";
+const getTeamValidity = (team: AdminTeam) => {
+  return isTeamValid(team) ? "Valide" : "Invalide";
 };
 
-const columns: NamedTableColumn<Team>[] = [
+const columns: NamedTableColumn<AdminTeam>[] = [
   {
     id: "name",
     name: "Nom",
@@ -86,7 +82,7 @@ const columns: NamedTableColumn<Team>[] = [
     id: "members",
     name: "Membres",
     header: "Membres",
-    accessorFn: (row: Team) => row.members.length,
+    accessorFn: (row: AdminTeam) => row.members.length,
   },
   {
     id: "actions",
@@ -141,7 +137,7 @@ setActions(computed(() => [{
   disabled: !can("export", "Team"),
 }]));
 
-function getRowItems(row: Row<Team>): Array<DropdownMenuItem> {
+function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
   const canUpdateTeam = can("update", "Team");
   const canDeleteTeam = can("delete", "Team");
 

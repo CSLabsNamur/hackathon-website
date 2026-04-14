@@ -3,7 +3,7 @@ import type * as v from "valibot";
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
 import schema from "#shared/schemas/teams/edit";
 
-const props = defineProps<{ team: Team, adminEdit?: boolean }>();
+const props = defineProps<{ team: ReadableTeam, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();

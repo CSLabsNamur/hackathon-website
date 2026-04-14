@@ -13,10 +13,6 @@ const props = withDefaults(defineProps<{
 const {status: teamsStatus, data: teams} = await useTeams({lazy: true});
 const {data: settings} = await useSettings();
 
-const participantsFetch = props.includeParticipantDerivedStats ? await useParticipants({lazy: true}) : null;
-const participantsStatus = computed(() => participantsFetch?.status.value ?? "success");
-const participants = computed(() => participantsFetch?.data.value ?? null);
-
 const dayjs = useDayjs();
 
 type TeamStat = {
@@ -41,25 +37,18 @@ const stats = computed(() => {
     icon: "i-lucide-clock",
   }];
 
-  if (!props.includeParticipantDerivedStats || !participants.value) {
+  if (!props.includeParticipantDerivedStats) {
     return allStats;
   }
 
   allStats.push({
     title: "Teams valides",
-    value: `${teams.value.filter(team => team.members.every(member => {
-      const participant = participants.value!.find(u => u.id === member.id);
-      const caution = participant?.caution;
-      return caution === CautionStatus.PAID || caution === CautionStatus.WAIVED;
-    })).length} / ${teams.value.length}`,
+    value: `${teams.value.filter((team) => isTeamValid(team)).length} / ${teams.value.length}`,
     icon: "i-lucide-wallet",
     condition: dayjs().isBefore(dayjs(settings.value!.event.endDate)),
   }, {
     title: "Teams remboursées",
-    value: `${teams.value.filter(team => team.members.every(member => {
-      const caution = participants.value!.find(participant => participant.id === member.id)?.caution;
-      return caution !== CautionStatus.PAID;
-    })).length} / ${teams.value.length}`,
+    value: `${teams.value.filter((team) => isTeamRefunded(team)).length} / ${teams.value.length}`,
     icon: "i-lucide-euro",
     condition: dayjs().isAfter(dayjs(settings.value!.event.endDate)),
   });
@@ -93,10 +82,9 @@ const [DefineFallback, UseFallback] = createReusableTemplate();
       <UseFallback/>
     </template>
 
-    <UseFallback
-        v-if="teamsStatus === 'pending' || (props.includeParticipantDerivedStats && participantsStatus === 'pending')"/>
+    <UseFallback v-if="teamsStatus === 'pending'"/>
     <UPageGrid
-        v-else-if="teamsStatus === 'success' && (!props.includeParticipantDerivedStats || participantsStatus === 'success')"
+        v-else-if="teamsStatus === 'success'"
         class="gap-4 sm:gap-6 lg:gap-px" v-bind="$attrs">
       <template v-for="stat in stats" :key="stat.title">
         <UPageCard :icon="stat.icon"

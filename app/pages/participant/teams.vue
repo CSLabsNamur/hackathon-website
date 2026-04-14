@@ -17,7 +17,7 @@ const {status, data: teams} = await useTeams({lazy: true});
 const globalFilter = ref("");
 const expanded = ref({});
 
-const columns: TableColumn<Team>[] = [
+const columns: TableColumn<AdminTeam>[] = [
   {
     id: "expand",
     enableGlobalFilter: false,
