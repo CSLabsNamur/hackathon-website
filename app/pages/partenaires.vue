@@ -36,7 +36,7 @@ useSeoMeta({
         </div>
       </UCard>
 
-      <div v-if="!sponsors?.length" class="gap-2 lg:columns-2">
+      <div v-if="sponsors?.length" class="gap-2 lg:columns-2">
         <UPageCard v-for="(sponsor, index) in sponsors" :key="sponsor.name"
                    class="break-inside-avoid mb-2 inline-block w-full p-2" :title="sponsor.name" draggable="false"
                    orientation="horizontal" :to="sponsor.url || undefined" :target="sponsor.url ? '_blank' : undefined"
