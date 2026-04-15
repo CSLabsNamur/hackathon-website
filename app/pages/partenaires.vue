@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const {data: sponsors} = await useSponsors();
 
-const heroSponsors = computed(() => {
-  return sponsors.value?.filter((partner) => partner.logo).map(({name, logo, url}) => ({name, logo, url}));
-});
+//const heroSponsors = computed(() => {
+//  return sponsors.value?.filter((partner) => partner.logo).map(({name, logo, url}) => ({name, logo, url}));
+//});
 
 useSeoMeta({
   title: "Partenaires",
