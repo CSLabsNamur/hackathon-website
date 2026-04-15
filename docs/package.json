@@ -3,6 +3,7 @@
   "description": "Developer documentation for the hackathon platform",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",

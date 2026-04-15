@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "CSLabs Hackathon Docs",
+  title: "Hackathon Docs",
   description: "Developer documentation for the Hackathon platform",
   lang: "en-BE",
   lastUpdated: true,
@@ -16,22 +16,39 @@ export default defineConfig({
       provider: "local",
     },
     nav: [
-      {text: "Home", link: "/"},
-      {text: "Examples", link: "/markdown-examples"},
+      {text: "Onboarding", link: "/onboarding/"},
+      {text: "Architecture", link: "/architecture/"},
+      {text: "Frontend", link: "/frontend/"},
+      {text: "Backend", link: "/backend/"},
+      {text: "Operations", link: "/operations/"},
+      {text: "ADRs", link: "/adrs/"},
     ],
-
-    sidebar: [
-      {
-        text: "Examples",
-        items: [
-          {text: "Markdown Examples", link: "/markdown-examples"},
-          {text: "Runtime API Examples", link: "/api-examples"},
-        ],
-      },
-    ],
-
+    sidebar: {
+      "/onboarding/": [
+        {
+          text: "Onboarding",
+          items: [
+            {text: "Overview", link: "/onboarding/"},
+            {text: "Local Setup", link: "/onboarding/local-setup"},
+            {text: "Environment", link: "/onboarding/environment"},
+          ],
+        },
+      ],
+      "/architecture/": [
+        {
+          text: "Architecture",
+          items: [
+            {text: "Overview", link: "/architecture/"},
+            {text: "Runtime Overview", link: "/architecture/runtime-overview"},
+            {text: "Auth & RBAC", link: "/architecture/auth-rbac"},
+            {text: "Data Model", link: "/architecture/data-model"},
+          ],
+        },
+      ],
+    },
     socialLinks: [
-      {icon: "github", link: "https://github.com/vuejs/vitepress"},
+      {icon: "github", link: "https://github.com/CSLabsNamur/hackathon-website/"},
     ],
+    outline: "deep",
   },
 });

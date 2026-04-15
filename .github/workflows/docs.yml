@@ -1,0 +1,51 @@
+name: Build and deploy documentation
+
+on:
+  push:
+    branches: [ main, deploy ]
+    paths: [ "docs/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node + pnpm and install dependencies
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          database-url: ${{ env.DATABASE_URL }}
+      - name: Setup pages
+        uses: actions/configure-pages@v4
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build documentation
+        run: pnpm run docs:build
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/.vitepress/dist
+  deploy:
+    name: Deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: "CSLabs Hackathon Docs"
+  name: "Hackathon Docs"
   text: "Developer documentation for the Hackathon platform"
-  tagline: My great project tagline
+#  tagline: My great project tagline
   actions:
     - theme: brand
       text: Markdown Examples
