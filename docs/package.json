@@ -1,0 +1,23 @@
+{
+  "name": "@cslabs/hackathon-docs",
+  "description": "Developer documentation for the hackathon platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "author": "CSLabs",
+  "contributors": [
+    {
+      "name": "Martin Jacob",
+      "email": "martin.jcb@proton.me"
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "vitepress": "^2.0.0-alpha.17",
+    "vue": "^3.5.32"
+  }
+}
