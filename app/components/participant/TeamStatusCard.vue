@@ -33,13 +33,13 @@ const statusColor = computed(() => teamIssues.value.length === 0
   <UCard>
     <div class="grid gap-3 place-items-center justify-items-center">
       <UIcon :name="statusIcon" class="text-6xl" :class="statusColor"/>
-      <div class="text-center">
+      <div v-auto-animate class="text-center">
         <template v-if="teamIssues.length === 0">
           <p class="font-medium text-green-600">Votre équipe est valide.</p>
           <p class="text-sm text-muted">Tous les points bloquants sont actuellement levés.</p>
         </template>
         <template v-else>
-          <div class="flex flex-col gap-3 text-left">
+          <div v-auto-animate class="flex flex-col gap-3 text-left">
             <template v-for="(issue, index) in teamIssues" :key="`issue-${index}`">
               <div>
                 <p :class="colorsSeverityMap(issue.severity)">{{ issue.message }}</p>

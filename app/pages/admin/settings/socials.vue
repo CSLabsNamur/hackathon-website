@@ -123,7 +123,7 @@ function moveLinkDown(index: number) {
         </div>
       </template>
 
-      <div class="grid gap-4">
+      <div v-auto-animate class="grid gap-4">
         <UCard v-for="(link, index) in state.socialLinks" :key="link.id || link.type" variant="subtle"
                :ui="{header: 'flex items-center justify-between gap-3'}">
           <template #header>
@@ -151,7 +151,7 @@ function moveLinkDown(index: number) {
             </div>
           </template>
 
-          <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div v-auto-animate class="grid gap-4 grid-cols-1 md:grid-cols-2">
             <UFormField label="Type" :name="`socialLinks.${index}.type`" required>
               <USelectMenu :model-value="link.type" :items="getSocialTypeItems(index)" value-key="value"
                            :leading-icon="getDefaultSocialLinkValues(link.type)?.icon || link.icon || 'i-lucide-link'"

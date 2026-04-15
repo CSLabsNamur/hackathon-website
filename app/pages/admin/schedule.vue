@@ -200,7 +200,7 @@ setActions(computed(() => [{
                 description="Ajoutez le premier élément du planning pour commencer." icon="i-lucide-calendar-plus"/>
       </UCard>
 
-      <div class="sticky top-0 self-start">
+      <div v-auto-animate="{duration: 140}" class="sticky top-0 self-start">
         <AdminScheduleCreateCard v-if="isCreating" v-model:is-saving="isSaving" :editor-source
                                  :sorted-schedule="sortedSchedule" :refresh @cancel="cancelCreating"
                                  @created="selectSavedItem"/>

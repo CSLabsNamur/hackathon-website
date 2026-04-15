@@ -36,6 +36,7 @@ export default defineNuxtConfig({
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui",
+    "@formkit/auto-animate/nuxt",
     "@nuxt/image",
     "@nuxt/fonts",
     "@nuxt/scripts",

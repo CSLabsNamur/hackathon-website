@@ -116,7 +116,7 @@ async function onError(event: FormErrorEvent) {
 
     <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined" name="files"
                 :error-pattern="/files\.\d*/" :required="submissionRequest.required">
-      <div class="grid gap-2">
+      <div v-auto-animate class="grid gap-2">
         <UFileUpload v-model="state.files" :disabled="isSubmitting || !canSubmitThisRequest"
                      description="Choisir un fichier..."
                      :accept="acceptAttr" layout="list"
@@ -124,7 +124,7 @@ async function onError(event: FormErrorEvent) {
 
         <div v-if="existingFiles.length" class="grid gap-1">
           <p class="text-sm text-muted">Fichier(s) déjà envoyé(s) :</p>
-          <ul class="grid gap-1">
+          <ul v-auto-animate class="grid gap-1">
             <li v-for="f in existingFiles" :key="f.id" class="flex items-center justify-between gap-2 text-sm">
               <span class="truncate" :title="f.originalName">{{ f.originalName }}</span>
               <UButton size="xs" color="error" variant="ghost"
