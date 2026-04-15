@@ -39,14 +39,12 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Aller plus loin"
-              subtitle="Ton projet peut changer les choses.
+    <PageHero size="medium" title="Aller plus loin" subtitle="Ton projet peut changer les choses.
                        N'hésite pas à aller consulter nos sponsors pour lui construire un avenir !"/>
   </UPageHero>
 
   <UPageSection title="Le TRAKK | LinKube" headline="Toutes tes idées ont un avenir !" :features :links
-                :ui="{container: '!pt-0'}"
-  >
+                :ui="{container: '!pt-0'}">
     <template #description>
       <p>Étudiant ou jeune diplômé plein d’idée ? La niak d’entreprendre et de mener un projet de A jusque Z ?</p>
       <p>Tu as envie d’oser, expérimenter, entreprendre, innover de façon plus créative ?</p>

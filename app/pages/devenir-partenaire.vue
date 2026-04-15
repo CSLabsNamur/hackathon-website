@@ -24,9 +24,8 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Devenir partenaire"
-              subtitle="Envie de soutenir l’événement ? Contactez l’équipe et découvrons ensemble la formule qui vous convient."
-              :images="[{ name: 'CSLabs', logo: '/images/logo-cslabs.png', url: 'https://cslabs.be' }]"/>
+    <PageHero size="medium" title="Devenir partenaire"
+              subtitle="Envie de soutenir l'événement ? Contactez l'équipe et découvrons ensemble la formule qui vous convient."/>
   </UPageHero>
 
   <UContainer class="py-10">

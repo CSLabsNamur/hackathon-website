@@ -54,7 +54,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Informations" subtitle="Tout ce qu'il faut savoir pour profiter au mieux de l'événement."/>
+    <PageHero size="medium" title="Informations" subtitle="Tout ce qu'il faut savoir pour profiter au mieux de l'événement."/>
   </UPageHero>
 
   <UContainer>

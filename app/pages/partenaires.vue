@@ -13,7 +13,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Nos partenaires" subtitle="Sans eux, rien ne serait possible !" :images="heroSponsors"/>
+    <PageHero size="medium" title="Nos partenaires" subtitle="Sans eux, rien ne serait possible !"/>
   </UPageHero>
 
   <UContainer class="max-w-[80vw]">

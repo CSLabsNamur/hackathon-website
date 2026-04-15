@@ -77,7 +77,7 @@ useSeoMeta({
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero title="Formulaire d'inscription"
+    <PageHero size="medium" title="Formulaire d'inscription"
               subtitle="Remplissez le formulaire ci-dessous pour vous inscrire à l'événement."/>
   </UPageHero>
 

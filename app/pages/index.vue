@@ -71,12 +71,8 @@ const prix: PageFeatureProps[] = [
 
 <template>
   <UPageHero :ui="{container: 'max-w-full !px-0'}">
-    <PageHero :title="heroTitle"
-              :subtitle="heroSubtitle"
-              :content="!settings?.event.teaserEnabled
-                ? formatDateRange(settings!.event.startDate, settings!.event.endDate, true, true)
-                : undefined"
-              :images="organizers"/>
+    <PageHero size="large" :title="heroTitle" :subtitle="heroSubtitle" :images="organizers"
+              :content="!settings?.event.teaserEnabled ? formatDateRange(settings!.event.startDate, settings!.event.endDate, true, true) : undefined"/>
   </UPageHero>
 
   <UContainer>
