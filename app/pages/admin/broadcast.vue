@@ -373,7 +373,7 @@ async function onError(event: FormErrorEvent) {
                    :editable="!isSubmitting && canSendBroadcast" :starter-kit="starterKit"
                    :extensions="[Emoji, CharacterCount.configure({limit: 20000})]"
                    :placeholder="{placeholder: 'Contenu de l’annonce...', showOnlyWhenEditable: true}"
-                   class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4">
+                   class="w-full min-h-72 flex flex-col gap-2 mt-2 md:mt-4 border border-muted rounded-md p-6 pt-2.5 focus-within:ring-2 focus-within:ring-primary">
             <UEditorToolbar v-if="$device.isDesktopOrTablet" :editor class="sm:px-8 overflow-x-auto"
                             :items="toolbarItems"/>
             <UEditorToolbar v-else :editor class="sm:px-8 overflow-x-auto" :items="toolbarItemsMobile"

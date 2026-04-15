@@ -8,10 +8,12 @@ withDefaults(defineProps<{
   title: "Tableau de bord",
 });
 
-const {data: currentParticipant, status} = await useCurrentParticipant();
+const {data: currentParticipant, status, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentParticipant);
 const {actions} = useDashboardNavbar();
+
+useRefreshOnPageReturn(refreshCurrentParticipant);
 
 const open = ref(false);
 const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");

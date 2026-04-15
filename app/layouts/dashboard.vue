@@ -8,9 +8,11 @@ withDefaults(defineProps<{
   title: "Tableau de bord",
 });
 
-const {data: currentAdmin} = await useCurrentAdmin();
+const {data: currentAdmin, refresh: refreshCurrentAdmin} = await useCurrentAdmin();
 const {data: settings} = await useSettings({lazy: true});
 const {canPermissions} = useAbility(currentAdmin);
+
+useRefreshOnPageReturn(refreshCurrentAdmin);
 
 const colorMode = useColorMode();
 // Provide theme to echarts components
