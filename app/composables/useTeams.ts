@@ -8,8 +8,9 @@ interface UseTeamsParams {
 
 export const useTeams = async (params?: UseTeamsParams) => {
   return useAPI<AdminTeam[]>("/api/teams", {
+    key: "teams",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 

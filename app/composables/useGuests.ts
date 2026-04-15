@@ -7,6 +7,8 @@ interface UseGuestsParams {
 
 export const useGuests = async (params?: UseGuestsParams) => {
   return useAPI("/api/guests", {
+    key: "guests",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
   });
 };

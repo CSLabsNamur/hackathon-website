@@ -7,8 +7,9 @@ interface UseRoomsParams {
 
 export const useRooms = async (params?: UseRoomsParams) => {
   return useAPI("/api/rooms", {
+    key: "rooms",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 

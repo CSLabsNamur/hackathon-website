@@ -7,8 +7,9 @@ interface UseAdminsParams {
 
 export const useAdmins = async (params?: UseAdminsParams) => {
   return useAPI("/api/admins", {
+    key: "admins",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 

@@ -8,8 +8,9 @@ interface UseParticipantsParams {
 
 export const useParticipants = async (params?: UseParticipantsParams) => {
   return useAPI<AdminParticipant[]>("/api/participants", {
+    key: "participants",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 

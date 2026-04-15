@@ -9,8 +9,9 @@ interface UseSubmissionsParams {
 
 export const useSubmissionsRequests = async (params?: UseSubmissionsParams) => {
   return useAPI("/api/submissions/requests", {
+    key: "submissions-requests",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 
@@ -46,8 +47,9 @@ export const useSubmissionsRequestsActions = () => {
 
 export const useSubmissions = async (params?: UseSubmissionsParams) => {
   return useAPI("/api/submissions/me", {
+    key: "submissions",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 

@@ -7,6 +7,7 @@ interface UseSettingsParams {
 export const useSettings = async (params?: UseSettingsParams) => {
   return useAPI("/api/settings", {
     key: "settings",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
   });
 };
@@ -14,6 +15,7 @@ export const useSettings = async (params?: UseSettingsParams) => {
 export const useAdminSettings = async (params?: UseSettingsParams) => {
   return useAPI("/api/admin/settings", {
     key: "admin-settings",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
   });
 };

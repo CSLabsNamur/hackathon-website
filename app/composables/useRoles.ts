@@ -7,12 +7,17 @@ interface UseRolesParams {
 
 export const useRoles = async (params?: UseRolesParams) => {
   return useAPI("/api/roles", {
+    key: "roles",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
   });
 };
 
 export const usePermissions = async () => {
-  return useAPI("/api/permissions");
+  return useAPI("/api/permissions", {
+    key: "permissions",
+    dedupe: "defer",
+  });
 };
 
 export const useRolesActions = () => {

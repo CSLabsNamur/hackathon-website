@@ -7,6 +7,8 @@ interface UseSponsorsParams {
 
 export const useSponsors = async (params?: UseSponsorsParams) => {
   return useAPI("/api/sponsors", {
+    key: "sponsors",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
   });
 };

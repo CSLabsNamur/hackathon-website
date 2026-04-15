@@ -7,8 +7,9 @@ interface UseScheduleParams {
 
 export const useSchedule = async (params?: UseScheduleParams) => {
   return useAPI("/api/schedule", {
+    key: "schedule",
+    dedupe: "defer",
     lazy: params?.lazy ?? false,
-    //cache: "force-cache",
   });
 };
 
