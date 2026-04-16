@@ -1,7 +1,7 @@
 {
   "name": "@cslabs/hackathon-website",
   "description": "CSLabs' Hackathon Website",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "BSD-3-Clause",
   "author": "CSLabs",
@@ -14,7 +14,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CSLabsNamur/hackathon-front-nuxt.git"
+    "url": "git+https://github.com/CSLabsNamur/hackathon-website.git"
   },
   "scripts": {
     "postinstall": "nuxt prepare && pnpm run db:generate",
