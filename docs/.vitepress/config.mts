@@ -45,6 +45,42 @@ export default defineConfig({
           ],
         },
       ],
+      "/frontend/": [
+        {
+          text: "Frontend",
+          items: [
+            {text: "Overview", link: "/frontend/"},
+          ],
+        },
+      ],
+      "/backend/": [
+        {
+          text: "Backend",
+          items: [
+            {text: "Overview", link: "/backend/"},
+            {text: "API", link: "/backend/api"},
+          ],
+        },
+      ],
+      "/operations/": [
+        {
+          text: "Operations",
+          items: [
+            {text: "Overview", link: "/operations/"},
+          ],
+        },
+      ],
+      "/adrs/": [
+        {
+          text: "ADRs",
+          items: [
+            {text: "Overview", link: "/adrs/"},
+            {text: "Nuxt", link: "/adrs/nuxt"},
+            {text: "Prisma", link: "/adrs/prisma"},
+            {text: "Supabase", link: "/adrs/supabase"},
+          ],
+        },
+      ],
     },
     socialLinks: [
       {icon: "github", link: "https://github.com/CSLabsNamur/hackathon-website/"},
