@@ -8,6 +8,23 @@ description: A guide to setting up your local development environment for the pr
 This guide will walk you through setting up a local development environment for the project using Docker and Supabase.
 By the end, you should be able to work on the project locally and test your changes before deploying them onto Coolify.
 
+## Prerequisites
+
+Before you start, make sure you have the following tools available:
+
+- Docker, for Supabase, Maildev and ClamAV
+- Node.js 22
+- `corepack`, which should be included by default
+
+> [!NOTE]
+> Fom Node.js 25 and up, `corepack` will not be included by default.
+
+You can then enable `pnpm` with:
+
+```sh
+corepack enable
+```
+
 ## Install Docker
 
 The instructions are available [here](https://docs.docker.com/get-started/get-docker/).
@@ -176,7 +193,7 @@ command ([source](https://supabase.com/docs/guides/self-hosting/docker#starting-
 docker compose up -d
 ```
 
-## Setup the hackathon website
+## Setup the platform
 
 First, you need to clone the repo:
 
@@ -196,7 +213,7 @@ After that, update the `.env` to match the config of Supabase and Maildev. It sh
 ```sh
 # (...)
 
-NUXT_SITE_URL="localhost"
+NUXT_SITE_URL="http://localhost:3000"
 
 # (...)
 
@@ -232,22 +249,41 @@ and executing the content of those files.
 Finally, you can start the website:
 
 ```sh
-# Docker (start Supabase and Maildev)
+# In the separate `supabase-project` folder
 docker compose up -d
 
-# Local
+# In this repository
 pnpm install
 pnpm run db:migrate
-./docker-entrypoint.sh
+pnpm run db:seed
 pnpm run dev
 ```
 
-If you have a heap memory error while building the website, you can try increasing the Node.js heap size:
+`pnpm run db:seed` is important on a fresh database.
+It creates the default settings rows, the system roles, and the initial admin profile stored in the application
+database. By default, the initial admin profile has the email address `it@cslabs.be`.
+
+If you want to run the application container from this repository's own `docker-compose.yaml` instead, use:
 
 ```sh
-export NODE_OPTIONS="--max-old-space-size=4096"
+docker compose up --build
 ```
 
-## Create a user
+This compose file starts the app container and ClamAV.
+It does not replace the separate Supabase self-hosted stack.
 
-To create a user, you need to add it directly to the postgres DB from the Supabase dashboard.
+> [!TIP]
+> If you have a heap memory error while building the website, you can try increasing the Node.js heap size:
+>
+> ```sh
+> export NODE_OPTIONS="--max-old-space-size=4096"
+> ```
+
+## Creating a user
+
+Participant accounts are created through the registration form.
+
+Organizer accounts are created by sending invites through the admin panel. Don't forget to assign them a fitting role.
+Nobody should have permissions that they don't need. We follow the principle of least privilege, so if an organizer
+doesn't need to manage the settings, don't give them access to the settings page. You can create custom roles with
+custom permissions if needed as well.

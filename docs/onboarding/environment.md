@@ -9,7 +9,7 @@ This guide will walk you through setting up the environment variables for the pr
 
 ## Create a `.env` file
 
-During the (local setup guide)[./local-setup.md], you should have copied the `.env.example` file to `.env`.
+During the [local setup guide](/onboarding/local-setup), you should have copied the `.env.example` file to `.env`.
 This file contains all the environment variables needed for the project.
 
 ## Update the environment variables
