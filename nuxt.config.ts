@@ -2,7 +2,7 @@ const supabaseHostname = new URL(process.env.SUPABASE_URL || "http://localhost")
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2025-07-15",
+  compatibilityDate: "2026-04-16",
   devtools: {enabled: true},
   experimental: {
     checkOutdatedBuildInterval: 1000 * 60,  // 1 minute

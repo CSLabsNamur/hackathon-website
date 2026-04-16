@@ -20,6 +20,8 @@ You can look at the route rules in `nuxt.config.ts` to see how that works.
 - `app/middleware/`: route guards
 - `app/plugins/`: app-wide Nuxt plugins (e.g. the custom fetch client)
 - `app/utils/`: shared client-side helpers
+- `shared/schemas/`: [`Valibot`](https://valibot.dev/) validation schemas shared between client and server
+- `shared/utils/`: shared permission and helper logic
 
 ## Layouts
 
