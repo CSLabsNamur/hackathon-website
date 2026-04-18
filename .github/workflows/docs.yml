@@ -26,20 +26,24 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup Node + pnpm and install dependencies
+        working-directory: ./docs
         uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          database-url: ${{ env.DATABASE_URL }}
       - name: Setup pages
+        working-directory: ./docs
         uses: actions/configure-pages@v4
       - name: Install dependencies
+        working-directory: ./docs
         run: pnpm install --frozen-lockfile
       - name: Build documentation
-        run: pnpm run docs:build
+        working-directory: ./docs
+        run: pnpm run build
       - name: Deploy to GitHub Pages
+        working-directory: ./docs
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/.vitepress/dist
+          path: .vitepress/dist
   deploy:
     name: Deploy
     environment:

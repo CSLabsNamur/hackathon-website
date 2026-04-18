@@ -36,7 +36,7 @@ For a protected route, the server does the following:
 5. Check the required permission before doing any sensitive work.
 
 This logic is centralized in the server utilities, which means new routes should reuse the existing helpers instead of
-rolling their own auth checks. Read more about this in the [API documentation](./api.md#authorization-patterns).
+rolling their own auth checks. Read more about this in the [API documentation](/backend/api#authorization-patterns).
 
 ## Roles and permissions
 
