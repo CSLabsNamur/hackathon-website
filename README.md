@@ -3,6 +3,9 @@
 Ce dépôt contient le code source du site web du Hackathon organisé par CSLabs, disponible
 sur [hackathon.cslabs.be](https://hackathon.cslabs.be).
 
+> [!NOTE]
+> La documentation développeur complète est disponible sur [docs.hackathon.cslabs.be](https://docs.hackathon.cslabs.be).
+
 # Installation
 
 Assurez-vous d'avoir [Node.js](https://nodejs.org/) installé sur votre machine, d'activer `corepack` et
