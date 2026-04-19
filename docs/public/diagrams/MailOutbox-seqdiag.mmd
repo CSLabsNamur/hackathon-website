@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant API as API route
+    participant Outbox as EmailOutbox table
+    participant Process as processEmailOutbox
+    participant Cron as emails:process task
+    participant Mailer as Nodemailer / SMTP
+
+    API->>Outbox: enqueueEmail(...)
+    API->>API: request can complete
+
+    Note over Cron,Outbox: Nitro runs emails:process every 5 minutes
+    Cron->>Process: processEmailOutbox()
+    Process->>Outbox: load PENDING / FAILED jobs
+    Process->>Outbox: claim one job as PROCESSING
+    Process->>Mailer: send mail
+
+    alt send succeeds
+        Mailer-->>Process: accepted
+        Process->>Outbox: mark SENT
+    else send fails, retries remain
+        Mailer-->>Process: error
+        Process->>Outbox: mark PENDING and reschedule
+    else retries exhausted
+        Mailer-->>Process: error
+        Process->>Outbox: mark FAILED
+    end

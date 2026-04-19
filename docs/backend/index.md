@@ -119,6 +119,9 @@ scheduled task processes the outbox and sends the emails, marking them as sent o
 This way, if the email service is down or there is a transient error, we don't lose any emails, and we can retry sending
 them later.
 
+![MailOutbox-seqdiag.png](../public/diagrams/MailOutbox-seqdiag.png)
+![MailOutbox-statediag.png](../public/diagrams/MailOutbox-statediag.png)
+
 ## Cron jobs
 
 Nitro scheduled tasks are enabled in `nuxt.config.ts`.
