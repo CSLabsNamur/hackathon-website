@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Client
+    participant API as API route
+    participant Supabase as Supabase Auth client
+    participant DB as Prisma / PostgreSQL
+    participant AuthH as Authorization Helper
+
+    Client->>API: Request with Supabase session/JWT
+    API->>Supabase: Read authenticated user
+    Supabase-->>API: JWT plaintext payload
+    API->>DB: Find User by supabaseAuthId with JWT.sub
+    DB-->>API: User + profiles + roles + permissions
+    API->>AuthH: createAbilityForUser(dbUser)
+    AuthH-->>API: App ability
+    API->>AuthH: requirePermission("...")
+    AuthH-->>API: allowed or denied
+    alt Permission granted
+        API-->>Client: Continue route handler
+    else Permission denied
+        API-->>Client: 403 Forbidden
+    end

@@ -1,0 +1,25 @@
+flowchart LR
+    Browser["Browser"]
+
+    subgraph Nuxt["Nuxt 4 application<br/>single deployable unit"]
+        Public["Public pages<br/>SSR"]
+        Dash["Dashboards<br/>CSR"]
+        API["Nitro API routes"]
+        Tasks["Nitro scheduled tasks"]
+    end
+
+    Browser --> Public
+    Browser --> Dash
+
+    Public -->|"forms / page data"| API
+    Dash --> API
+
+    API -->|"Database access"| Prisma["Prisma ORM"]
+    Prisma --> Supabase
+    API -->|"Authentication"| Supabase
+    API -->|"File storage"| Supabase
+    API -->|"Virus scanning"| AV["ClamAV"]
+    API --> SMTP["SMTP relay/server"]
+
+    Tasks -->|"send queued emails"| SMTP
+    Tasks -->|"process email outbox"| Supabase

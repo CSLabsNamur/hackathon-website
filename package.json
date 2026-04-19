@@ -1,7 +1,7 @@
 {
   "name": "@cslabs/hackathon-website",
   "description": "CSLabs' Hackathon Website",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "license": "BSD-3-Clause",
   "author": "CSLabs",
@@ -14,7 +14,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CSLabsNamur/hackathon-front-nuxt.git"
+    "url": "git+https://github.com/CSLabsNamur/hackathon-website.git"
   },
   "scripts": {
     "postinstall": "nuxt prepare && pnpm run db:generate",
@@ -34,7 +34,10 @@
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "docs:dev": "pnpm --dir docs run dev",
+    "docs:build": "pnpm --dir docs run build",
+    "docs:preview": "pnpm --dir docs run preview"
   },
   "packageManager": "pnpm@9.15.9",
   "dependencies": {

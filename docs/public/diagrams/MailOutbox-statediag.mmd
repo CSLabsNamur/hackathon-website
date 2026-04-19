@@ -1,0 +1,7 @@
+stateDiagram-v2
+    [*] --> PENDING: enqueueEmail
+    PENDING --> PROCESSING: claimed by processEmailOutbox
+    PROCESSING --> SENT: SMTP send succeeds
+    PROCESSING --> PENDING: send fails, retry scheduled
+    PROCESSING --> FAILED: max attempts reached
+    FAILED --> PROCESSING: retried manually / selected by id
