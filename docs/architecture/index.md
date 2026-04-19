@@ -33,6 +33,8 @@ The application runs as one deployable unit with a few important external servic
 - an SMTP server/relay used by Nodemailer;
 - ClamAV for antivirus scanning on uploads.
 
+![Architecture-flowchart.png](../public/diagrams/Architecture-flowchart.png)
+
 The codebase is organized into four main directories, which follows the Nuxt 4 structure:
 
 - `app/` contains pages, layouts, components, composables, middleware and client-side utilities of the frontend.
@@ -87,7 +89,7 @@ The email pipeline is split in two parts:
 - HTML content is generated from MJML templates compiled into TypeScript render functions.
 - Email jobs are stored in `EmailOutbox`, then processed by a Nitro scheduled task every 5 minutes.
 
-For detailed explanation, check out the [email documentation](/backend#email).
+For detailed explanation, check out the [email documentation](/backend/#email).
 
 ## Important architectural choices
 
