@@ -232,7 +232,7 @@ const {actions} = useDashboardNavbar();
     <UDashboardSidebar collapsible resizable class="bg-elevated/25" :ui="{footer: 'lg:border-t lg:border-default'}">
       <template #header>
         <div class="mx-auto">
-          <NuxtLink to="/admin">
+          <NuxtLink to="/">
             <img :src="dashboardLogoUrl" alt="Logo Hackathon" class="size-16 object-contain">
           </NuxtLink>
         </div>
