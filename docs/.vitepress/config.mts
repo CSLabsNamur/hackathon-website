@@ -39,7 +39,6 @@ export default defineConfig({
           text: "Architecture",
           items: [
             {text: "Overview", link: "/architecture/"},
-            {text: "Runtime Overview", link: "/architecture/runtime-overview"},
             {text: "Auth & RBAC", link: "/architecture/auth-rbac"},
             {text: "Data Model", link: "/architecture/data-model"},
           ],

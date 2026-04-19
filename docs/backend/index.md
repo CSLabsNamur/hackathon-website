@@ -112,11 +112,6 @@ All of this is configured through environment variables.
 
 If you want an example, check out `server/api/sponsors/index.post.ts`.
 
-## Cron jobs
-
-Nitro scheduled tasks are enabled in `nuxt.config.ts`.
-At the moment, the main scheduled job processes the email outbox every 5 minutes.
-
 ## Email outbox
 
 To ensure reliable email delivery, we use an outbox pattern, where emails to be sent are stored in the database, and a
@@ -124,3 +119,7 @@ scheduled task processes the outbox and sends the emails, marking them as sent o
 This way, if the email service is down or there is a transient error, we don't lose any emails, and we can retry sending
 them later.
 
+## Cron jobs
+
+Nitro scheduled tasks are enabled in `nuxt.config.ts`.
+At the moment, the main scheduled job processes the email outbox every 5 minutes.

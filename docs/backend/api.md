@@ -62,10 +62,9 @@ For JSON routes, the preferred pattern is to validate with Valibot and a shared 
 For multipart routes, the flow is different (more details on why in the [overview](./index.md#validation) page):
 
 - parse with Formidable;
-- normalize fields manually;
-- validate the non-file part;
-- validate file type and size;
-- scan with ClamAV if relevant.
+- validate file type and size.
+- scan the file(s) with ClamAV;
+- validate the non-file part with Valibot and a shared schema;
 
 Because of a bug in the [Nuxt Security](https://nuxt-security.vercel.app/) module, routes using Formidable must disable
 the CSRF check. If enabled, this will cause Formidable parser to hang.
