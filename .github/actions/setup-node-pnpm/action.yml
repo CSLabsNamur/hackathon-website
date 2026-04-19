@@ -7,6 +7,14 @@ inputs:
   pnpm-version:
     description: 'The pnpm version to setup'
     required: false
+  working-directory:
+    description: 'The directory where pnpm install should run'
+    required: false
+    default: '.'
+  cache-dependency-path:
+    description: 'The pnpm lockfile path used for cache invalidation'
+    required: false
+    default: 'pnpm-lock.yaml'
   database-url:
     description: 'The database URL to use during dependency installation'
     required: false
@@ -25,7 +33,6 @@ runs:
     - name: Setup pnpm
       uses: pnpm/action-setup@v4
       with:
-        cache: true
         version: ${{ inputs.pnpm-version }}
 
     - name: Setup Node.js cache
@@ -33,6 +40,7 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: pnpm
+        cache-dependency-path: ${{ inputs.cache-dependency-path }}
 
     - name: Show versions
       shell: bash
@@ -42,6 +50,7 @@ runs:
 
     - name: Install dependencies
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: pnpm install --frozen-lockfile
       env:
         DATABASE_URL: ${{ inputs.database-url }}
