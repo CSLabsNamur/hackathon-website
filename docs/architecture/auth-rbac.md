@@ -13,6 +13,8 @@ Authentication and authorization are two separate concerns in the application:
 That distinction is important because a valid Supabase account is not enough on its own.
 The user also needs a valid application-side profile and matching roles.
 
+![AuthRBAC-seqdiag.png](/diagrams/AuthRBAC-seqdiag.png)
+
 ## Identity model
 
 There are three important layers to keep in mind:
