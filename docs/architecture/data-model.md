@@ -30,6 +30,8 @@ The main rules to keep in mind are:
 - a person's permissions are granted through roles assigned in `UserRoleAssignment`;
 - permissions are defined in the shared permission catalog and linked to roles through `RolePermission`.
 
+![Identity-erdiag.png](/diagrams/Identity-erdiag.png)
+
 ## Teams and submissions
 
 These tables describe the actual event participation:
@@ -47,6 +49,8 @@ In practice, this means:
 
 - some requests create one submission per participant;
 - some requests create one submission per team, but they are still attached to a participant record for storage.
+
+![Participation-erdiag.png](/diagrams/Participation-erdiag.png)
 
 ## Settings and event configuration
 

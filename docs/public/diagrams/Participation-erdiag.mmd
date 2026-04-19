@@ -1,0 +1,41 @@
+erDiagram
+    PARTICIPANT {
+        string id PK
+        string userId FK
+        string teamId FK
+    }
+
+    TEAM {
+        string id PK
+        string roomId FK
+        string token UK
+    }
+
+    ROOM {
+        string id PK
+        int sequence UK
+    }
+
+    SUBMISSION_REQUEST {
+        string id PK
+        boolean teamRequest
+        string type
+    }
+
+    SUBMISSION {
+        string id PK
+        string requestId FK
+        string participantId FK
+    }
+
+    SUBMISSION_FILE {
+        string id PK
+        string submissionId FK
+        string path
+    }
+
+    ROOM o|--o{ TEAM : hosts
+    TEAM o|--o{ PARTICIPANT : "is part of"
+    PARTICIPANT ||--o{ SUBMISSION : creates
+    SUBMISSION_REQUEST ||--o{ SUBMISSION : asks_for
+    SUBMISSION ||--o{ SUBMISSION_FILE : contains

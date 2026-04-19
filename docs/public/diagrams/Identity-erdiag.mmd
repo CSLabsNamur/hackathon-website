@@ -1,0 +1,43 @@
+erDiagram
+    USER[User] {
+        string id PK
+        string supabaseAuthId UK
+        string email UK
+    }
+
+    ADMIN[Admin] {
+        string id PK
+        string userId FK
+    }
+
+    PARTICIPANT[Participant] {
+        string id PK
+        string userId FK
+    }
+
+    ROLE[Role] {
+        string id PK
+        string key UK
+    }
+
+    PERMISSION[Permission] {
+        string id PK
+        string key UK
+    }
+
+    USER_ROLE_ASSIGNMENT[UserRoleAssignment] {
+        string userId FK
+        string roleId FK
+    }
+
+    ROLE_PERMISSION[RolePermission] {
+        string roleId FK
+        string permissionId FK
+    }
+
+    USER ||--o| ADMIN : "has admin profile"
+    USER ||--o| PARTICIPANT : "has participant profile"
+    USER ||--o{ USER_ROLE_ASSIGNMENT : receives
+    ROLE ||--o{ USER_ROLE_ASSIGNMENT : assigned
+    ROLE ||--o{ ROLE_PERMISSION : grants
+    PERMISSION ||--o{ ROLE_PERMISSION : links

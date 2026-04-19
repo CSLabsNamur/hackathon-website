@@ -33,7 +33,7 @@ The application runs as one deployable unit with a few important external servic
 - an SMTP server/relay used by Nodemailer;
 - ClamAV for antivirus scanning on uploads.
 
-![Architecture-flowchart.png](../public/diagrams/Architecture-flowchart.png)
+![Architecture-flowchart.png](/diagrams/Architecture-flowchart.png)
 
 The codebase is organized into four main directories, which follows the Nuxt 4 structure:
 
