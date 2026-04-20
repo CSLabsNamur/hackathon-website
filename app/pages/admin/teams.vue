@@ -22,10 +22,9 @@ const {data: currentAdmin} = await useCurrentAdmin();
 const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 
-const toast = useToast();
 const dayjs = useDayjs();
 const overlay = useOverlay();
-const {copy} = useClipboard();
+const {copyWithToast} = useCopyWithToast();
 
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
@@ -155,11 +154,9 @@ function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
       label: "Copier le token",
       icon: "i-lucide-clipboard-copy",
       onSelect: () => {
-        copy(row.original.token);
-        toast.add({
+        copyWithToast(row.original.token, {
           title: "Token copié",
           description: `Le token de l'équipe ${row.original.name} a été copié dans le presse-papier.`,
-          color: "success",
           duration: 1500,
         });
       },

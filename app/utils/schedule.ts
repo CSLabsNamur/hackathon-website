@@ -44,6 +44,33 @@ export function buildSuggestedScheduleDateString(startTime: string | Date, endTi
   return `${capitalize(start.format("dddd H[h]mm"))} - ${capitalize(end.format("dddd H[h]mm"))}`;
 }
 
+function compareScheduleItems(a: ScheduleItem, b: ScheduleItem) {
+  const dayjs = useDayjs();
+
+  const startDiff = dayjs(a.startTime).valueOf() - dayjs(b.startTime).valueOf();
+  if (startDiff !== 0) return startDiff;
+
+  const endDiff = dayjs(a.endTime).valueOf() - dayjs(b.endTime).valueOf();
+  if (endDiff !== 0) return endDiff;
+
+  return a.title.localeCompare(b.title, "fr");
+}
+
+export function sortScheduleItems(items: ScheduleItem[] | null | undefined) {
+  return [...(items ?? [])].sort(compareScheduleItems);
+}
+
+export function isScheduleItemLive(item: ScheduleItem, referenceTime: string | Date = new Date()) {
+  const dayjs = useDayjs();
+  const now = dayjs(referenceTime);
+
+  return now.isSameOrAfter(dayjs(item.startTime)) && now.isBefore(dayjs(item.endTime));
+}
+
+export function findLiveScheduleItem(items: ScheduleItem[] | null | undefined, referenceTime: string | Date = new Date()) {
+  return (items ?? []).find((item) => isScheduleItemLive(item, referenceTime)) ?? null;
+}
+
 /**
  * Converts a `ScheduleItem` (as stored in the database) into the shape expected by the form for creating/editing schedule items, including formatting the start/end times as `YYYY-MM-DDTHH:mm` strings for use in `datetime-local` inputs.
  *

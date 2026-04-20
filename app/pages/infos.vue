@@ -2,9 +2,8 @@
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
 import type { TimelineItem } from "@nuxt/ui";
 
-const {copy} = useClipboard();
-const toast = useToast();
 const {data: settings} = await useSettings();
+const {copyWithToast} = useCopyWithToast();
 
 const {data: schedule} = await useSchedule({lazy: false});
 
@@ -13,11 +12,9 @@ const fullAddress = computed(() => [
   settings.value!.event.locationAddress,
 ]);
 const copyAddress = () => {
-  copy(fullAddress.value.join(", "));
-  toast.add({
+  copyWithToast(fullAddress.value.join(", "), {
     title: "Adresse copiée",
     description: "L'adresse de l'événement a été copiée dans le presse-papier.",
-    color: "success",
   });
 };
 
