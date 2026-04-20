@@ -128,11 +128,11 @@ useSeoMeta({
         </UFormField>
 
         <!-- Socials -->
-        <UFormField label="Compte GitHub" name="githubAccount">
+        <UFormField label="Profil GitHub" name="githubAccount" hint="Nom d'utilisateur ou URL du profil">
           <UInput v-model="state.githubAccount" icon="i-simple-icons-github" class="w-full"/>
         </UFormField>
 
-        <UFormField label="Compte LinkedIn" name="linkedInAccount">
+        <UFormField label="Profil LinkedIn" name="linkedInAccount" hint="Nom d'utilisateur ou URL du profil">
           <UInput v-model="state.linkedInAccount" icon="i-simple-icons-linkedin" class="w-full"/>
         </UFormField>
 

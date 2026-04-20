@@ -1,7 +1,11 @@
 // @ts-check
-import withNuxt from './.nuxt/eslint.config.mjs';
+import withNuxt from "./.nuxt/eslint.config.mjs";
 
-export default withNuxt({
+export default withNuxt(
+  {
+    ignores: ["docs/**/*"],
+  },
+  {
     rules: {
       "vue/first-attribute-linebreak": "off",
       "vue/require-default-prop": "off",
@@ -16,7 +20,7 @@ export default withNuxt({
   {
     files: ["server/mail/generated/**/*.{js,ts}"],
     linterOptions: {
-      reportUnusedDisableDirectives: 'off',
-    }
-  }
+      reportUnusedDisableDirectives: "off",
+    },
+  },
 );

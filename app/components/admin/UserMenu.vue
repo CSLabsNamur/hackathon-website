@@ -6,10 +6,7 @@ const props = defineProps<{
   collapsed?: boolean
 }>();
 
-const avatarUrl = computed(() => {
-  const seed = encodeURIComponent(`${props.admin.user.firstName} ${props.admin.user.lastName}`);
-  return `https://api.dicebear.com/6.x/initials/svg?seed=${seed}`;
-});
+const avatarUrl = computed(() => getAvatarUrl(props.admin));
 
 const items: DropdownMenuItem[][] = [[
 //  {

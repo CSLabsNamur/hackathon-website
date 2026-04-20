@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import type { FormErrorEvent, FormSubmitEvent } from "#ui/types";
-import type { Reactive } from "vue";
-import { default as schema, type EditParticipantSchema } from "#shared/schemas/participants/edit";
+import {
+  default as schema,
+  type EditParticipantFormState,
+  type EditParticipantSchema,
+} from "#shared/schemas/participants/edit";
 
 const props = defineProps<{ participant: CurrentParticipant | AdminParticipant, adminEdit?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
 
-const state: Reactive<EditParticipantSchema> = reactive({
+const state = reactive<EditParticipantFormState>({
   firstName: props.participant.user.firstName,
   lastName: props.participant.user.lastName,
   email: props.participant.user.email,
@@ -41,7 +44,6 @@ async function onSubmit(event: FormSubmitEvent<EditParticipantSchema>) {
       color: "success",
     });
 
-    console.log(event.data);
     emit("close", true);
   } finally {
     isSubmitting.value = false;
@@ -81,11 +83,11 @@ async function onError(event: FormErrorEvent) {
         </UFormField>
 
         <!-- Socials -->
-        <UFormField label="Compte GitHub" name="githubAccount">
+        <UFormField label="Profil GitHub" name="githubAccount" hint="Nom d'utilisateur ou URL du profil">
           <UInput v-model="state.githubAccount" icon="i-simple-icons-github" class="w-full"/>
         </UFormField>
 
-        <UFormField label="Compte LinkedIn" name="linkedInAccount">
+        <UFormField label="Profil LinkedIn" name="linkedInAccount" hint="Nom d'utilisateur ou URL du profil">
           <UInput v-model="state.linkedInAccount" icon="i-simple-icons-linkedin" class="w-full"/>
         </UFormField>
 

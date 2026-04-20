@@ -9,9 +9,18 @@ export default defineEventHandler(async (event) => {
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
-  const {firstName, lastName, email, ...data} = await readValidatedBody(event, v.parser(schema));
+  const {
+    firstName,
+    lastName,
+    email,
+    githubAccount,
+    linkedInAccount,
+    ...data
+  } = await readValidatedBody(event, v.parser(schema));
   const payload: ParticipantUpdateInput = {
     ...data,
+    githubAccount: githubAccount ?? null,
+    linkedInAccount: linkedInAccount ?? null,
     user: {
       update: {
         firstName,

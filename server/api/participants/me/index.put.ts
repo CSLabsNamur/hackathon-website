@@ -6,10 +6,19 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 export default defineEventHandler(async (event) => {
   const {authUser, dbUser} = await requirePermission(event, "participants.update.own");
 
-  const {firstName, lastName, email, ...data} = await readValidatedBody(event, v.parser(schema));
+  const {
+    firstName,
+    lastName,
+    email,
+    githubAccount,
+    linkedInAccount,
+    ...data
+  } = await readValidatedBody(event, v.parser(schema));
 
   const payload: ParticipantUpdateInput = {
     ...data,
+    githubAccount: githubAccount ?? null,
+    linkedInAccount: linkedInAccount ?? null,
     user: {
       update: {
         firstName,

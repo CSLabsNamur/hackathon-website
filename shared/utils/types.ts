@@ -133,6 +133,27 @@ export type CurrentParticipant = ParticipantScalar & {
   user: ParticipantUser;
 } & AuthorizationInfo;
 
+export type ParticipantPublicProfile = SerializeObject<Prisma.ParticipantGetPayload<{
+  select: {
+    id: true;
+    school: true;
+    curriculumVitae: true;
+    githubAccount: true;
+    linkedInAccount: true;
+    team: {
+      select: {
+        name: true;
+      };
+    };
+    user: {
+      select: {
+        firstName: true;
+        lastName: true;
+      };
+    };
+  };
+}>>;
+
 type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
   select: {
     id: true;

@@ -28,12 +28,11 @@ definePageMeta({
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
-const {renderParticipantBadge} = useParticipantsActions();
+const {renderParticipantBadge, downloadParticipantCv} = useParticipantsActions();
 const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
 
-const supabase = useSupabaseClient();
 const toast = useToast();
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -42,24 +41,6 @@ const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
 const exportModal = overlay.create(AdminExportModal);
-
-const downloadCV = async (participant: AdminParticipant) => {
-  if (!participant.curriculumVitae) {
-    return;
-  }
-  const blob = await supabase.storage.from("cvs").download(participant.curriculumVitae);
-
-  if (blob.error || !blob.data) {
-    toast.add({
-      title: "Erreur",
-      description: "Impossible de télécharger le CV.",
-      color: "error",
-    });
-    return;
-  }
-
-  downloadBlob(blob.data, participant.curriculumVitae.split("/").pop() || "cv.pdf");
-};
 
 const globalFilter = useSearchQuery();
 const cautionItems = Object.values(CautionStatus).map((status) => ({
@@ -122,19 +103,21 @@ const allColumns: NamedTableColumn<AdminParticipant>[] = [
       },
     },
     cell: ({row}) => {
-      const github = row.original.githubAccount ? h(UButton, {
+      const githubUrl = row.original.githubAccount ? getParticipantGithubUrl(row.original.githubAccount) : null;
+      const linkedInUrl = row.original.linkedInAccount ? getParticipantLinkedInUrl(row.original.linkedInAccount) : null;
+      const github = githubUrl ? h(UButton, {
         variant: "link",
         size: "sm",
         icon: "i-simple-icons-github",
         external: true,
-        to: `https://github.com/${row.original.githubAccount.split("/").pop()}`,
+        to: githubUrl,
       }) : null;
-      const linkedIn = row.original.linkedInAccount ? h(UButton, {
+      const linkedIn = linkedInUrl ? h(UButton, {
         variant: "link",
         size: "sm",
         icon: "i-simple-icons-linkedin",
         external: true,
-        to: `https://linkedin.com/in/${row.original.linkedInAccount.split("/").pop()}`,
+        to: linkedInUrl,
       }) : null;
       return h("div", {}, [github, linkedIn]);
     },
@@ -152,7 +135,7 @@ const allColumns: NamedTableColumn<AdminParticipant>[] = [
           variant: "link",
           size: "sm",
           icon: "i-lucide-download",
-          onClick: () => downloadCV(row.original),
+          onClick: () => downloadParticipantCv(row.original.curriculumVitae),
         });
       }
     },

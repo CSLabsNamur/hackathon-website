@@ -1,11 +1,23 @@
 import * as v from "valibot";
 
+export const participantGithubAccountSchema = v.optional(v.pipe(
+  v.string(),
+  v.transform((value) => normalizeParticipantGithubAccount(value)),
+  v.check((value) => value === undefined || isValidParticipantGithubAccount(value), "Le profil GitHub n'est pas valide."),
+));
+
+export const participantLinkedInAccountSchema = v.optional(v.pipe(
+  v.string(),
+  v.transform((value) => normalizeParticipantLinkedInAccount(value)),
+  v.check((value) => value === undefined || isValidParticipantLinkedInAccount(value), "Le profil LinkedIn n'est pas valide."),
+));
+
 const schema = v.strictObject({
   firstName: v.pipe(v.string(), v.nonEmpty("Le prénom est requis")),
   lastName: v.pipe(v.string(), v.nonEmpty("Le nom est requis")),
   email: v.pipe(v.string(), v.nonEmpty("L'email est requis"), v.email("L'email n'est pas valide")),
-  githubAccount: v.optional(v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,39}$/iu, "Le nom d'utilisateur GitHub n'est pas valide"))),  // Source : https://github.com/orgs/community/discussions/133913
-  linkedInAccount: v.optional(v.pipe(v.string(), v.regex(/^[a-z0-9-_/]{5,30}$/iu, "Le nom d'utilisateur LinkedIn n'est pas valide"))),  // Source : https://www.linkedin.com/pulse/linkedin-character-limits-vincent-vinnie-savino-mba-cpcc/
+  githubAccount: participantGithubAccountSchema,
+  linkedInAccount: participantLinkedInAccountSchema,
   school: v.optional(v.string()),
   diet: v.optional(v.string()),
   needs: v.optional(v.string()),

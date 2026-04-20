@@ -15,12 +15,15 @@ definePageMeta({
 const {status, data: currentParticipant} = await useCurrentParticipant();
 const {data: settings} = await useSettings();
 const {can} = useAbility(currentParticipant);
+const {setActions} = useDashboardNavbar();
 const canUpdateProfile = computed(() => can("updateOwn", "Participant"));
-const supabase = useSupabaseClient();
 
-const toast = useToast();
 const overlay = useOverlay();
 const editModal = overlay.create(ParticipantEditModal);
+const {downloadParticipantCv} = useParticipantsActions();
+
+const githubUrl = computed(() => currentParticipant.value?.githubAccount ? getParticipantGithubUrl(currentParticipant.value.githubAccount) : null);
+const linkedInUrl = computed(() => currentParticipant.value?.linkedInAccount ? getParticipantLinkedInUrl(currentParticipant.value.linkedInAccount) : null);
 
 const {cautionAmount, iban: cautionIban, bic: cautionBic} = settings.value!.event;
 
@@ -40,74 +43,50 @@ const cautionQrCode = hasPendingCaution ? await generateEpcQrcode({
   lastName: currentParticipant.value!.user.lastName,
 }, {amount: cautionAmount, iban: cautionIban, bic: cautionBic}) : null;
 
-const downloadCV = async () => {
-  if (!currentParticipant.value?.curriculumVitae) {
-    return;
-  }
-  const blob = await supabase.storage.from("cvs").download(currentParticipant.value.curriculumVitae);
-
-  if (blob.error || !blob.data) {
-    toast.add({
-      title: "Erreur",
-      description: "Impossible de télécharger le CV.",
-      color: "error",
-    });
-    return;
-  }
-  const url = URL.createObjectURL(blob.data);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = currentParticipant.value.curriculumVitae.split("/").pop() || "cv.pdf";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+setActions([{
+  label: "Voir mon profil public",
+  icon: "i-lucide-external-link",
+  to: `/participant/${currentParticipant.value!.id}`,
+  target: "_blank",
+}]);
 </script>
 
 <template>
   <UContainer>
-    <UCard v-if="status === 'success'">
+    <UCard v-if="status === 'pending'" :ui="{body: 'p-0'}">
+      <USkeleton class="h-128 w-full"/>
+    </UCard>
+
+    <UCard v-else-if="status === 'success'">
       <template #default>
         <div class="grid gap-2">
           <div class="grid grid-cols-2 gap-6 *:w-full">
-            <ParticipantProfileLabel label="Nom complet" icon="i-lucide-user">
-              {{ currentParticipant!.user.firstName }} {{ currentParticipant!.user.lastName }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Nom complet" icon="i-lucide-user"
+                                     :value="`${currentParticipant!.user.firstName} ${currentParticipant!.user.lastName}`"/>
 
-            <ParticipantProfileLabel label="Adresse e-mail" icon="i-lucide-at-sign">
-              {{ currentParticipant!.user.email }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Adresse e-mail" icon="i-lucide-at-sign"
+                                     :value="currentParticipant!.user.email"/>
 
-            <ParticipantProfileLabel label="Compte GitHub" icon="i-simple-icons-github">
-              {{ currentParticipant!.githubAccount || "Non renseigné" }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Compte GitHub" icon="i-simple-icons-github" :url="githubUrl"
+                                     :value="currentParticipant!.githubAccount"/>
 
-            <ParticipantProfileLabel label="Compte LinkedIn" icon="i-simple-icons-linkedin">
-              {{ currentParticipant!.linkedInAccount || "Non renseigné" }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Compte LinkedIn" icon="i-simple-icons-linkedin" :url="linkedInUrl"
+                                     :value="currentParticipant!.linkedInAccount"/>
 
-            <ParticipantProfileLabel label="École / Université" icon="i-lucide-graduation-cap">
-              {{ currentParticipant!.school || "Non renseigné" }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="École / Université" icon="i-lucide-graduation-cap"
+                                     :value="currentParticipant!.school"/>
 
-            <ParticipantProfileLabel label="Régime alimentaire spécifique" icon="i-lucide-apple">
-              {{ currentParticipant!.diet || "Aucun" }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Régime alimentaire spécifique" icon="i-lucide-apple"
+                                     :value="currentParticipant!.diet"/>
 
-            <ParticipantProfileLabel label="Besoins spécifiques" icon="i-lucide-heart">
-              {{ currentParticipant!.needs || "Aucun" }}
-            </ParticipantProfileLabel>
+            <ParticipantProfileLabel label="Besoins spécifiques" icon="i-lucide-heart"
+                                     :value="currentParticipant!.needs"/>
 
-            <ParticipantProfileLabel label="CV" icon="i-lucide-file-user">
-              <div v-if="currentParticipant!.curriculumVitae">
-                <UButton size="xs" variant="ghost" icon="i-lucide-download"
-                         @click="downloadCV">
-                  Télécharger
-                </UButton>
-              </div>
-              <div v-else>
-                Non renseigné
-              </div>
+            <ParticipantProfileLabel label="CV" icon="i-lucide-file-user" :value="currentParticipant!.curriculumVitae">
+              <UButton size="xs" variant="ghost" icon="i-lucide-download"
+                       @click="downloadParticipantCv(currentParticipant!.curriculumVitae)">
+                Télécharger
+              </UButton>
             </ParticipantProfileLabel>
 
             <ParticipantProfileLabel label="Statut de la caution" icon="i-lucide-wallet">
