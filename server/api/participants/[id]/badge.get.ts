@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 404, statusMessage: "Participant not found"});
   }
 
-  const doc = await renderParticipantBadge(participant);
+  const doc = await renderParticipantBadge(participant, event);
 
   const filename = sanitizeFilename(`badge_${participant.user.firstName}_${participant.user.lastName}.pdf`);
 

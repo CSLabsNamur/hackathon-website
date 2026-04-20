@@ -71,6 +71,7 @@ export default defineEventHandler(async (event) => {
     includeGuests ? guests : [],
     includeSponsors ? sponsors : [],
     includeAdmins ? admins : [],
+    event,
   );
 
   setHeader(event, "Content-Type", "application/pdf");

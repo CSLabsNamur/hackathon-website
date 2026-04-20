@@ -3,6 +3,7 @@
  */
 import PDFDocument from "pdfkit";
 import qr from "qrcode";
+import type { H3Event } from "h3";
 import type { Prisma } from "#server/prisma/generated/prisma/browser";
 import { getEventBadgeLogoPath } from "./settings";
 
@@ -601,10 +602,13 @@ async function drawBadgeLayout(doc: PDFKit.PDFDocument, size: Coordinates = BADG
  * @param participant The participant for whom to create the badge
  * @param size The size of the page in points
  */
-async function drawParticipantBadge(doc: PDFKit.PDFDocument, participant: Participant, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0], drawCutGuide = false) {
+async function drawParticipantBadge(doc: PDFKit.PDFDocument, participant: Participant, event: H3Event, size: Coordinates = BADGE_SIZE, origin: Coordinates = [0, 0], drawCutGuide = false) {
   await drawBadgeFrame(doc, async () => {
     const [, pageHeight] = size;
-    const qrcode = await qr.toBuffer(participant.userId, {margin: 0, color: {light: BADGE_BACKGROUND_COLOR}});
+    const siteConfig = getSiteConfig(event);
+    const profileUrl = new URL(`/participant/${participant.id}`, siteConfig.url).toString();
+
+    const qrcode = await qr.toBuffer(profileUrl, {margin: 0, color: {light: BADGE_BACKGROUND_COLOR}});
     const qrcodeSize = pageHeight * .4;
     const qrcodeMargin = cmToPoints(.25);
     const qrcodePos: Coordinates = [qrcodeMargin, pageHeight - qrcodeSize - qrcodeMargin];
@@ -706,8 +710,8 @@ async function drawGuestBadge(doc: PDFKit.PDFDocument, guest: Guest, size: Coord
 //endregion
 
 //region Render functions
-export async function renderParticipantBadge(participant: Participant): Promise<PDFKit.PDFDocument> {
-  return renderSingleBadge(`Badge de ${participant.user.firstName} ${participant.user.lastName}`, async (doc) => drawParticipantBadge(doc, participant, BADGE_SIZE));
+export async function renderParticipantBadge(participant: Participant, event: H3Event): Promise<PDFKit.PDFDocument> {
+  return renderSingleBadge(`Badge de ${participant.user.firstName} ${participant.user.lastName}`, async (doc) => drawParticipantBadge(doc, participant, event, BADGE_SIZE));
 }
 
 export async function renderAdminBadge(admin: Admin): Promise<PDFKit.PDFDocument> {
@@ -720,11 +724,11 @@ export async function renderAdminBadge(admin: Admin): Promise<PDFKit.PDFDocument
  * @param participants An array of participants to render badges for
  * @returns A PDFDocument instance containing the rendered badges for all participants
  */
-export async function renderParticipantsBadges(participants: Participant[]): Promise<PDFKit.PDFDocument> {
+export async function renderParticipantsBadges(participants: Participant[], event: H3Event): Promise<PDFKit.PDFDocument> {
   const orderedParticipants = getOrderedParticipants(participants);
 
   return renderBadgeGridEntries(
-    toBadgeGridEntries(orderedParticipants, async (doc, participant, origin) => drawParticipantBadge(doc, participant, BADGE_SIZE, origin, true)),
+    toBadgeGridEntries(orderedParticipants, async (doc, participant, origin) => drawParticipantBadge(doc, participant, event, BADGE_SIZE, origin, true)),
     "Badges des participants",
   );
 }
@@ -753,13 +757,13 @@ export async function renderGuestsBadges(guests: Guest[]): Promise<PDFKit.PDFDoc
   );
 }
 
-export async function renderAllBadges(participants: Participant[], guests: Guest[], sponsors: Sponsor[], admins: Admin[]): Promise<PDFKit.PDFDocument> {
+export async function renderAllBadges(participants: Participant[], guests: Guest[], sponsors: Sponsor[], admins: Admin[], event: H3Event): Promise<PDFKit.PDFDocument> {
   const orderedParticipants = getOrderedParticipants(participants);
   const expandedGuests = getExpandedGuests(guests);
   const sponsorsWithBadge = sponsors.filter((sponsor) => sponsor.hasBadge);
 
   return renderBadgeGridEntries([
-    ...toBadgeGridEntries(orderedParticipants, async (doc, participant, origin) => drawParticipantBadge(doc, participant, BADGE_SIZE, origin, true)),
+    ...toBadgeGridEntries(orderedParticipants, async (doc, participant, origin) => drawParticipantBadge(doc, participant, event, BADGE_SIZE, origin, true)),
     ...toBadgeGridEntries(expandedGuests, async (doc, guest, origin) => drawGuestBadge(doc, guest, BADGE_SIZE, origin, true)),
     ...toBadgeGridEntries(sponsorsWithBadge, async (doc, sponsor, origin) => drawSponsorBadge(doc, sponsor, BADGE_SIZE, origin, true)),
     ...toBadgeGridEntries(admins, async (doc, admin, origin) => drawAdminBadge(doc, admin, BADGE_SIZE, origin, true)),
