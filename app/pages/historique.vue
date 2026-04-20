@@ -78,7 +78,8 @@ useSeoMeta({
           <MDC v-if="item.description" :value="item.description" unwrap class="whitespace-pre-line"/>
         </template>
       </UTimeline>
-      <UCarousel v-slot="{ item }" :items="pictures" loop autoplay class="md:w-2xl">
+      <UCarousel v-slot="{ item }" :items="pictures" loop :autoplay="{stopOnInteraction: false, stopOnMouseEnter: true}"
+                 class="md:w-2xl">
         <NuxtImg :src="item" alt="Photo d'une édition précédente" sizes="700px" class="rounded-lg"/>
       </UCarousel>
     </div>
