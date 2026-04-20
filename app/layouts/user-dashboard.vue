@@ -26,6 +26,13 @@ const links: RestrictedNavigationItem[][] = [[{
     open.value = false;
   },
 }, {
+  label: "Programme",
+  icon: "i-lucide-calendar",
+  to: "/participant/schedule",
+  onSelect: () => {
+    open.value = false;
+  },
+}, {
   label: "Mon équipe",
   icon: "i-lucide-user-check",
   to: "/participant/team",
