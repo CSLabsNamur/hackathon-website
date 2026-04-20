@@ -1,9 +1,4 @@
-export function formatDateRange(
-  start: string | number | Date,
-  end: string | number | Date,
-  utc: boolean = true,
-  capitalize: boolean = true,
-): string {
+export function formatDateRange(start: string | number | Date, end: string | number | Date, utc: boolean = true, capitalize: boolean = true): string {
   const dayjs = useDayjs();
 
   const startDate = utc ? dayjs.utc(start) : dayjs(start);

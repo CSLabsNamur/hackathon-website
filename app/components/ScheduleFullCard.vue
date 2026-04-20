@@ -9,7 +9,7 @@ type TimelineScheduleItem = TimelineItem & {
 
 defineProps<{
   item: TimelineScheduleItem;
-  editingItemId: string;
+  editingItemId?: string;
   currentScheduleItemId: string | null;
 }>()
 </script>

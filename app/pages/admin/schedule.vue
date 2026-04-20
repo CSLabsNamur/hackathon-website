@@ -2,7 +2,12 @@
 import type { TimelineItem } from "@nuxt/ui";
 import type { CreateScheduleItemInput } from "#shared/schemas/schedule/create";
 import RemoveModal from "~/components/admin/schedule/RemoveModal.vue";
-import { createEmptyScheduleFormState, scheduleItemToFormState } from "~/utils/schedule";
+import {
+  createEmptyScheduleFormState,
+  findLiveScheduleItem,
+  scheduleItemToFormState,
+  sortScheduleItems,
+} from "~/utils/schedule";
 
 definePageMeta({
   layout: {
@@ -20,7 +25,6 @@ type TimelineScheduleItem = TimelineItem & {
   scheduleItem: ScheduleItem;
 };
 
-const dayjs = useDayjs();
 const overlay = useOverlay();
 const {setActions} = useDashboardNavbar();
 
@@ -36,26 +40,10 @@ const editingItemId = ref<string>("new");
 // We use an existing item as a "base": the new form defaults to starting right after that base item's `endTime`.
 const createBaseItemId = ref<string | null>(null);
 
-function compareScheduleItems(a: ScheduleItem, b: ScheduleItem) {
-  const startDiff = dayjs(a.startTime).valueOf() - dayjs(b.startTime).valueOf();
-  if (startDiff !== 0) return startDiff;
-
-  const endDiff = dayjs(a.endTime).valueOf() - dayjs(b.endTime).valueOf();
-  if (endDiff !== 0) return endDiff;
-
-  return a.title.localeCompare(b.title, "fr");
-}
-
-const sortedSchedule = computed(() =>
-    [...(schedule.value ?? [])].sort(compareScheduleItems),
-);
+const sortedSchedule = computed(() => sortScheduleItems(schedule.value));
 
 const currentScheduleItemId = computed(() => {
-  const currentTime = dayjs();
-
-  return sortedSchedule.value.find((item) =>
-      currentTime.isSameOrAfter(dayjs(item.startTime)) && currentTime.isBefore(dayjs(item.endTime)),
-  )?.id ?? null;
+  return findLiveScheduleItem(sortedSchedule.value)?.id ?? null;
 });
 
 const selectedScheduleItem = computed(() =>

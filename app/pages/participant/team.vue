@@ -28,7 +28,7 @@ const editTeamModal = overlay.create(AdminTeamsEditModal);
 
 const toast = useToast();
 const supabase = useSupabaseClient();
-const {copy} = useClipboard();
+const {copyWithToast} = useCopyWithToast();
 
 //const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
@@ -158,11 +158,9 @@ const noMembersLinks: ButtonProps[] = [
 const copyToken = () => {
   if (!currentParticipant.value?.team) return;
 
-  copy(currentParticipant.value.team.token);
-  toast.add({
+  copyWithToast(currentParticipant.value.team.token, {
     title: "Code d'invitation copié",
     description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers. Partagez-le avec vos amis pour les inviter dans votre équipe !",
-    color: "success",
   });
 };
 
