@@ -6,19 +6,12 @@ export function useRefreshOnPageReturn(refresh: () => Promise<unknown> | unknown
   const visibility = useDocumentVisibility();
   const focused = useWindowFocus();
 
-  const minIntervalMs = options?.minIntervalMs ?? 1000;
-  let lastRefreshAt = 0;
+  const throttledRefresh = useThrottleFn(refresh, options?.minIntervalMs ?? 1000, false);
 
-  const refreshIfNeeded = async () => {
+  const refreshIfNeeded = () => {
     if (visibility.value !== "visible") return;
 
-    const now = Date.now();
-    if (now - lastRefreshAt < minIntervalMs) {
-      return;
-    }
-
-    lastRefreshAt = now;
-    await refresh();
+    return throttledRefresh();
   };
 
   watch([visibility, focused], ([nextVisibility, nextFocused], [previousVisibility, previousFocused]) => {
@@ -30,7 +23,7 @@ export function useRefreshOnPageReturn(refresh: () => Promise<unknown> | unknown
     }
   });
 
-  useEventListener(window, "pageshow", () => {
+  useEventListener("pageshow", () => {
     void refreshIfNeeded();
   });
 }

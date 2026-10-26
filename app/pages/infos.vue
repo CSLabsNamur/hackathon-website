@@ -95,7 +95,7 @@ useSeoMeta({
       <!-- Date -->
       <UPageCard title="Dates de l'événement" icon="i-lucide-calendar-days" :ui="{description: 'mt-5.5'}">
         <template #description>
-          <div class="grid gap-4">
+          <div v-if="settings" class="grid gap-4">
             <div class="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
               <div class="flex items-center justify-center size-12 rounded-lg bg-primary/10 shrink-0">
                 <UIcon name="i-lucide-calendar-check" class="size-6 text-primary"/>
@@ -132,7 +132,7 @@ useSeoMeta({
       <!-- Contacts -->
       <UPageCard title="Besoin d'aide ?" icon="i-lucide-message-circle" :ui="{description: 'mt-5'}">
         <template #description>
-          <div class="grid gap-4">
+          <div v-if="settings" class="grid gap-4">
             <p class="text-sm text-muted">
               Notre équipe est là pour répondre à toutes vos questions avant et pendant l'événement.
             </p>
