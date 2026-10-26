@@ -192,7 +192,7 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
         searchTermPath,
         ...searchFields.map((field) => field.path),
       ]);
-      const rawFuseKeys: Array<{ name: string; weight: number }> = [
+      const fuseKeys: FuseOptionKey<SearchCandidate>[] = [
         {name: "title", weight: 6},
         ...(rankWithSearchTerm ? [{name: "searchTerm", weight: 5}] : []),
         {name: "description", weight: 2},
@@ -201,7 +201,6 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
           weight: field.weight,
         })),
       ];
-      const totalFuseWeight = rawFuseKeys.reduce((sum, key) => sum + key.weight, 0);
 
       return {
         modelName,
@@ -218,10 +217,7 @@ const buildDefinitions = (allowedPermissionKeys?: ReadonlySet<Permission>): Sear
         buildTo: config.buildTo,
         searchFields,
         select: buildPrismaSelect(selectPaths),
-        fuseKeys: rawFuseKeys.map((key) => ({
-          ...key,
-          weight: key.weight / totalFuseWeight,
-        })) satisfies FuseOptionKey<SearchCandidate>[],
+        fuseKeys,
         orderBy: {[config.orderBy ?? "updatedAt"]: "desc"},
       };
     });

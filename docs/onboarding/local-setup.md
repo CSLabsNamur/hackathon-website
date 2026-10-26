@@ -13,7 +13,7 @@ By the end, you should be able to work on the project locally and test your chan
 Before you start, make sure you have the following tools available:
 
 - Docker, for Supabase, Maildev and ClamAV
-- Node.js 22
+- Node.js 22.23.4
 - `corepack`, which should be included by default
 
 > [!NOTE]
@@ -23,6 +23,7 @@ You can then enable `pnpm` with:
 
 ```sh
 corepack enable
+corepack prepare pnpm@12.15.0 --activate
 ```
 
 ## Install Docker

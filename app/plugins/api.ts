@@ -1,3 +1,9 @@
+declare module "#app" {
+  interface NuxtApp {
+    $api: typeof $fetch;
+  }
+}
+
 export default defineNuxtPlugin((nuxtApp) => {
   const session = useSupabaseSession();
   const {csrf, headerName: csrfHeaderName} = useCsrf();

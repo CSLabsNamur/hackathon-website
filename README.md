@@ -8,12 +8,12 @@ sur [hackathon.cslabs.be](https://hackathon.cslabs.be).
 
 # Installation
 
-Assurez-vous d'avoir [Node.js](https://nodejs.org/) installé sur votre machine, d'activer `corepack` et
+Assurez-vous d'avoir [Node.js](https://nodejs.org/) 22.23.4 installé, d'activer `corepack` et
 d'installer les dépendances :
 
 ```bash
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare pnpm@12.15.0 --activate
 pnpm install
 ```
 

@@ -47,7 +47,7 @@ async function generateTemplate(templateName: string) {
   const mjmlPath = path.join(templatesDir, `${templateName}.mjml`);
   const mjmlSource = await readFile(mjmlPath, "utf8");
 
-  const {html, errors} = mjml2html(mjmlSource, {
+  const {html, errors} = await mjml2html(mjmlSource, {
     validationLevel: "strict",
     filePath: mjmlPath,
     minify: false,

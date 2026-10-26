@@ -1,0 +1,35 @@
+packages:
+  - .
+
+shamefullyHoist: true
+
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  better-sqlite3: true
+  esbuild: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+  vue-demi: true
+
+# The module only uses createTransport/sendMail; its SMTP helper is compatible
+# with Nodemailer 10, but the published peer range still targets version 7.
+peerDependencyRules:
+  allowedVersions:
+    'nuxt-nodemailer@1.1.4>nodemailer': ^10.2.1
+
+# Resolve optional peers in the consuming package, rather than borrowing
+# incompatible versions from unrelated packages in the hoisted node_modules.
+packageExtensions:
+  htmlnano@3.3.1:
+    dependencies:
+      cssnano: ^8.0.0
+  unctx@3.0.1:
+    dependencies:
+      oxc-parser: ^0.155.0
+      unplugin: ^3.5.0
+
+minimumReleaseAgeExclude:
+  - '@iconify-json/simple-icons@1.2.101'
+  - unplugin@3.5.0

@@ -1,4 +1,4 @@
-import { AbilityBuilder, type PureAbility } from "@casl/ability";
+import { AbilityBuilder, type Ability } from "@casl/ability";
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
@@ -8,7 +8,7 @@ import { createPrismaAbility } from "./casl";
 
 const AUTHORIZATION_CACHE_MAX_AGE_SECONDS = 60;
 
-export type AppAbility = PureAbility<[AppAction, AppSubject], AppPrismaQuery>;
+export type AppAbility = Ability<[AppAction, AppSubject], AppPrismaQuery>;
 
 type AuthorizationContext = {
   authUser: JwtPayload;

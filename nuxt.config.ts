@@ -2,7 +2,7 @@ const supabaseHostname = new URL(process.env.SUPABASE_URL || "http://localhost")
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2026-04-16",
+  compatibilityDate: "2026-10-26",
   devtools: {enabled: true},
   experimental: {
     checkOutdatedBuildInterval: 1000 * 60,  // 1 minute
@@ -81,6 +81,9 @@ export default defineNuxtConfig({
   sitemap: {
     zeroRuntime: true,
   },
+
+  aiReady: false,
+  skewProtection: false,
 
   // TODO: Is this still necessary?
   postcss: {
@@ -234,6 +237,7 @@ export default defineNuxtConfig({
   },
 
   nodemailer: {
+    //@ts-expect-error The type definitions for nodemailer are outdated
     from: "\"Hackathon CSLabs\" <hackathon@cslabs.be>",
     host: process.env.NUXT_SMTP_HOST,
     port: parseInt(process.env.NUXT_SMTP_PORT || "8465"),
