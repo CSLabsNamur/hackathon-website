@@ -10,7 +10,7 @@ ENV NODE_ENV=${NODE_ENV}
 ENV DATABASE_URL=${DATABASE_URL}
 ENV SUPABASE_URL=${SUPABASE_URL}
 
-COPY package.json pnpm-lock.yaml .npmrc prisma.config.ts ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml prisma.config.ts ./
 COPY server/prisma/schema.prisma ./server/prisma/schema.prisma
 
 RUN corepack enable && pnpm install --prod --frozen-lockfile && pnpm add @nuxt/cli
