@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       "*/5 * * * *": ["emails:process"],
+      "*/2 * * * *": ["supabase:cleanup"],
     },
     rollupConfig: {
       external: [/^@prisma\//, /\.wasm$/],
@@ -126,7 +127,6 @@ export default defineNuxtConfig({
     // API routes
     // Mostly file uploads because of a conflict between Formidable and the XSS validator
     "/api/sponsors": {
-      swr: 300,
       security: {
         xssValidator: {
           methods: ["GET"],

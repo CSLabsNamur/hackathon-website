@@ -30,6 +30,10 @@ const links = [
     label: "Réseaux sociaux",
     icon: "i-lucide-share-2",
     to: "/admin/settings/socials",
+  }, {
+    label: "Éditions et archives",
+    icon: "i-lucide-archive",
+    to: "/admin/settings/editions",
   },
 ] satisfies NavigationMenuItem[];
 </script>

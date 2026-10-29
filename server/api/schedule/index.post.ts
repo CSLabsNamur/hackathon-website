@@ -3,6 +3,7 @@ import * as v from "valibot";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "schedule.update");
+  const editionId = await getCurrentEditionId();
 
   const body = await readValidatedBody(event, v.parser(schema));
   const data: ScheduleItemWithDates = {
@@ -13,5 +14,5 @@ export default defineEventHandler(async (event) => {
 
   await scheduleItemCanBeSaved(data);
 
-  return prisma.scheduleItem.create({data});
+  return withEventTransaction(editionId, (db) => db.scheduleItem.create({data}));
 });

@@ -1,4 +1,4 @@
-import { AbilityBuilder, type Ability } from "@casl/ability";
+import { type Ability, AbilityBuilder } from "@casl/ability";
 import { serverSupabaseUser } from "#supabase/server";
 import type { JwtPayload } from "@supabase/supabase-js";
 import type { H3Event } from "h3";
@@ -225,5 +225,13 @@ export async function requireOrganizerAccess(event: H3Event) {
     throw createError({statusCode: 403, statusMessage: "Forbidden"});
   }
 
+  return context;
+}
+
+export async function requireSuperAdmin(event: H3Event, permission: PermissionKey) {
+  const context = await requirePermission(event, permission);
+  if (!isSuperAdmin(context.dbUser)) {
+    throw createError({statusCode: 403, statusMessage: "Réservé aux super administrateurs."});
+  }
   return context;
 }

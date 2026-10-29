@@ -4,6 +4,7 @@ import type { SubmissionRequestCreateInput } from "~~/server/prisma/generated/pr
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "submissionRequests.create");
+  const editionId = await getCurrentEditionId();
   const settings = await getPublicSettings(event);
 
   const schema = createSubmissionRequestSchema(
@@ -20,5 +21,5 @@ export default defineEventHandler(async (event) => {
     deadline: new Date(data.deadline),
   };
 
-  return prisma.submissionRequest.create({data: payload});
+  return withEventTransaction(editionId, (db) => db.submissionRequest.create({data: payload}));
 });

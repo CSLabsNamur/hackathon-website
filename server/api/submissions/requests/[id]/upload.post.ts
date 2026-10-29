@@ -8,6 +8,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "submissions.update.own");
+  const editionId = await getCurrentEditionId();
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
   const participant = await getSubmissionActor(dbUser.id);
 
@@ -174,10 +175,12 @@ export default defineEventHandler(async (event) => {
       });
     }
   } catch (e) {
-    const uploadedPathsToRemove = uploadedFiles.map((file) => file.path).filter((path) => !existingFilePaths.has(path));
+    const editionChanged = await getCurrentEditionId() !== editionId;
+    const uploadedPathsToRemove = uploadedFiles.map((file) => file.path).filter((path) => editionChanged || !existingFilePaths.has(path));
     if (uploadedPathsToRemove.length) {
       const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(uploadedPathsToRemove);
       if (error) {
+        await prisma.supabaseCleanupJob.createMany({data: uploadedPathsToRemove.map((target) => ({type: "STORAGE_OBJECT", bucket: SUBMISSIONS_BUCKET, target}))});
         console.error("Erreur lors de la suppression des fichiers téléversés après échec:", error);
       }
     }
@@ -197,8 +200,8 @@ export default defineEventHandler(async (event) => {
   const replacedFilePaths = request.multiple ? [] : existingSubmission?.files.map((file) => file.path) ?? [];
 
   try {
-    const submission = existingSubmission
-      ? await prisma.submission.update({
+    const submission = await withEventTransaction(editionId, (db) => existingSubmission
+      ? db.submission.update({
         where: {id: existingSubmission.id},
         data: {
           skipped: false,
@@ -213,7 +216,7 @@ export default defineEventHandler(async (event) => {
         },
         include: accessibleSubmissionInclude,
       })
-      : await prisma.submission.create({
+      : db.submission.create({
         data: {
           skipped: false,
           content: null,
@@ -226,7 +229,7 @@ export default defineEventHandler(async (event) => {
           },
         },
         include: accessibleSubmissionInclude,
-      });
+      }));
 
     const replacedStoragePaths = replacedFilePaths.filter((path) => !uploadedFilePaths.includes(path));
     if (replacedStoragePaths.length > 0) {
@@ -238,9 +241,12 @@ export default defineEventHandler(async (event) => {
 
     return submission;
   } catch (e) {
-    if (newUploadedFilePaths.length) {
-      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(newUploadedFilePaths);
+    const editionChanged = await getCurrentEditionId() !== editionId;
+    const pathsToRemove = editionChanged ? uploadedFilePaths : newUploadedFilePaths;
+    if (pathsToRemove.length) {
+      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(pathsToRemove);
       if (error) {
+        await prisma.supabaseCleanupJob.createMany({data: pathsToRemove.map((target) => ({type: "STORAGE_OBJECT", bucket: SUBMISSIONS_BUCKET, target}))});
         console.error("Erreur lors de la suppression des fichiers téléversés après échec de l'enregistrement:", error);
       }
     }

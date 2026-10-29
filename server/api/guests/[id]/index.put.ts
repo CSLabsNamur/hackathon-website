@@ -11,6 +11,7 @@ import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "guests.update");
+  const editionId = await getCurrentEditionId();
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
@@ -81,8 +82,10 @@ export default defineEventHandler(async (event) => {
       payload.imageUrl = uploadData.path;
     }
 
+    let saved = false;
     try {
-      const updatedGuest = await prisma.guest.update({where: {id}, data: payload});
+      const updatedGuest = await withEventTransaction(editionId, (db) => db.guest.update({where: {id}, data: payload}));
+      saved = true;
 
       if (uploadedPath && guest.imageUrl) {
         const {error} = await supabase.storage.from(GUESTS_BUCKET).remove([guest.imageUrl]);
@@ -93,8 +96,9 @@ export default defineEventHandler(async (event) => {
 
       return updatedGuest;
     } catch (error) {
-      if (uploadedPath) {
-        await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+      if (uploadedPath && !saved) {
+        const {error: cleanupError} = await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+        if (cleanupError) await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: GUESTS_BUCKET, target: uploadedPath}});
       }
       throw error;
     }

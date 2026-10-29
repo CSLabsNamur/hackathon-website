@@ -15,6 +15,7 @@ function escapeHtml(value: string) {
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "broadcasts.send");
+  const editionId = await getCurrentEditionId();
   const settings = await getPublicSettings(event);
 
   const [bodyRaw, files] = await formidable({
@@ -84,8 +85,15 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  let broadcastId: string | undefined;
   try {
     const {sendMail} = useNodeMailer();
+    const html = renderBroadcast({title: escapeHtml(data.title), body: data.message});
+    // Track this immediate send so rollover waits for it, just like an outbox email.
+    const broadcast = await withEventTransaction(editionId, (db) => db.emailOutbox.create({data: {
+      type: "broadcast", recipient: recipients.join(", "), subject: data.title, html, status: "PROCESSING",
+    }}));
+    broadcastId = broadcast.id;
 
     // TODO: Use email outbox
     await sendMail({
@@ -95,10 +103,7 @@ export default defineEventHandler(async (event) => {
         filename: f.originalFilename || "attachment",
         content: fs.readFileSync(f.filepath),
       })),
-      html: renderBroadcast({
-        title: escapeHtml(data.title),
-        body: data.message,
-      }),
+      html,
       replyTo: settings.website.contactEmail,
     });
   } catch {
@@ -107,6 +112,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Erreur lors de l'envoi de l'annonce.",
     });
   } finally {
+    if (broadcastId) await prisma.emailOutbox.deleteMany({where: {id: broadcastId}});
     for (const f of fileList) {
       try {
         fs.unlinkSync(f.filepath);

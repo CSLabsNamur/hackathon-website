@@ -176,7 +176,15 @@ const topLinks: RestrictedNavigationItem[] = [
         onSelect: () => {
           open.value = false;
         },
-      },
+      }, {
+        label: "Éditions et archives",
+        icon: "i-lucide-archive",
+        to: "/admin/settings/editions",
+        requiredPermissions: ["settings.read"],
+        onSelect: () => {
+          open.value = false;
+        },
+      }
     ],
   },
 ];
