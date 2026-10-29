@@ -13,6 +13,11 @@ allowBuilds:
   unrs-resolver: true
   vue-demi: true
 
+skills:
+  dirs:
+    - .agents/skills
+
+
 # The module only uses createTransport/sendMail; its SMTP helper is compatible
 # with Nodemailer 10, but the published peer range still targets version 7.
 peerDependencyRules:
@@ -33,3 +38,9 @@ packageExtensions:
 minimumReleaseAgeExclude:
   - '@iconify-json/simple-icons@1.2.101'
   - unplugin@3.5.0
+
+permissions:
+  '@nuxtjs/seo':
+    skills: true
+  '@unhead/vue':
+    skills: true
