@@ -10,6 +10,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "sponsors.update");
+  const editionId = await getCurrentEditionId();
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
 
@@ -80,8 +81,10 @@ export default defineEventHandler(async (event) => {
       payload.logo = uploadData.path;
     }
 
+    let saved = false;
     try {
-      const updatedSponsor = await prisma.sponsor.update({where: {id}, data: payload});
+      const updatedSponsor = await withEventTransaction(editionId, (db) => db.sponsor.update({where: {id}, data: payload}));
+      saved = true;
 
       if (uploadedPath) {
         const {error} = await supabase.storage.from(SPONSORS_BUCKET).remove([sponsor.logo]);
@@ -92,8 +95,9 @@ export default defineEventHandler(async (event) => {
 
       return updatedSponsor;
     } catch (error) {
-      if (uploadedPath) {
-        await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+      if (uploadedPath && !saved) {
+        const {error: cleanupError} = await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+        if (cleanupError) await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: SPONSORS_BUCKET, target: uploadedPath}});
       }
       throw error;
     }

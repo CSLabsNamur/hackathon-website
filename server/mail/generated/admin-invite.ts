@@ -63,12 +63,12 @@ const templateSource = `<!doctype html>
     
     
   </head>
-  <body style="word-spacing:normal;background-color:#1bb17a;">
-    
-    
-      <div
-         aria-roledescription="email" style="background-color:#1bb17a;" role="article" lang="und" dir="auto"
-      >
+  
+      <body  style="word-spacing:normal;background-color:#1bb17a;">
+        
+        <div
+           aria-roledescription="email" role="article" lang="und" dir="auto" style="word-spacing:normal;background-color:#1bb17a;"
+        >
         
       
       <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
@@ -208,7 +208,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://cslabs.be/" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWhvdXNlLWljb24gbHVjaWRlLWhvdXNlIj48cGF0aCBkPSJNMTUgMjF2LThhMSAxIDAgMCAwLTEtMWgtNGExIDEgMCAwIDAtMSAxdjgiLz48cGF0aCBkPSJNMyAxMGEyIDIgMCAwIDEgLjcwOS0xLjUyOGw3LTZhMiAyIDAgMCAxIDIuNTgyIDBsNyA2QTIgMiAwIDAgMSAyMSAxMHY5YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0yeiIvPjwvc3ZnPg==" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWhvdXNlLWljb24gbHVjaWRlLWhvdXNlIj48cGF0aCBkPSJNMTUgMjF2LThhMSAxIDAgMCAwLTEtMWgtNGExIDEgMCAwIDAtMSAxdjgiLz48cGF0aCBkPSJNMyAxMGEyIDIgMCAwIDEgLjcwOS0xLjUyOGw3LTZhMiAyIDAgMCAxIDIuNTgyIDBsNyA2QTIgMiAwIDAgMSAyMSAxMHY5YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0yeiIvPjwvc3ZnPg==" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -242,7 +242,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://www.facebook.com/ComputerScienceLabs" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik05LjEwMSAyMy42OTF2LTcuOThINi42Mjd2LTMuNjY3aDIuNDc0di0xLjU4YzAtNC4wODUgMS44NDgtNS45NzggNS44NTgtNS45NzhjLjQwMSAwIC45NTUuMDQyIDEuNDY4LjEwM2E5IDkgMCAwIDEgMS4xNDEuMTk1djMuMzI1YTkgOSAwIDAgMC0uNjUzLS4wMzZhMjcgMjcgMCAwIDAtLjczMy0uMDA5Yy0uNzA3IDAtMS4yNTkuMDk2LTEuNjc1LjMwOWExLjcgMS43IDAgMCAwLS42NzkuNjIyYy0uMjU4LjQyLS4zNzQuOTk1LS4zNzQgMS43NTJ2MS4yOTdoMy45MTlsLS4zODYgMi4xMDNsLS4yODcgMS41NjRoLTMuMjQ2djguMjQ1QzE5LjM5NiAyMy4yMzggMjQgMTguMTc5IDI0IDEyLjA0NGMwLTYuNjI3LTUuMzczLTEyLTEyLTEycy0xMiA1LjM3My0xMiAxMmMwIDUuNjI4IDMuODc0IDEwLjM1IDkuMTAxIDExLjY0NyIvPjwvc3ZnPg==" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik05LjEwMSAyMy42OTF2LTcuOThINi42Mjd2LTMuNjY3aDIuNDc0di0xLjU4YzAtNC4wODUgMS44NDgtNS45NzggNS44NTgtNS45NzhjLjQwMSAwIC45NTUuMDQyIDEuNDY4LjEwM2E5IDkgMCAwIDEgMS4xNDEuMTk1djMuMzI1YTkgOSAwIDAgMC0uNjUzLS4wMzZhMjcgMjcgMCAwIDAtLjczMy0uMDA5Yy0uNzA3IDAtMS4yNTkuMDk2LTEuNjc1LjMwOWExLjcgMS43IDAgMCAwLS42NzkuNjIyYy0uMjU4LjQyLS4zNzQuOTk1LS4zNzQgMS43NTJ2MS4yOTdoMy45MTlsLS4zODYgMi4xMDNsLS4yODcgMS41NjRoLTMuMjQ2djguMjQ1QzE5LjM5NiAyMy4yMzggMjQgMTguMTc5IDI0IDEyLjA0NGMwLTYuNjI3LTUuMzczLTEyLTEyLTEycy0xMiA1LjM3My0xMiAxMmMwIDUuNjI4IDMuODc0IDEwLjM1IDkuMTAxIDExLjY0NyIvPjwvc3ZnPg==" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -276,7 +276,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://www.instagram.com/cslabs_namur" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik03LjAzLjA4NGMtMS4yNzcuMDYtMi4xNDkuMjY0LTIuOTEuNTYzYTUuOSA1LjkgMCAwIDAtMi4xMjQgMS4zODhhNS45IDUuOSAwIDAgMC0xLjM4IDIuMTI3Qy4zMjEgNC45MjYuMTIgNS44LjA2NCA3LjA3NnMtLjA2OSAxLjY4OC0uMDYzIDQuOTQ3cy4wMjEgMy42NjcuMDgzIDQuOTQ3Yy4wNjEgMS4yNzcuMjY0IDIuMTQ5LjU2MyAyLjkxMWMuMzA4Ljc4OS43MiAxLjQ1NyAxLjM4OCAyLjEyM2E1LjkgNS45IDAgMCAwIDIuMTI5IDEuMzhjLjc2My4yOTUgMS42MzYuNDk2IDIuOTEzLjU1MmMxLjI3OC4wNTYgMS42ODkuMDY5IDQuOTQ3LjA2M3MzLjY2OC0uMDIxIDQuOTQ3LS4wODJjMS4yOC0uMDYgMi4xNDctLjI2NSAyLjkxLS41NjNhNS45IDUuOSAwIDAgMCAyLjEyMy0xLjM4OGE1LjkgNS45IDAgMCAwIDEuMzgtMi4xMjljLjI5NS0uNzYzLjQ5Ni0xLjYzNi41NTEtMi45MTJjLjA1Ni0xLjI4LjA3LTEuNjkuMDYzLTQuOTQ4Yy0uMDA2LTMuMjU4LS4wMi0zLjY2Ny0uMDgxLTQuOTQ3Yy0uMDYtMS4yOC0uMjY0LTIuMTQ4LS41NjQtMi45MTFhNS45IDUuOSAwIDAgMC0xLjM4Ny0yLjEyM2E1LjkgNS45IDAgMCAwLTIuMTI4LTEuMzhjLS43NjQtLjI5NC0xLjYzNi0uNDk2LTIuOTE0LS41NUMxNS42NDcuMDA5IDE1LjIzNi0uMDA2IDExLjk3NyAwUzguMzEuMDIxIDcuMDMuMDg0bS4xNCAyMS42OTNjLTEuMTctLjA1LTEuODA1LS4yNDUtMi4yMjgtLjQwOGEzLjcgMy43IDAgMCAxLTEuMzgyLS44OTVhMy43IDMuNyAwIDAgMS0uOS0xLjM3OGMtLjE2NS0uNDIzLS4zNjMtMS4wNTgtLjQxNy0yLjIyOGMtLjA2LTEuMjY0LS4wNzItMS42NDQtLjA4LTQuODQ4Yy0uMDA2LTMuMjA0LjAwNi0zLjU4My4wNjEtNC44NDhjLjA1LTEuMTY5LjI0Ni0xLjgwNS40MDgtMi4yMjhjLjIxNi0uNTYxLjQ3Ny0uOTYuODk1LTEuMzgyYTMuNyAzLjcgMCAwIDEgMS4zNzktLjljLjQyMy0uMTY1IDEuMDU3LS4zNjEgMi4yMjctLjQxN2MxLjI2NS0uMDYgMS42NDQtLjA3MiA0Ljg0OC0uMDhjMy4yMDMtLjAwNiAzLjU4My4wMDYgNC44NS4wNjJjMS4xNjguMDUgMS44MDQuMjQ0IDIuMjI3LjQwOGMuNTYuMjE2Ljk2LjQ3NSAxLjM4Mi44OTVzLjY4MS44MTcuOSAxLjM3OGMuMTY1LjQyMi4zNjIgMS4wNTYuNDE3IDIuMjI3Yy4wNiAxLjI2NS4wNzQgMS42NDUuMDggNC44NDhjLjAwNSAzLjIwMy0uMDA2IDMuNTgzLS4wNjEgNC44NDhjLS4wNTEgMS4xNy0uMjQ1IDEuODA1LS40MDggMi4yM2MtLjIxNi41Ni0uNDc3Ljk2LS44OTYgMS4zOGEzLjcgMy43IDAgMCAxLTEuMzc4LjljLS40MjIuMTY1LTEuMDU4LjM2Mi0yLjIyNi40MThjLTEuMjY2LjA2LTEuNjQ1LjA3Mi00Ljg1LjA3OXMtMy41ODItLjAwNi00Ljg0OC0uMDZtOS43ODMtMTYuMTkyYTEuNDQgMS40NCAwIDEgMCAxLjQzNy0xLjQ0MmExLjQ0IDEuNDQgMCAwIDAtMS40MzcgMS40NDJNNS44MzkgMTIuMDEyYTYuMTYxIDYuMTYxIDAgMSAwIDEyLjMyMy0uMDI0YTYuMTYyIDYuMTYyIDAgMCAwLTEyLjMyMy4wMjRNOCAxMi4wMDhBNCA0IDAgMSAxIDEyLjAwOCAxNkE0IDQgMCAwIDEgOCAxMi4wMDgiLz48L3N2Zz4=" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik03LjAzLjA4NGMtMS4yNzcuMDYtMi4xNDkuMjY0LTIuOTEuNTYzYTUuOSA1LjkgMCAwIDAtMi4xMjQgMS4zODhhNS45IDUuOSAwIDAgMC0xLjM4IDIuMTI3Qy4zMjEgNC45MjYuMTIgNS44LjA2NCA3LjA3NnMtLjA2OSAxLjY4OC0uMDYzIDQuOTQ3cy4wMjEgMy42NjcuMDgzIDQuOTQ3Yy4wNjEgMS4yNzcuMjY0IDIuMTQ5LjU2MyAyLjkxMWMuMzA4Ljc4OS43MiAxLjQ1NyAxLjM4OCAyLjEyM2E1LjkgNS45IDAgMCAwIDIuMTI5IDEuMzhjLjc2My4yOTUgMS42MzYuNDk2IDIuOTEzLjU1MmMxLjI3OC4wNTYgMS42ODkuMDY5IDQuOTQ3LjA2M3MzLjY2OC0uMDIxIDQuOTQ3LS4wODJjMS4yOC0uMDYgMi4xNDctLjI2NSAyLjkxLS41NjNhNS45IDUuOSAwIDAgMCAyLjEyMy0xLjM4OGE1LjkgNS45IDAgMCAwIDEuMzgtMi4xMjljLjI5NS0uNzYzLjQ5Ni0xLjYzNi41NTEtMi45MTJjLjA1Ni0xLjI4LjA3LTEuNjkuMDYzLTQuOTQ4Yy0uMDA2LTMuMjU4LS4wMi0zLjY2Ny0uMDgxLTQuOTQ3Yy0uMDYtMS4yOC0uMjY0LTIuMTQ4LS41NjQtMi45MTFhNS45IDUuOSAwIDAgMC0xLjM4Ny0yLjEyM2E1LjkgNS45IDAgMCAwLTIuMTI4LTEuMzhjLS43NjQtLjI5NC0xLjYzNi0uNDk2LTIuOTE0LS41NUMxNS42NDcuMDA5IDE1LjIzNi0uMDA2IDExLjk3NyAwUzguMzEuMDIxIDcuMDMuMDg0bS4xNCAyMS42OTNjLTEuMTctLjA1LTEuODA1LS4yNDUtMi4yMjgtLjQwOGEzLjcgMy43IDAgMCAxLTEuMzgyLS44OTVhMy43IDMuNyAwIDAgMS0uOS0xLjM3OGMtLjE2NS0uNDIzLS4zNjMtMS4wNTgtLjQxNy0yLjIyOGMtLjA2LTEuMjY0LS4wNzItMS42NDQtLjA4LTQuODQ4Yy0uMDA2LTMuMjA0LjAwNi0zLjU4My4wNjEtNC44NDhjLjA1LTEuMTY5LjI0Ni0xLjgwNS40MDgtMi4yMjhjLjIxNi0uNTYxLjQ3Ny0uOTYuODk1LTEuMzgyYTMuNyAzLjcgMCAwIDEgMS4zNzktLjljLjQyMy0uMTY1IDEuMDU3LS4zNjEgMi4yMjctLjQxN2MxLjI2NS0uMDYgMS42NDQtLjA3MiA0Ljg0OC0uMDhjMy4yMDMtLjAwNiAzLjU4My4wMDYgNC44NS4wNjJjMS4xNjguMDUgMS44MDQuMjQ0IDIuMjI3LjQwOGMuNTYuMjE2Ljk2LjQ3NSAxLjM4Mi44OTVzLjY4MS44MTcuOSAxLjM3OGMuMTY1LjQyMi4zNjIgMS4wNTYuNDE3IDIuMjI3Yy4wNiAxLjI2NS4wNzQgMS42NDUuMDggNC44NDhjLjAwNSAzLjIwMy0uMDA2IDMuNTgzLS4wNjEgNC44NDhjLS4wNTEgMS4xNy0uMjQ1IDEuODA1LS40MDggMi4yM2MtLjIxNi41Ni0uNDc3Ljk2LS44OTYgMS4zOGEzLjcgMy43IDAgMCAxLTEuMzc4LjljLS40MjIuMTY1LTEuMDU4LjM2Mi0yLjIyNi40MThjLTEuMjY2LjA2LTEuNjQ1LjA3Mi00Ljg1LjA3OXMtMy41ODItLjAwNi00Ljg0OC0uMDZtOS43ODMtMTYuMTkyYTEuNDQgMS40NCAwIDEgMCAxLjQzNy0xLjQ0MmExLjQ0IDEuNDQgMCAwIDAtMS40MzcgMS40NDJNNS44MzkgMTIuMDEyYTYuMTYxIDYuMTYxIDAgMSAwIDEyLjMyMy0uMDI0YTYuMTYyIDYuMTYyIDAgMCAwLTEyLjMyMy4wMjRNOCAxMi4wMDhBNCA0IDAgMSAxIDEyLjAwOCAxNkE0IDQgMCAwIDEgOCAxMi4wMDgiLz48L3N2Zz4=" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -310,7 +310,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://www.linkedin.com/company/cslabs-namur" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0wIDEuMTQ2QzAgLjUxMy41MjYgMCAxLjE3NSAwaDEzLjY1QzE1LjQ3NCAwIDE2IC41MTMgMTYgMS4xNDZ2MTMuNzA4YzAgLjYzMy0uNTI2IDEuMTQ2LTEuMTc1IDEuMTQ2SDEuMTc1Qy41MjYgMTYgMCAxNS40ODcgMCAxNC44NTR6bTQuOTQzIDEyLjI0OFY2LjE2OUgyLjU0MnY3LjIyNXptLTEuMi04LjIxMmMuODM3IDAgMS4zNTgtLjU1NCAxLjM1OC0xLjI0OGMtLjAxNS0uNzA5LS41Mi0xLjI0OC0xLjM0Mi0xLjI0OFMyLjQgMy4yMjYgMi40IDMuOTM0YzAgLjY5NC41MjEgMS4yNDggMS4zMjcgMS4yNDh6bTQuOTA4IDguMjEyVjkuMzU5YzAtLjIxNi4wMTYtLjQzMi4wOC0uNTg2Yy4xNzMtLjQzMS41NjgtLjg3OCAxLjIzMi0uODc4Yy44NjkgMCAxLjIxNi42NjIgMS4yMTYgMS42MzR2My44NjVoMi40MDFWOS4yNWMwLTIuMjItMS4xODQtMy4yNTItMi43NjQtMy4yNTJjLTEuMjc0IDAtMS44NDUuNy0yLjE2NSAxLjE5M3YuMDI1aC0uMDE2bC4wMTYtLjAyNVY2LjE2OWgtMi40Yy4wMy42NzggMCA3LjIyNSAwIDcuMjI1eiIvPjwvc3ZnPg==" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0wIDEuMTQ2QzAgLjUxMy41MjYgMCAxLjE3NSAwaDEzLjY1QzE1LjQ3NCAwIDE2IC41MTMgMTYgMS4xNDZ2MTMuNzA4YzAgLjYzMy0uNTI2IDEuMTQ2LTEuMTc1IDEuMTQ2SDEuMTc1Qy41MjYgMTYgMCAxNS40ODcgMCAxNC44NTR6bTQuOTQzIDEyLjI0OFY2LjE2OUgyLjU0MnY3LjIyNXptLTEuMi04LjIxMmMuODM3IDAgMS4zNTgtLjU1NCAxLjM1OC0xLjI0OGMtLjAxNS0uNzA5LS41Mi0xLjI0OC0xLjM0Mi0xLjI0OFMyLjQgMy4yMjYgMi40IDMuOTM0YzAgLjY5NC41MjEgMS4yNDggMS4zMjcgMS4yNDh6bTQuOTA4IDguMjEyVjkuMzU5YzAtLjIxNi4wMTYtLjQzMi4wOC0uNTg2Yy4xNzMtLjQzMS41NjgtLjg3OCAxLjIzMi0uODc4Yy44NjkgMCAxLjIxNi42NjIgMS4yMTYgMS42MzR2My44NjVoMi40MDFWOS4yNWMwLTIuMjItMS4xODQtMy4yNTItMi43NjQtMy4yNTJjLTEuMjc0IDAtMS44NDUuNy0yLjE2NSAxLjE5M3YuMDI1aC0uMDE2bC4wMTYtLjAyNVY2LjE2OWgtMi40Yy4wMy42NzggMCA3LjIyNSAwIDcuMjI1eiIvPjwvc3ZnPg==" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -344,7 +344,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://x.com/CSLabs" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xNC4yMzQgMTAuMTYyTDIyLjk3NyAwaC0yLjA3MmwtNy41OTEgOC44MjRMNy4yNTEgMEguMjU4bDkuMTY4IDEzLjM0M0wuMjU4IDI0SDIuMzNsOC4wMTYtOS4zMThMMTYuNzQ5IDI0aDYuOTkzem0tMi44MzcgMy4yOTlsLS45MjktMS4zMjlMMy4wNzYgMS41NmgzLjE4Mmw1Ljk2NSA4LjUzMmwuOTI5IDEuMzI5bDcuNzU0IDExLjA5aC0zLjE4MnoiLz48L3N2Zz4=" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xNC4yMzQgMTAuMTYyTDIyLjk3NyAwaC0yLjA3MmwtNy41OTEgOC44MjRMNy4yNTEgMEguMjU4bDkuMTY4IDEzLjM0M0wuMjU4IDI0SDIuMzNsOC4wMTYtOS4zMThMMTYuNzQ5IDI0aDYuOTkzem0tMi44MzcgMy4yOTlsLS45MjktMS4zMjlMMy4wNzYgMS41NmgzLjE4Mmw1Ljk2NSA4LjUzMmwuOTI5IDEuMzI5bDcuNzU0IDExLjA5aC0zLjE4MnoiLz48L3N2Zz4=" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -378,7 +378,7 @@ const templateSource = `<!doctype html>
                 <td  style="font-size:0;height:28px;vertical-align:middle;width:28px;">
                   <a  href="https://www.youtube.com/@CSLabs_Namur" target="_blank">
                     <img
-                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMy40OTggNi4xODZhMy4wMiAzLjAyIDAgMCAwLTIuMTIyLTIuMTM2QzE5LjUwNSAzLjU0NSAxMiAzLjU0NSAxMiAzLjU0NXMtNy41MDUgMC05LjM3Ny41MDVBMy4wMiAzLjAyIDAgMCAwIC41MDIgNi4xODZDMCA4LjA3IDAgMTIgMCAxMnMwIDMuOTMuNTAyIDUuODE0YTMuMDIgMy4wMiAwIDAgMCAyLjEyMiAyLjEzNmMxLjg3MS41MDUgOS4zNzYuNTA1IDkuMzc2LjUwNXM3LjUwNSAwIDkuMzc3LS41MDVhMy4wMiAzLjAyIDAgMCAwIDIuMTIyLTIuMTM2QzI0IDE1LjkzIDI0IDEyIDI0IDEyczAtMy45My0uNTAyLTUuODE0TTkuNTQ1IDE1LjU2OFY4LjQzMkwxNS44MTggMTJ6Ii8+PC9zdmc+" style="border-radius:3px;display:block;" width="28"
+                       alt="" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMy40OTggNi4xODZhMy4wMiAzLjAyIDAgMCAwLTIuMTIyLTIuMTM2QzE5LjUwNSAzLjU0NSAxMiAzLjU0NSAxMiAzLjU0NXMtNy41MDUgMC05LjM3Ny41MDVBMy4wMiAzLjAyIDAgMCAwIC41MDIgNi4xODZDMCA4LjA3IDAgMTIgMCAxMnMwIDMuOTMuNTAyIDUuODE0YTMuMDIgMy4wMiAwIDAgMCAyLjEyMiAyLjEzNmMxLjg3MS41MDUgOS4zNzYuNTA1IDkuMzc2LjUwNXM3LjUwNSAwIDkuMzc3LS41MDVhMy4wMiAzLjAyIDAgMCAwIDIuMTIyLTIuMTM2QzI0IDE1LjkzIDI0IDEyIDI0IDEyczAtMy45My0uNTAyLTUuODE0TTkuNTQ1IDE1LjU2OFY4LjQzMkwxNS44MTggMTJ6Ii8+PC9zdmc+" style="border:0;border-radius:3px;display:block;" width="28"
                     />
                   </a>
                 </td>
@@ -422,8 +422,8 @@ const templateSource = `<!doctype html>
     
     
       </div>
+      </body>
     
-  </body>
 </html>
   `;
 

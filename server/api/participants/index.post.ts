@@ -13,6 +13,7 @@ const ACCEPTED_CV_MIME_TYPES = ["application/pdf", "application/acrobat", "appli
 
 export default defineEventHandler(async (event) => {
   const siteConfig = getSiteConfig(event);
+  const editionId = await getCurrentEditionId();
   const settings = await getPublicSettings(event);
 
   if (!isRegistrationOpen(settings.event.registrationMode, settings.event.registrationsStartDate, settings.event.registrationsEndDate)) {
@@ -120,29 +121,35 @@ export default defineEventHandler(async (event) => {
 
     createdAuthUserId = authUser.data.user.id;
 
-    const participant = await prisma.participant.create({
-      data: {
-        ...body,
-        user: {
-          create: {
-            firstName,
-            lastName,
-            email,
-            supabaseAuthId: createdAuthUserId,
-            roleAssignments: {
-              create: [{
-                role: {
-                  connect: {
-                    id: participantRole.id,
+    const participant = await withEventTransaction(editionId, async (db) => {
+      const currentEvent = await db.eventSettings.findUniqueOrThrow({where: {id: EVENT_SETTINGS_ID}});
+      if (!isRegistrationOpen(currentEvent.registrationMode, currentEvent.registrationsStartDate, currentEvent.registrationsEndDate)) {
+        throw createError({statusCode: 403, statusMessage: "Les inscriptions sont fermées."});
+      }
+      return db.participant.create({
+        data: {
+          ...body,
+          user: {
+            create: {
+              firstName,
+              lastName,
+              email,
+              supabaseAuthId: createdAuthUserId,
+              roleAssignments: {
+                create: [{
+                  role: {
+                    connect: {
+                      id: participantRole.id,
+                    },
                   },
-                },
-              }],
+                }],
+              },
             },
           },
+          curriculumVitae: undefined,
+          caution: CautionStatus.NOT_PAID,
         },
-        curriculumVitae: undefined,
-        caution: CautionStatus.NOT_PAID,
-      },
+      });
     });
     createdUserId = participant.userId;
 
@@ -179,7 +186,7 @@ export default defineEventHandler(async (event) => {
       bic: paymentBic,
     });
 
-    const registrationEmailJob = await enqueueEmail({
+    const registrationEmailJob = await withEventTransaction(editionId, (db) => enqueueEmail({
       type: "participant_registration",
       recipient: email,
       subject: "Confirmation d'inscription au Hackathon du CSLabs",
@@ -194,13 +201,14 @@ export default defineEventHandler(async (event) => {
         qrcodeUri,
       }),
       replyTo: settings.website.contactEmail,
-    });
+    }, db));
     registrationEmailJobId = registrationEmailJob.id;
   } catch {
     if (uploadedCvPath) {
       // Clean up uploaded CV in case of error
       const {error} = await supabase.storage.from("cvs").remove([uploadedCvPath]);
       if (error) {
+        await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: "cvs", target: uploadedCvPath}});
         console.error("Erreur lors de la suppression du CV après échec de la création du participant :", error);
       }
     }
@@ -214,6 +222,7 @@ export default defineEventHandler(async (event) => {
     if (createdAuthUserId) {
       const {error} = await supabase.auth.admin.deleteUser(createdAuthUserId);
       if (error) {
+        await prisma.supabaseCleanupJob.create({data: {type: "AUTH_USER", target: createdAuthUserId}});
         console.error("Erreur lors de la suppression du compte d'authentification après échec de la création :", error);
       }
     }

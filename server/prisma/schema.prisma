@@ -264,7 +264,6 @@ model EmailOutbox {
 }
 
 // ==== Settings and event configuration ====
-// TODO: Move EventSettings to a versioned Event model when historical event pages need database-backed editions.
 enum RegistrationMode {
   SCHEDULED
   OPEN
@@ -294,6 +293,7 @@ model WebsiteSettings {
 
 model EventSettings {
   id                     String           @id @default("event-settings")
+  editionId              String           @unique @default(cuid(2))
   title                  String           @default("Le Hackathon du CSLabs")
   slogan                 String           @default("")
   logoPath               String?
@@ -310,6 +310,36 @@ model EventSettings {
   locationAddress        String           @default("Rue Grandgagnage 21, 5000 Namur, Belgique")
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
+}
+
+// Archives contain an explicit snapshot of event content and aggregate counts only
+model EventArchive {
+  id         String   @id @default(cuid(2))
+  editionId  String   @unique
+  title      String
+  startDate  DateTime
+  endDate    DateTime
+  snapshot   Json
+  archivedAt DateTime @default(now())
+}
+
+enum SupabaseCleanupJobType {
+  STORAGE_OBJECT
+  AUTH_USER
+}
+
+enum SupabaseCleanupJobScope {
+  GENERAL
+  ROLLOVER
+}
+
+model SupabaseCleanupJob {
+  id        String                  @id @default(cuid(2))
+  type      SupabaseCleanupJobType
+  scope     SupabaseCleanupJobScope @default(GENERAL)
+  bucket    String?
+  target    String
+  createdAt DateTime                @default(now())
 }
 
 model SocialLink {

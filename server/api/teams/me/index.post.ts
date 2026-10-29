@@ -7,12 +7,13 @@ import type { Prisma } from "~~/server/prisma/generated/prisma/browser";
  */
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "teams.create.own");
+  const editionId = await getCurrentEditionId();
 
   const data = await readValidatedBody(event, v.parser(schema));
 
   const payload: Prisma.TeamCreateInput = data;
 
-  return prisma.$transaction(async (tx) => {
+  return withEventTransaction(editionId, async (tx) => {
     const team = await tx.team.create({data: payload});
     const updateResult = await tx.participant.updateMany({
       where: {

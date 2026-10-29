@@ -1,6 +1,7 @@
 import prisma from "./prisma";
 import { EmailOutboxStatus } from "../prisma/generated/prisma/enums";
 import type { Prisma } from "../prisma/generated/prisma/browser";
+import { getCurrentEditionId, withEventTransaction } from "./eventEdition";
 
 const EMAIL_OUTBOX_MAX_ATTEMPTS = 5;
 
@@ -31,8 +32,8 @@ function getEmailOutboxRetryDate(attempts: number) {
   return now.add(retryDelayMinutes, "minute");
 }
 
-export function enqueueEmail(input: EnqueueEmailInput) {
-  return prisma.emailOutbox.create({data: input});
+export function enqueueEmail(input: EnqueueEmailInput, db: Prisma.TransactionClient = prisma) {
+  return db.emailOutbox.create({data: input});
 }
 
 /**
@@ -43,7 +44,15 @@ export function enqueueEmail(input: EnqueueEmailInput) {
  * @return An object containing the number of jobs processed, sent, failed, and skipped
  */
 export async function processEmailOutbox(options: ProcessEmailOutboxOptions = {}): Promise<ProcessEmailOutboxResult> {
+  const editionId = await getCurrentEditionId();
   const now = dayjs();
+
+  // Immediate broadcasts have no queued attachments, so a crashed send cannot be retried.
+  // TODO: Fix this
+  await prisma.emailOutbox.updateMany({
+    where: {type: "broadcast", status: EmailOutboxStatus.PROCESSING, updatedAt: {lt: now.subtract(15, "minute").toDate()}},
+    data: {status: EmailOutboxStatus.FAILED, attempts: EMAIL_OUTBOX_MAX_ATTEMPTS},
+  });
 
   // Reset stuck jobs that have been processing for more than 15 minutes and haven't exceeded max attempts.
   await prisma.emailOutbox.updateMany({
@@ -101,7 +110,7 @@ export async function processEmailOutbox(options: ProcessEmailOutboxOptions = {}
   let skipped = 0;
 
   for (const job of jobs) {
-    const claimed = await prisma.emailOutbox.updateMany({
+    const claimed = await withEventTransaction(editionId, (db) => db.emailOutbox.updateMany({
       // Concurrency control: only claim the job if it is still in the expected state (not modified by another worker)
       where: {
         id: job.id,
@@ -115,7 +124,7 @@ export async function processEmailOutbox(options: ProcessEmailOutboxOptions = {}
         },
         lastError: null,
       },
-    });
+    }));
 
     if (claimed.count === 0) {
       skipped++;

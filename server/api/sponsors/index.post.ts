@@ -9,6 +9,7 @@ import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "sponsors.create");
+  const editionId = await getCurrentEditionId();
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,
@@ -75,10 +76,11 @@ export default defineEventHandler(async (event) => {
       uploadedPath = uploadData.path;
       payload.logo = uploadData.path;
 
-      return prisma.sponsor.create({data: payload});
+      return await withEventTransaction(editionId, (db) => db.sponsor.create({data: payload}));
     } catch (error) {
       if (uploadedPath) {
-        await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+        const {error: cleanupError} = await supabase.storage.from(SPONSORS_BUCKET).remove([uploadedPath]);
+        if (cleanupError) await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: SPONSORS_BUCKET, target: uploadedPath}});
       }
       throw error;
     }

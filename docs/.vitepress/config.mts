@@ -66,6 +66,8 @@ export default defineConfig({
           text: "Operations",
           items: [
             {text: "Overview", link: "/operations/"},
+            {text: "Event rollover", link: "/operations/event-rollover"},
+            {text: "Testing", link: "/operations/testing"},
           ],
         },
       ],

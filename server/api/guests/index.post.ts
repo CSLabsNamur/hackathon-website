@@ -10,6 +10,7 @@ import { resolveGuestName, resolveGuestQuantity } from "#shared/utils/guests";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "guests.create");
+  const editionId = await getCurrentEditionId();
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,
@@ -73,10 +74,11 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-      return prisma.guest.create({data: payload});
+      return await withEventTransaction(editionId, (db) => db.guest.create({data: payload}));
     } catch (error) {
       if (uploadedPath) {
-        await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+        const {error: cleanupError} = await supabase.storage.from(GUESTS_BUCKET).remove([uploadedPath]);
+        if (cleanupError) await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: GUESTS_BUCKET, target: uploadedPath}});
       }
       throw error;
     }

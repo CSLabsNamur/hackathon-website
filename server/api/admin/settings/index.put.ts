@@ -10,6 +10,7 @@ import { sanitizeFilename } from "#shared/utils/fileUploads";
 
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "settings.update");
+  const editionId = await getCurrentEditionId();
 
   const [bodyRaw, files] = await formidable({
     allowEmptyFiles: false,
@@ -72,10 +73,15 @@ export default defineEventHandler(async (event) => {
       data.event.logoPath = uploadedPath;
     }
 
+    let saved = false;
     try {
-      const updatedSettings = await updateSettings(data);
+      const updatedSettings = await updateSettings(data, editionId);
+      saved = true;
 
-      if (uploadedPath && currentSettings.event.logoPath) {
+      const archivedLogo = uploadedPath && currentSettings.event.logoPath && await prisma.eventArchive.count({
+        where: {snapshot: {path: ["logoPath"], equals: currentSettings.event.logoPath}},
+      });
+      if (uploadedPath && currentSettings.event.logoPath && !archivedLogo) {
         const {error} = await supabase.storage.from(EVENT_ASSETS_BUCKET).remove([currentSettings.event.logoPath]);
         if (error) {
           console.error("Erreur lors de la suppression de l'ancien logo :", error);
@@ -84,8 +90,9 @@ export default defineEventHandler(async (event) => {
 
       return updatedSettings;
     } catch (error) {
-      if (uploadedPath) {
-        await supabase.storage.from(EVENT_ASSETS_BUCKET).remove([uploadedPath]);
+      if (uploadedPath && !saved) {
+        const {error: cleanupError} = await supabase.storage.from(EVENT_ASSETS_BUCKET).remove([uploadedPath]);
+        if (cleanupError) await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: EVENT_ASSETS_BUCKET, target: uploadedPath}});
       }
       throw error;
     }

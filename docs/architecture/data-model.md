@@ -59,9 +59,14 @@ These tables store the various settings that control how the event runs and what
 - `WebsiteSettings`
 - `EventSettings`
 - `SocialLink`
+- `EventArchive` for private, immutable event snapshots and aggregate counts;
+- `SupabaseCleanupJob` for retryable Storage/Auth deletions, scoped to general cleanup or event rollover.
 
 You can control things such as the event name, date, registration open/close dates, and the links shown in the website
 header and footer.
+
+`EventSettings.editionId` identifies the active edition independently of its editable title and dates.
+See [Event rollover](../operations/event-rollover) for retention and cleanup rules.
 
 ## Communication and operations
 

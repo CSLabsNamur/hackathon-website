@@ -12,11 +12,15 @@ export default defineEventHandler(async (event) => {
     throw createError({statusCode: 404, statusMessage: "Sponsor introuvable."});
   }
 
+  // Delete the row first: if rollover archived it meanwhile, no archived logo is removed.
+  const deletedSponsor = await prisma.sponsor.delete({where: {id}});
+
   const supabase = serverSupabaseServiceRole(event);
   const {error} = await supabase.storage.from(SPONSORS_BUCKET).remove([sponsor.logo]);
   if (error) {
+    await prisma.supabaseCleanupJob.create({data: {type: "STORAGE_OBJECT", bucket: SPONSORS_BUCKET, target: sponsor.logo}});
     throw createError({statusCode: 500, statusMessage: "Erreur lors de la suppression du logo."});
   }
 
-  return prisma.sponsor.delete({where: {id}});
+  return deletedSponsor;
 });

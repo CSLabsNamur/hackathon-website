@@ -120,9 +120,14 @@ export const getEventBadgeLogoPath = defineCachedFunction(async (): Promise<stri
   return eventSettings.logoPath;
 }, {
   maxAge: SETTINGS_CACHE_MAX_AGE_SECONDS,
+  swr: false,
   name: "event-badge-logo-path",
-  getKey: () => "event-badge-logo-path",
+  getKey: () => "current",
 });
+
+export async function invalidateEventBadgeLogoPath() {
+  await useStorage("cache").removeItem("nitro:functions:event-badge-logo-path:current.json");
+}
 
 export async function getPublicSettings(event: H3Event): Promise<PublicSettings> {
   const [website, eventSettings, socialLinks] = await prisma.$transaction([
@@ -199,9 +204,9 @@ export async function getPublicSettings(event: H3Event): Promise<PublicSettings>
   };
 }
 
-export async function updateSettings(settings: UpdateSettingsSchema) {
-  await prisma.$transaction([
-    prisma.websiteSettings.update({
+export async function updateSettings(settings: UpdateSettingsSchema, editionId: string) {
+  await withEventTransaction(editionId, (db) => Promise.all([
+    db.websiteSettings.update({
       where: {id: WEBSITE_SETTINGS_ID},
       data: {
         contactEmail: settings.website.contactEmail.trim().toLowerCase(),
@@ -209,7 +214,7 @@ export async function updateSettings(settings: UpdateSettingsSchema) {
         bugReportWebhookUrl: settings.website.bugReportWebhookUrl,
       },
     }),
-    prisma.eventSettings.update({
+    db.eventSettings.update({
       where: {id: EVENT_SETTINGS_ID},
       data: {
         title: settings.event.title.trim(),
@@ -228,7 +233,7 @@ export async function updateSettings(settings: UpdateSettingsSchema) {
         locationAddress: settings.event.locationAddress.trim(),
       },
     }),
-    prisma.socialLink.deleteMany({
+    db.socialLink.deleteMany({
       where: {
         type: {
           notIn: settings.socialLinks.map((link) => link.type),
@@ -238,7 +243,7 @@ export async function updateSettings(settings: UpdateSettingsSchema) {
     ...settings.socialLinks.map((rawLink) => {
       const link = normalizeSocialLinkValues(rawLink);
 
-      return prisma.socialLink.upsert({
+      return db.socialLink.upsert({
         where: {
           type: link.type,
         },
@@ -259,7 +264,8 @@ export async function updateSettings(settings: UpdateSettingsSchema) {
         },
       });
     }),
-  ]);
+  ]));
 
+  await invalidateEventBadgeLogoPath();
   return getEditableSettings();
 }
