@@ -1,0 +1,26 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="All Tests" type="JavaScriptTestRunnerVitest" nameIsGenerated="true">
+    <node-interpreter value="project" />
+    <vitest-package value="$PROJECT_DIR$/node_modules/vitest" />
+    <working-dir value="$PROJECT_DIR$" />
+    <envs>
+      <env name="TEST_DATABASE_URL" value="postgresql://postgres:test@127.0.0.1:55439/hackathon_test" />
+    </envs>
+    <scope-kind value="ALL" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="Run Test Database" run_configuration_type="docker-deploy" />
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_Sleep 5 seconds" />
+      <option name="NpmBeforeRunTask" enabled="true">
+        <package-json value="$PROJECT_DIR$/package.json" />
+        <command value="run" />
+        <scripts>
+          <script value="db:deploy" />
+        </scripts>
+        <node-interpreter value="project" />
+        <envs>
+          <env name="DATABASE_URL" value="postgresql://postgres:test@127.0.0.1:55439/hackathon_test" />
+        </envs>
+      </option>
+    </method>
+  </configuration>
+</component>

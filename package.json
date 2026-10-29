@@ -26,6 +26,8 @@
     "preview": "nuxt preview",
     "lint": "eslint .",
     "typecheck": "nuxi typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "mail:generate": "tsx scripts/generate-mail-templates.ts",
     "start": "node .output/server/index.mjs",
     "db:permission-sync": "tsx scripts/permission-sync.ts",
@@ -102,14 +104,18 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@nuxt/test-utils": "4.0.2",
     "@types/clamscan": "^2.4.1",
     "@types/formidable": "^3.5.1",
     "@types/mjml": "^5.4.1",
     "@types/node": "22.20.5",
     "@types/pdfkit": "^0.17.7",
     "@types/qrcode": "^1.5.6",
+    "@vue/test-utils": "2.4.6",
+    "happy-dom": "20.9.0",
     "nuxtseo-devtools-host": "^1.0.2",
     "typescript": "^6.0.3",
+    "vitest": "4.1.4",
     "vue-tsc": "^3.3.13",
     "zod": "^4.6.7"
   }
