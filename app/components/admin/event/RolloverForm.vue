@@ -26,13 +26,15 @@ const state = reactive({
 watchImmediate(() => [props.event, props.revision] as const, ([event, revision]) => {
   state.editionId = event.editionId;
   state.revision = revision;
-  state.title = event.title;
+  state.title = "";
   state.confirmation = "";
   state.reviewedArchive = false;
 
-  for (const field of ["startDate", "endDate", "registrationsStartDate", "registrationsEndDate"] as const) {
-    state[field] = dayjs(event[field]).tz("Europe/Brussels").add(1, "year").format("YYYY-MM-DDTHH:mm");
+  for (const field of ["startDate", "endDate", "registrationsStartDate"] as const) {
+    state[field] = dayjs(event[field]).tz("Europe/Brussels").add(1, "year").startOf("day")
+        .hour(field === "registrationsStartDate" ? 0 : 18).format("YYYY-MM-DDTHH:mm");
   }
+  state.registrationsEndDate = state.startDate;
 });
 
 function submit(event: FormSubmitEvent<EventRolloverInput>) {

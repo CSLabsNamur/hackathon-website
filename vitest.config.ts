@@ -24,6 +24,7 @@ export default defineConfig({
           environmentOptions: {
             nuxt: {
               overrides: {
+                //@ts-expect-error idk why but the 'supabase' key is not recognized in the Nuxt config type here
                 supabase: {url: "https://supabase.example.test", key: "test-key"},
                 ogImage: {enabled: false},
                 turnstile: {siteKey: "test-key"},

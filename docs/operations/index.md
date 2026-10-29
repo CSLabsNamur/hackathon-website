@@ -10,14 +10,17 @@ It is not yet a full deployment runbook, but it should be enough to avoid the mo
 
 ## CI
 
-The CI pipeline currently is relatively simple, because we don't have a test suite yet. It runs the following steps:
+The CI pipeline runs the following steps:
 
 1. install dependencies;
 2. lint;
 3. typecheck;
-4. build.
+4. tests, with a disposable PostgreSQL database for rollover integration tests;
+5. build.
 
 This way, we can at least catch build-time issues before they make it to production.
+
+See [Testing](./testing) for the Nuxt/Vitest setup and [Event rollover](./event-rollover) for switching editions.
 
 ## Deployment
 

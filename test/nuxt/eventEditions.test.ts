@@ -14,6 +14,10 @@ describe("rollover confirmation", () => {
       props: {event: currentEdition, revision: nextEdition.revision},
       attachTo: document.body,
     });
+    const title = wrapper.get<HTMLInputElement>('input[name="title"]');
+    expect(title.element.value).toBe("");
+    await title.setValue("Hackathon 2027");
+
     const prepare = wrapper.findAll("button").find((button) => button.text() === "Préparer la nouvelle édition")!;
     expect(prepare.attributes("disabled")).toBeDefined();
 
@@ -38,7 +42,11 @@ describe("rollover confirmation", () => {
       revision: nextEdition.revision,
       confirmation: currentEdition.title,
       reviewedArchive: true,
-      startDate: "2027-03-27T10:00",
+      title: "Hackathon 2027",
+      startDate: "2027-03-27T18:00",
+      endDate: "2027-03-29T18:00",
+      registrationsStartDate: "2026-11-01T00:00",
+      registrationsEndDate: "2027-03-27T18:00",
     })]]));
   });
 });
