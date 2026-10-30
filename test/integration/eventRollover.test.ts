@@ -54,7 +54,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("event rollover", () => {
     const settings = await prisma.eventSettings.findFirstOrThrow();
     expect(settings).toMatchObject({
       title: "Hackathon 2099",
-      slogan: "",
+      slogan: "Créons demain ensemble",
       logoPath: null,
       registrationMode: "CLOSED",
       teaserEnabled: true,

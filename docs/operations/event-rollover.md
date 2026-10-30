@@ -16,7 +16,7 @@ to the public history page automatically yet.
 2. Review the archive preview, especially free-text schedule and sponsor descriptions, to remove leftover participant
    details if any. Logically there shouldn't be any, but we have to be sure for GDPR compliance. Also check if anything
    is missing or broken, and fix it in the active event before proceeding.
-3. Enter the next title and event/registration dates. The next event must start in the future
+3. Enter the next title, optional slogan, and event/registration dates. The next event must start in the future
    and after the current event; registration must end no later than its start. Duh.
 4. Confirm the content review, type the exact current title in the confirmation dialog, and confirm the rollover.
 
@@ -37,7 +37,7 @@ If the cleanup is stuck, check the logs of both the application and Supabase.
 | CVs, submitted files, guest images and participant-only Supabase Auth accounts                           | Queued for deletion in Supabase                                                                     |
 | Guests and all email outbox entries, including sent/failed messages                                      | Deleted                                                                                             |
 | Rooms, social links, staff accounts/roles/permissions, website settings, venue and payment configuration | Preserved                                                                                           |
-| Next event                                                                                               | New edition identity, supplied title/dates, empty slogan/logo, teaser enabled, registrations closed |
+| Next event                                                                                               | New edition identity, supplied title/slogan/dates, empty logo, teaser enabled, registrations closed |
 
 Each archive is an independent snapshot. Later edits to the active event do not rewrite it.
 Event and sponsor logos remain in their existing storage buckets because the archive references them. We might need to

@@ -14,6 +14,7 @@ export const nextEdition: EventRolloverInput = {
   revision: "a".repeat(64),
   confirmation: currentEdition.title,
   title: "Hackathon 2099",
+  slogan: "Créons demain ensemble",
   startDate: "2099-10-23T10:00",
   endDate: "2099-10-25T18:00",
   registrationsStartDate: "2099-01-01T10:00",

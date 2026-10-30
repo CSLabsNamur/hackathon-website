@@ -8,6 +8,7 @@ const schema = v.pipe(
     revision: v.pipe(v.string(), v.regex(/^[a-f0-9]{64}$/)),
     confirmation: v.pipe(v.string(), v.nonEmpty("Recopiez le titre de l'événement actuel.")),
     title: v.pipe(v.string(), v.trim(), v.nonEmpty("Le nouveau titre est requis."), v.maxLength(100)),
+    slogan: v.pipe(v.string(), v.maxLength(160, "Le slogan ne peut pas dépasser 160 caractères.")),
     startDate: dateTime,
     endDate: dateTime,
     registrationsStartDate: dateTime,

@@ -16,6 +16,7 @@ const state = reactive({
   revision: "",
   confirmation: "",
   title: "",
+  slogan: "",
   startDate: "",
   endDate: "",
   registrationsStartDate: "",
@@ -27,6 +28,7 @@ watchImmediate(() => [props.event, props.revision] as const, ([event, revision])
   state.editionId = event.editionId;
   state.revision = revision;
   state.title = "";
+  state.slogan = "";
   state.confirmation = "";
   state.reviewedArchive = false;
 
@@ -48,8 +50,11 @@ function submit(event: FormSubmitEvent<EventRolloverInput>) {
   <UForm id="event-rollover-form" :schema :state :disabled="disabled || loading"
          @submit="submit" @error="confirmOpen = false">
     <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
-      <UFormField label="Titre de la prochaine édition" name="title" required class="md:col-span-2">
+      <UFormField label="Titre de la prochaine édition" name="title" required>
         <UInput v-model="state.title" icon="i-lucide-type" class="w-full"/>
+      </UFormField>
+      <UFormField label="Slogan" name="slogan">
+        <UInput v-model="state.slogan" icon="i-lucide-sparkles" class="w-full"/>
       </UFormField>
       <UFormField label="Début de l'événement" name="startDate" required>
         <UInput v-model="state.startDate" type="datetime-local" icon="i-lucide-calendar-plus" class="w-full"/>

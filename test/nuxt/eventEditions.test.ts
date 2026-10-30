@@ -17,6 +17,9 @@ describe("rollover confirmation", () => {
     const title = wrapper.get<HTMLInputElement>('input[name="title"]');
     expect(title.element.value).toBe("");
     await title.setValue("Hackathon 2027");
+    const slogan = wrapper.get<HTMLInputElement>('input[name="slogan"]');
+    expect(slogan.element.value).toBe("");
+    await slogan.setValue("Créons demain ensemble");
 
     const prepare = wrapper.findAll("button").find((button) => button.text() === "Préparer la nouvelle édition")!;
     expect(prepare.attributes("disabled")).toBeDefined();
@@ -43,6 +46,7 @@ describe("rollover confirmation", () => {
       confirmation: currentEdition.title,
       reviewedArchive: true,
       title: "Hackathon 2027",
+      slogan: "Créons demain ensemble",
       startDate: "2027-03-27T18:00",
       endDate: "2027-03-29T18:00",
       registrationsStartDate: "2026-11-01T00:00",

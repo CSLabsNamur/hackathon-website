@@ -174,7 +174,7 @@ export async function rolloverEvent(input: EventRolloverInput) {
     await db.scheduleItem.deleteMany();
     const updated = await db.eventSettings.updateMany({
       where: {id: EVENT_SETTINGS_ID, editionId: input.editionId}, data: {
-        editionId: createId(), title: input.title, slogan: "", logoPath: null, teaserEnabled: true,
+        editionId: createId(), title: input.title, slogan: input.slogan, logoPath: null, teaserEnabled: true,
         startDate, endDate: dayjs.tz(input.endDate, "Europe/Brussels").toDate(),
         registrationsStartDate: dayjs.tz(input.registrationsStartDate, "Europe/Brussels").toDate(),
         registrationsEndDate: dayjs.tz(input.registrationsEndDate, "Europe/Brussels").toDate(),
