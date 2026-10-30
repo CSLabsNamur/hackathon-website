@@ -1,5 +1,6 @@
 import * as v from "valibot";
 import * as ibantools from "ibantools";
+import { eventDetailsSchema, eventDateCheck, registrationDateCheck } from "./event";
 
 const websiteSettingsSchema = v.strictObject({
   contactEmail: v.pipe(v.string(), v.nonEmpty("L'email de contact est requis."), v.email("L'email de contact n'est pas valide.")),
@@ -16,12 +17,7 @@ const websiteSettingsSchema = v.strictObject({
 });
 
 const eventSettingsSchema = v.pipe(v.strictObject({
-    title: v.pipe(
-      v.string(),
-      v.nonEmpty("Le titre de l'événement est requis."),
-      v.maxLength(100, "Le titre de l'événement ne peut pas dépasser 100 caractères."),
-    ),
-    slogan: v.pipe(v.string(), v.maxLength(160, "Le slogan ne peut pas dépasser 160 caractères.")),
+    ...eventDetailsSchema.entries,
     logoPath: v.pipe(
       v.nullable(
         v.pipe(
@@ -36,26 +32,6 @@ const eventSettingsSchema = v.pipe(v.strictObject({
       v.transform((value) => typeof value === "string" && value.trim() === "" ? null : value),
     ),
     teaserEnabled: v.boolean(),
-    startDate: v.pipe(
-      v.string(),
-      v.nonEmpty("La date de début est requise."),
-      v.isoDateTime("La date de début doit être une date et heure valide."),
-    ),
-    endDate: v.pipe(
-      v.string(),
-      v.nonEmpty("La date de fin est requise."),
-      v.isoDateTime("La date de fin doit être une date et heure valide."),
-    ),
-    registrationsStartDate: v.pipe(
-      v.string(),
-      v.nonEmpty("La date d'ouverture des inscriptions est requise."),
-      v.isoDateTime("La date d'ouverture des inscriptions doit être une date et heure valide."),
-    ),
-    registrationsEndDate: v.pipe(
-      v.string(),
-      v.nonEmpty("La date de fermeture des inscriptions est requise."),
-      v.isoDateTime("La date de fermeture des inscriptions doit être une date et heure valide."),
-    ),
     registrationMode: v.picklist(Object.values(RegistrationMode)),
     cautionAmount: v.pipe(
       v.number(),
@@ -84,22 +60,9 @@ const eventSettingsSchema = v.pipe(v.strictObject({
       v.maxLength(200, "L'adresse du lieu ne peut pas dépasser 200 caractères."),
     ),
   }),
-  v.forward(
-    v.partialCheck(
-      [["startDate"], ["endDate"]],
-      (input) => new Date(input.startDate) < new Date(input.endDate),
-      "La date de fin doit être après la date de début.",
-    ),
-    ["endDate"],
-  ),
-  v.forward(
-    v.partialCheck(
-      [["registrationsStartDate"], ["registrationsEndDate"]],
-      (input) => new Date(input.registrationsStartDate) < new Date(input.registrationsEndDate),
-      "La fermeture des inscriptions doit être après leur ouverture.",
-    ),
-    ["registrationsEndDate"],
-  ));
+  v.forward(v.partialCheck(...eventDateCheck), ["endDate"]),
+  v.forward(v.partialCheck(...registrationDateCheck), ["registrationsEndDate"]),
+);
 
 const socialLinkSchema = v.pipe(
   v.strictObject({
