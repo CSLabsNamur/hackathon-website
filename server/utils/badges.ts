@@ -161,9 +161,9 @@ function fitImageWithinBox(originalWidth: number, originalHeight: number, maxWid
 }
 
 function resolvePublicStorageUrl(path: string, bucket: string) {
-  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseUrl = useRuntimeConfig().public.supabase.url;
   if (!supabaseUrl) {
-    console.error("SUPABASE_URL is not defined in the environment variables.");
+    console.error("Supabase URL is not configured.");
     return null;
   }
 

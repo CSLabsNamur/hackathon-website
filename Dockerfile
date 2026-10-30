@@ -23,8 +23,6 @@ COPY . ./
 
 # Generation needs a URL, but never connects to a database during the build.
 ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
-ARG SUPABASE_URL
-ENV SUPABASE_URL=${SUPABASE_URL}
 ARG NUXT_SITE_URL
 ENV NUXT_SITE_URL=${NUXT_SITE_URL}
 

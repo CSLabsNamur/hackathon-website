@@ -1,6 +1,7 @@
 import NodeClam from "clamscan";
 
 export const clamscan = (async () => {
+  const {clamav} = useRuntimeConfig();
   // During build or on dev machines, the ClamAV host might not exist.
   // We keep the promise API but avoid throwing unhandled rejections.
   try {
@@ -12,8 +13,8 @@ export const clamscan = (async () => {
       scanRecursively: true,
       clamdscan: {
         socket: false, // Disable socket mode - use TCP instead
-        host: process.env.CLAMAV_HOST || "clamav", // Default to docker-compose service name
-        port: process.env.CLAMAV_PORT ? parseInt(process.env.CLAMAV_PORT) : 3310, // Default to 3310
+        host: clamav.host,
+        port: clamav.port,
         multiscan: true,
         active: true,
         tls: false,

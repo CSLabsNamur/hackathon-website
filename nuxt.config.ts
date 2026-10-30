@@ -1,5 +1,3 @@
-const supabaseHostname = new URL(process.env.SUPABASE_URL || "http://localhost").host;
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-26",
@@ -71,9 +69,9 @@ export default defineNuxtConfig({
   },
 
   site: {
-    url: process.env.NUXT_SITE_URL || "https://hackathon.cslabs.be",
-    name: process.env.NUXT_SITE_NAME || "Le Hackathon du CSLabs",
-    description: process.env.NUXT_SITE_DESCRIPTION || "Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.",
+    url: "https://hackathon.cslabs.be",
+    name: "Le Hackathon du CSLabs",
+    description: "Le Hackathon du CSLabs : 48h pour imaginer, prototyper et présenter un projet tech en équipe.",
     defaultLocale: "fr-BE",
   },
 
@@ -110,8 +108,17 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    clamav: {
+      host: "clamav",
+      port: 3310,
+    },
     turnstile: {
       secretKey: "",
+    },
+    public: {
+      turnstile: {
+        siteKey: "",
+      },
     },
   },
 
@@ -189,13 +196,13 @@ export default defineNuxtConfig({
     csrf: true,
     // TODO: Doesn't work : https://github.com/Baroshem/nuxt-security/issues/515
     corsHandler: {
-      origin: ["http://localhost:3000", "https://hackathon.cslabs.be", "https://hackathon-dev.cslabs.be", process.env.SUPABASE_URL || ""],
+      origin: ["http://localhost:3000", "https://hackathon.cslabs.be", "https://hackathon-dev.cslabs.be"],
     },
     headers: {
       crossOriginEmbedderPolicy: "unsafe-none",
       contentSecurityPolicy: {
-        "img-src": ["'self'", "data:", "blob:", "https://api.dicebear.com", `https://${supabaseHostname}`, "https://lh3.googleusercontent.com"],
-        "connect-src": ["'self'", `https://${supabaseHostname}`, `wss://${supabaseHostname}`, "https://api.iconify.design"],
+        "img-src": ["'self'", "data:", "blob:", "https://api.dicebear.com", "https://lh3.googleusercontent.com"],
+        "connect-src": ["'self'", "https://api.iconify.design"],
         "frame-src": ["'self'", "https://challenges.cloudflare.com", "https://www.openstreetmap.org"],
         "script-src": ["'self'", "https:", "'unsafe-inline'", "'wasm-unsafe-eval'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
         "script-src-attr": ["'unsafe-hashes'", "'unsafe-inline'"],
@@ -235,20 +242,16 @@ export default defineNuxtConfig({
     features: ["LabelLayout", "UniversalTransition"],
   },
 
-  turnstile: {
-    siteKey: process.env.NUXT_TURNSTILE_SITE_KEY || "",
-  },
-
   nodemailer: {
     //@ts-expect-error The type definitions for nodemailer are outdated
     from: "\"Hackathon CSLabs\" <hackathon@cslabs.be>",
-    host: process.env.NUXT_SMTP_HOST || "",
-    port: parseInt(process.env.NUXT_SMTP_PORT || "8465"),
-    secure: process.env.NUXT_SMTP_SECURE !== "false",
+    host: "",
+    port: 465,
+    secure: true,
     auth: {
-      user: process.env.NUXT_SMTP_USER,
-      pass: process.env.NUXT_SMTP_PASSWORD,
+      user: "",
+      pass: "",
     },
-    replyTo: process.env.NUXT_SMTP_REPLY_TO || "event@cslabs.be",
+    replyTo: "event@cslabs.be",
   },
 });

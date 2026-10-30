@@ -31,8 +31,8 @@ function requiredEnv(name: string) {
   return value;
 }
 
-const supabaseUrl = requiredEnv("SUPABASE_URL").replace(/\/$/, "");
-const supabaseServiceKey = requiredEnv("SUPABASE_SECRET_KEY");
+const supabaseUrl = requiredEnv("NUXT_PUBLIC_SUPABASE_URL").replace(/\/$/, "");
+const supabaseServiceKey = requiredEnv("NUXT_SUPABASE_SECRET_KEY");
 
 async function supabaseAdminRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${supabaseUrl}${path}`, {

@@ -218,15 +218,16 @@ NUXT_SITE_URL="http://localhost:3000"
 
 # (...)
 
-NUXT_SMTP_HOST="localhost"
-NUXT_SMTP_PORT="1025"
-NUXT_SMTP_USER="test"
-NUXT_SMTP_PASSWORD="test"
-NUXT_SMTP_REPLY_TO="event@cslabs.be"
+NUXT_NODEMAILER_HOST="localhost"
+NUXT_NODEMAILER_PORT="1025"
+NUXT_NODEMAILER_SECURE="false"
+NUXT_NODEMAILER_AUTH_USER="test"
+NUXT_NODEMAILER_AUTH_PASS="test"
+NUXT_NODEMAILER_REPLY_TO="event@cslabs.be"
 
-SUPABASE_URL="http://localhost:8000"
-SUPABASE_KEY="sb_publishable_<your-publishable-key>"
-SUPABASE_SECRET_KEY="sb_secret_<your-secret-key>"
+NUXT_PUBLIC_SUPABASE_URL="http://localhost:8000"
+NUXT_PUBLIC_SUPABASE_KEY="sb_publishable_<your-publishable-key>"
+NUXT_SUPABASE_SECRET_KEY="sb_secret_<your-secret-key>"
 DATABASE_URL="postgresql://postgres.your-tenant-id:your-super-secret-and-long-postgres-password@localhost:5432/postgres"
 
 # (...)
@@ -234,9 +235,9 @@ DATABASE_URL="postgresql://postgres.your-tenant-id:your-super-secret-and-long-po
 
 Just keep in mind the following 3 things:
 
-- The environment variable `SUPABASE_KEY` corresponds to the environment variable `SUPABASE_PUBLISHABLE_KEY` of
+- The environment variable `NUXT_PUBLIC_SUPABASE_KEY` corresponds to the environment variable `SUPABASE_PUBLISHABLE_KEY` of
   supabase.
-- The environment variable `SUPABASE_SECRET_KEY` corresponds to the environment variable `SUPABASE_SECRET_KEY` of
+- The environment variable `NUXT_SUPABASE_SECRET_KEY` corresponds to the environment variable `SUPABASE_SECRET_KEY` of
   supabase.
 - The user in the environment variable `DATABASE_URL` is not just the `postgres` role. You also need to add the value of
   your tenant ID from `POOLER_TENANT_ID` in the Supabase config:

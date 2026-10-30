@@ -24,8 +24,7 @@ env:
   NODE_VERSION: 22.23.4
   DATABASE_URL: "postgresql://user:password@localhost:5432/dbname"
   NUXT_SITE_URL: "https://hackathon.cslabs.be"
-  NUXT_PUBLIC_SITE_URL: "https://hackathon.cslabs.be"
-  SUPABASE_URL: "https://supabase-hackathon.cslabs.be"
+  NUXT_PUBLIC_SUPABASE_URL: "https://supabase-hackathon.cslabs.be"
 
 jobs:
   checks:
