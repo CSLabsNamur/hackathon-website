@@ -270,8 +270,10 @@ If you want to run the application container from this repository's own `docker-
 docker compose up --build
 ```
 
-This compose file starts the app container and ClamAV.
-It does not replace the separate Supabase self-hosted stack.
+Fill the required values in `.env` first, including a local `NUXT_APP_SECRET` generated with `openssl rand -hex 32`.
+This compose file starts PostgreSQL, Maildev and ClamAV, applies migrations, seeds the application database, and
+starts the app. Open Maildev at `http://localhost:1080` to inspect local mail. It does not replace Supabase Auth
+and Storage. For credentials and port settings, see [Operations](../operations/index#local-docker-compose).
 
 > [!TIP]
 > If you have a heap memory error while building the website, you can try increasing the Node.js heap size:

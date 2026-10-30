@@ -17,8 +17,11 @@ export default defineNuxtConfig({
       "*/5 * * * *": ["emails:process"],
       "*/2 * * * *": ["supabase:cleanup"],
     },
+    externals: {
+      external: [/^@prisma\//],
+    },
     rollupConfig: {
-      external: [/^@prisma\//, /\.wasm$/],
+      external: [/\.wasm$/],
     },
   },
 
@@ -239,9 +242,9 @@ export default defineNuxtConfig({
   nodemailer: {
     //@ts-expect-error The type definitions for nodemailer are outdated
     from: "\"Hackathon CSLabs\" <hackathon@cslabs.be>",
-    host: process.env.NUXT_SMTP_HOST,
+    host: process.env.NUXT_SMTP_HOST || "",
     port: parseInt(process.env.NUXT_SMTP_PORT || "8465"),
-    secure: true,
+    secure: process.env.NUXT_SMTP_SECURE !== "false",
     auth: {
       user: process.env.NUXT_SMTP_USER,
       pass: process.env.NUXT_SMTP_PASSWORD,

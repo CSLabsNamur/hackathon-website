@@ -1,0 +1,18 @@
+{
+  "name": "@cslabs/hackathon-migrations",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "scripts": {
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "dayjs": "1.11.23",
+    "dotenv": "17.4.2",
+    "prisma": "^7.10.1",
+    "tsx": "^4.23.15"
+  }
+}

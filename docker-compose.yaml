@@ -1,35 +1,66 @@
 services:
   app:
+    extends:
+      file: docker-compose.coolify.yaml
+      service: app
     build:
-      context: .
       args:
-        - DATABASE_URL=${DATABASE_URL}
-        - SUPABASE_URL=${SUPABASE_URL}
+        NUXT_SITE_URL: ${NUXT_SITE_URL:-http://localhost:3000}
     ports:
-      - "3000:80"
-    env_file:
-      - .env
+      - "${APP_PORT:-3000}:80"
+    environment:
+      SERVICE_URL_APP: ${NUXT_SITE_URL:-http://localhost:3000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@localhost:5432/postgres}
+      NUXT_SITE_URL: ${NUXT_SITE_URL:-http://localhost:3000}
+      NUXT_SITE_ENV: ${NUXT_SITE_ENV:-staging}
+      NUXT_APP_SECRET: ${NUXT_APP_SECRET:?}
+      NUXT_NODEMAILER_HOST: maildev
+      NUXT_NODEMAILER_PORT: 1025
+      NUXT_NODEMAILER_SECURE: "false"
+      NUXT_NODEMAILER_AUTH_USER: ""
+      NUXT_NODEMAILER_AUTH_PASS: ""
     depends_on:
-      prisma_setup:
-        condition: service_completed_successfully
-        required: true
-        restart: false
-      clamav:
+      postgres:
         condition: service_healthy
-        required: true
+      maildev:
+        condition: service_healthy
+
   clamav:
-    image: clamav/clamav:1.5
-    healthcheck:
-      test: [ "CMD-SHELL", "echo 'PING' | nc -w 5 localhost 3310" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    extends:
+      file: docker-compose.coolify.yaml
+      service: clamav
+
   prisma_setup:
-    build:
-      context: .
-      dockerfile: Dockerfile-prisma
-      args:
-        - DATABASE_URL=${DATABASE_URL}
-    restart: no
-    env_file:
-      - .env
+    extends:
+      file: docker-compose.coolify.yaml
+      service: prisma_setup
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:password@localhost:5432/postgres}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"' ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  maildev:
+    image: maildev/maildev:2.2.1
+    ports:
+      - "127.0.0.1:${MAILDEV_WEB_PORT:-1080}:1080"
+      - "127.0.0.1:${MAILDEV_SMTP_PORT:-1025}:1025"
+
+volumes:
+  postgres-data:

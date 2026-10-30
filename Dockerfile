@@ -1,39 +1,50 @@
 FROM node:22.23.4-slim AS base
+
 WORKDIR /app
 
-RUN apt-get update -y && apt-get install -y openssl
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-ARG NODE_ENV=production
-ARG DATABASE_URL
-ARG SUPABASE_URL
-ENV NODE_ENV=${NODE_ENV}
-ENV DATABASE_URL=${DATABASE_URL}
-ENV SUPABASE_URL=${SUPABASE_URL}
+FROM base AS dependencies
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml prisma.config.ts ./
-COPY server/prisma/schema.prisma ./server/prisma/schema.prisma
+ENV PNPM_HOME=/pnpm
+ENV PATH="${PNPM_HOME}:${PATH}"
 
-RUN corepack enable && pnpm install --prod --frozen-lockfile && pnpm add @nuxt/cli
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY docker/prisma/package.json ./docker/prisma/package.json
 
-FROM base AS build
-WORKDIR /app
+RUN corepack enable && corepack install
+RUN --mount=type=cache,id=hackathon-pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --ignore-scripts --store-dir=/pnpm/store
 
-# Copy the entire project
+FROM dependencies AS prepare
+
 COPY . ./
 
-# Build the project
+# Generation needs a URL, but never connects to a database during the build.
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
+ARG SUPABASE_URL
+ENV SUPABASE_URL=${SUPABASE_URL}
+ARG NUXT_SITE_URL
+ENV NUXT_SITE_URL=${NUXT_SITE_URL}
+
+# Source files must be present before the root postinstall prepares Nuxt and Prisma.
+RUN pnpm rebuild --pending
+
+FROM prepare AS build
+
 RUN pnpm run build
 
 FROM base AS runtime
-WORKDIR /app
 
-# Only `.output` folder is needed from the build stage
-COPY --from=build /app/.output ./.output
-
-# Change the port and host
+ENV NODE_ENV=production
 ENV PORT=80
 ENV HOST=0.0.0.0
 
+COPY --from=build --chown=node:node /app/.output ./.output
+
+RUN chown node:node /app
+USER node
 EXPOSE 80
 
 CMD ["node", "/app/.output/server/index.mjs"]

@@ -4,6 +4,7 @@ node_modules
 .nitro
 .nuxt
 .cache
+.data
 coverage
 
 # VCS and IDE
@@ -11,6 +12,9 @@ coverage
 .gitignore
 .vscode
 .idea
+.agents
+.codex
+.run
 *.log
 
 # Docker
@@ -22,11 +26,13 @@ Dockerfile*
 *.local
 
 # Tests & misc
+test
 **/__tests__
 **/*.spec.*
 **/*.test.*
 
 # Docs and top-level miscellanea that should not trigger a rebuild
+docs
 README*
 LICENSE*
 *.md
