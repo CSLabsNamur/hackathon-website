@@ -175,12 +175,9 @@ setActions(computed(() => currentParticipant.value?.team ? [{
       <UCard class="col-span-2 row-span-2" variant="subtle">
         <div class="grid gap-6">
           <p class="text-3xl font-semibold text-center">{{ currentParticipant.team.name }}</p>
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 gap-3">
             <UPageCard variant="subtle" title="Description" icon="i-lucide-text">
               {{ currentParticipant.team.description || "Aucune description fournie." }}
-            </UPageCard>
-            <UPageCard variant="subtle" title="Idée" icon="i-lucide-lightbulb">
-              {{ currentParticipant.team.idea || "Aucune idée fournie." }}
             </UPageCard>
             <UPageCard variant="subtle" title="Code d'invitation" icon="i-lucide-key">
               <div class="flex items-center gap-2">

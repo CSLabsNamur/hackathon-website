@@ -52,17 +52,13 @@ async function onError(event: FormErrorEvent) {
     <template #body>
       <UContainer>
         <UForm id="team-creation-form" :schema :state :disabled="isSubmitting"
-               class="grid grid-cols-1 lg:grid-cols-2 gap-6"
+               class="grid gap-6"
                @submit="onSubmit" @error="onError">
           <UFormField label="Nom de l'équipe" name="name" required>
             <UInput v-model="state.name" icon="i-lucide-pen-line" class="w-full"/>
           </UFormField>
 
-          <UFormField label="Idée de l'équipe" name="idea">
-            <UInput v-model="state.idea" icon="i-lucide-lightbulb" class="w-full"/>
-          </UFormField>
-
-          <UFormField label="Description de l'équipe" name="description" required class="col-span-2">
+          <UFormField label="Description de l'équipe" name="description" required>
             <UTextarea v-model="state.description" icon="i-lucide-info" :rows="3" class="w-full"/>
           </UFormField>
         </UForm>

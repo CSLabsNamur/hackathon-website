@@ -141,7 +141,6 @@ const teamsExportSchema = defineExportSchema<TeamExportRow>({
     {id: "id", name: "ID", enabledByDefault: false, path: "id"},
     {id: "name", name: "Nom", path: "name"},
     {id: "description", name: "Description", path: "description"},
-    {id: "idea", name: "Idée", path: "idea"},
     {
       id: "valid",
       name: "Validité",

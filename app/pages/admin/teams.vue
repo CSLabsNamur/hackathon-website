@@ -55,13 +55,6 @@ const columns: NamedTableColumn<AdminTeam>[] = [
     meta: getWrappingColumnMeta(),
   },
   {
-    id: "idea",
-    name: "Idée",
-    header: "Idée",
-    accessorKey: "idea",
-    meta: getWrappingColumnMeta(),
-  },
-  {
     id: "valid",
     name: "Validité",
     header: ({column}) => getSingleSelectFilterHeader(column, "Validité", [...validityItems]),

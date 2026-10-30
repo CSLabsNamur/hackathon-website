@@ -22,22 +22,18 @@ const prisma = new PrismaClient({adapter});
 //  {
 //    name: "Team Alpha",
 //    description: "Platform integration squad focused on auth and SSO.",
-//    idea: "Build a unified login experience across products.",
 //  },
 //  {
 //    name: "Team Beta",
 //    description: "Experimentation and prototyping team.",
-//    idea: "Rapidly validate new product ideas with lightweight prototypes.",
 //  },
 //  {
 //    name: "Team Gamma",
 //    description: "Performance and observability team.",
-//    idea: "Improve metrics and monitoring pipelines.",
 //  },
 //  {
 //    name: "Team Delta",
 //    description: "Customer success integrations.",
-//    idea: "Automate onboarding and support workflows.",
 //  },
 //];
 

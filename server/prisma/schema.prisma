@@ -70,7 +70,6 @@ model Team {
   id          String        @id @default(cuid(2))
   name        String        @unique
   description String
-  idea        String?
   token       String        @unique @default(nanoid(16))
   members     Participant[]
   room        Room?         @relation(fields: [roomId], references: [id])

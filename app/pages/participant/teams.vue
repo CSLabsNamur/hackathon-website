@@ -43,11 +43,6 @@ const columns: TableColumn<AdminTeam>[] = [
     accessorKey: "description",
     meta: getWrappingColumnMeta(),
   },
-  {
-    header: "Idée",
-    accessorKey: "idea",
-    meta: getWrappingColumnMeta(),
-  },
 ];
 </script>
 
