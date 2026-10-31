@@ -85,6 +85,10 @@ export async function getDbUser(authUser: JwtPayload): Promise<DbUser> {
   }
 }
 
+export async function invalidateUserAuthorization(supabaseAuthId: string) {
+  await useStorage("cache").removeItem(`nitro:functions:db-user-authorization:${supabaseAuthId}.json`);
+}
+
 export function getGrantedPermissionKeys(dbUser: DbUser): PermissionKey[] {
   const permissionKeys = new Set<PermissionKey>();
 

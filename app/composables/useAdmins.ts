@@ -34,9 +34,14 @@ export const useAdminsActions = () => {
     return $api<Blob>(`/api/admins/${admin.id}/badge`);
   };
 
+  const removeAdmin = async (id: string) => {
+    return $api(`/api/admins/${id}`, {method: "DELETE"});
+  };
+
   return {
     inviteAdmin,
     updateAdminRoles,
     renderAdminBadge,
+    removeAdmin,
   };
 };

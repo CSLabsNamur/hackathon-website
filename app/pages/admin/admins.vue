@@ -4,6 +4,7 @@ import type { Row } from "@tanstack/vue-table";
 import { UBadge, UButton, UDropdownMenu } from "#components";
 import EditRolesModal from "~/components/admin/admins/EditRolesModal.vue";
 import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
+import RemoveAdminModal from "~/components/admin/admins/RemoveModal.vue";
 
 definePageMeta({
   layout: {
@@ -19,7 +20,7 @@ definePageMeta({
 const {setActions} = useDashboardNavbar();
 
 const {status, data: admins, refresh} = await useAdmins({lazy: true});
-const {data: currentAdmin} = await useCurrentAdmin();
+const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
 const {data: roles} = await useRoles();
 const {renderAdminBadge} = useAdminsActions();
 const {can} = useAbility(currentAdmin);
@@ -27,6 +28,7 @@ const {can} = useAbility(currentAdmin);
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
 const editRolesModal = overlay.create(EditRolesModal);
+const removeModal = overlay.create(RemoveAdminModal);
 const toast = useToast();
 
 const globalFilter = useSearchQuery();
@@ -130,6 +132,9 @@ const columns: NamedTableColumn<Admin>[] = [
 function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
   const canUpdateAdmin = can("update", "Admin");
   const canManageThisAdminRoles = canManageRoleAssignments(row.original, currentAdmin, roles);
+  const targetIsSuperAdmin = row.original.user.roleAssignments.some((assignment) => assignment.role.key === "super_admin");
+  const canDeleteAdmin = can("delete", "Admin") && canManageThisAdminRoles
+    && row.original.id !== currentAdmin.value?.id && (!targetIsSuperAdmin || isSuperAdmin.value);
 
   return [{
     type: "label",
@@ -144,6 +149,16 @@ function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
         admin: row.original,
         roles: roles.value ?? [],
       });
+      if (result) await refresh();
+    },
+  }, {
+    label: "Supprimer",
+    icon: "i-lucide-trash",
+    color: "error",
+    disabled: !canDeleteAdmin,
+    onSelect: async () => {
+      if (!canDeleteAdmin) return;
+      const result = await removeModal.open({admin: row.original});
       if (result) await refresh();
     },
   }];
