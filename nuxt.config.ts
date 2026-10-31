@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-26",
@@ -17,6 +19,7 @@ export default defineNuxtConfig({
     },
     externals: {
       external: [/^@prisma\//],
+      traceInclude: [createRequire(import.meta.resolve("file-type")).resolve("strtok3")],
     },
     rollupConfig: {
       external: [/\.wasm$/],
