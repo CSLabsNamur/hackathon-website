@@ -45,9 +45,10 @@ export const useSponsorsActions = () => {
     });
   };
 
-  const removeSponsor = async (id: string) => {
+  const removeSponsor = async (id: string, silent = false) => {
     return $api(`/api/sponsors/${id}`, {
       method: "DELETE" as never,
+      silent,
     });
   };
 
@@ -55,7 +56,8 @@ export const useSponsorsActions = () => {
     return $api<Blob>(`/api/sponsors/${sponsor.id}/badge`);
   };
 
-  const renderSponsorsBadges = async () => {
+  const renderSponsorsBadges = async (ids?: string[]) => {
+    if (ids) return $api<Blob>("/api/sponsors/badges", {method: "POST", body: {ids}});
     return $api<Blob>("/api/sponsors/badges");
   };
 

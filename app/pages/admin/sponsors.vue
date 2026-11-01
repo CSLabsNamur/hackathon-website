@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/sponsors/BulkRemoveModal.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
@@ -20,25 +21,47 @@ definePageMeta({
 const {setActions} = useDashboardNavbar();
 const {status, data: sponsors, refresh} = await useSponsors({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
-const {renderSponsorBadge} = useSponsorsActions();
+const {renderSponsorsBadges, renderSponsorBadge} = useSponsorsActions();
 const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
+const globalFilter = useSearchQuery();
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const globalFilter = useSearchQuery();
+const {rowSelection, columnFilters, selectedItems: selectedSponsors} = useTableSelection(sponsors, globalFilter);
+
+const canPrintSelection = computed(() => can("print", "Badge") && selectedSponsors.value.length > 0 && selectedSponsors.value.every((sponsor) => sponsor.hasBadge));
+const canDeleteSelection = computed(() => selectedSponsors.value.length > 0 && selectedSponsors.value.every(function () {
+  return can("delete", "Sponsor");
+}));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedSponsors} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({sponsors: [...selectedSponsors.value]});
+  if (removedIds) await refresh();
+}, undefined, {immediate: false});
+
+const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} = useAsyncState(async () => {
+  if (!canPrintSelection.value) return;
+  const badges = await renderSponsorsBadges(selectedSponsors.value.map((item) => item.id));
+  downloadBlob(badges, "badges-sponsors.pdf");
+}, undefined, {immediate: false});
+const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
+
 const badgeItems = [
   {label: "Oui", value: "Oui"},
   {label: "Non", value: "Non"},
 ] as const;
 
 const columns: NamedTableColumn<Sponsor>[] = [
+  getSelectionColumn<Sponsor>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les sponsors"),
   {
     id: "expand",
     enableHiding: false,
@@ -125,9 +148,32 @@ const columns: NamedTableColumn<Sponsor>[] = [
   },
 ];
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("print", "Badge")) {
+    items.push({
+      label: "Générer les badges",
+      icon: "i-lucide-id-card",
+      description: canPrintSelection.value ? undefined : "La sélection contient des sponsors sans badge.",
+      disabled: !canPrintSelection.value || isBulkActionPending.value,
+      onSelect: () => generateSelectedBadges(),
+    });
+  }
+  if (can("delete", "Sponsor")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedSponsors(),
+    });
+  }
+  return items;
+});
+
 function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
   const canUpdateSponsor = can("update", "Sponsor");
-  const canDeleteSponsor = can("delete", "Sponsor");
+  const canDeleteThisSponsor = can("delete", "Sponsor");
   const canPrintBadge = can("print", "Badge");
 
   return [{
@@ -149,9 +195,9 @@ function getRowItems(row: Row<Sponsor>): Array<DropdownMenuItem> {
   }, {
     label: "Supprimer le sponsor",
     icon: "i-lucide-trash-2",
-    disabled: !canDeleteSponsor,
+    disabled: !canDeleteThisSponsor || isBulkActionPending.value,
     onSelect: async () => {
-      if (!canDeleteSponsor) return;
+      if (!canDeleteThisSponsor || isBulkActionPending.value) return;
       const result = await removeModal.open({sponsor: row.original});
       if (result) await refresh();
     },
@@ -211,8 +257,10 @@ setActions(computed(() => [{
   <UContainer>
     <div class="flex flex-col gap-4 lg:gap-6">
       <div class="flex flex-col gap-1 lg:gap-2">
-        <div v-if="status === 'success'" class="flex justify-between">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+          <AdminBulkActions :count="selectedSponsors.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                            @clear="rowSelection = {}"/>
           <TourHelperPopover title="Astuce : colonnes personnalisables"
                              description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                              status-key="admin-table-column-visibility" placement="top">
@@ -222,8 +270,9 @@ setActions(computed(() => [{
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" sticky
+        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+                v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" :get-row-id="(item) => item.id" sticky
                 :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
           <template #empty>
             <div class="max-w-1/2 mx-auto">
