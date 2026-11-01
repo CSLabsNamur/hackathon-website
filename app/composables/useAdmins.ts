@@ -14,7 +14,8 @@ export const useAdmins = async (params?: UseAdminsParams) => {
 };
 
 export const useAdminsActions = () => {
-  const {$api} = useNuxtApp();
+  const nuxtApp = useNuxtApp();
+  const {$api} = nuxtApp;
 
   const inviteAdmin = async (data: InviteAdminSchema) => {
     return $api("/api/admins", {
@@ -34,14 +35,23 @@ export const useAdminsActions = () => {
     return $api<Blob>(`/api/admins/${admin.id}/badge`);
   };
 
-  const removeAdmin = async (id: string) => {
-    return $api(`/api/admins/${id}`, {method: "DELETE"});
+  const renderAdminsBadges = async (ids: string[]) => {
+    return $api<Blob>("/api/admins/badges", {method: "POST", body: {ids}});
+  };
+
+  const removeAdmin = async (id: string, silent = false) => {
+    return $api(`/api/admins/${id}`, {
+      method: "DELETE",
+      retry: 0,
+      silent,
+    });
   };
 
   return {
     inviteAdmin,
     updateAdminRoles,
     renderAdminBadge,
+    renderAdminsBadges,
     removeAdmin,
   };
 };

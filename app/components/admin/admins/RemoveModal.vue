@@ -19,8 +19,7 @@ const {isLoading: isRemoving, executeImmediate: remove} = useAsyncState(async ()
 <template>
   <UModal title="Supprimer l'administrateur"
           :description="`Voulez-vous vraiment supprimer le compte de ${admin.user.firstName} ${admin.user.lastName} (${admin.user.email}) ? Cette action est irréversible.`"
-          :dismissible="!isRemoving"
-          :close="{disabled: isRemoving, onClick: () => emit('close', false)}"
+          :dismissible="!isRemoving" :close="{disabled: isRemoving, onClick: () => emit('close', false)}"
           :ui="{footer: 'justify-end'}">
     <template #footer>
       <UButton color="error" :loading="isRemoving" @click="remove()">Supprimer</UButton>

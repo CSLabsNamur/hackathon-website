@@ -4,6 +4,12 @@ declare module "#app" {
   }
 }
 
+declare module "ofetch" {
+  interface FetchOptions {
+    silent?: boolean;
+  }
+}
+
 export default defineNuxtPlugin((nuxtApp) => {
   const session = useSupabaseSession();
   const {csrf, headerName: csrfHeaderName} = useCsrf();
@@ -16,10 +22,11 @@ export default defineNuxtPlugin((nuxtApp) => {
       options.headers.set(csrfHeaderName, csrf);
     },
 
-    async onResponseError({response}) {
+    async onResponseError({options, response}) {
       if (response.status === 401) {
         await nuxtApp.runWithContext(() => navigateTo("/"));
       }
+      if (options.silent) return;
 
       const errorData = await response._data as { message?: string, statusMessage: string };
       await nuxtApp.runWithContext(() => {

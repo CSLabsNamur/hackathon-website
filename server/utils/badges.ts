@@ -718,6 +718,13 @@ export async function renderAdminBadge(admin: Admin): Promise<PDFKit.PDFDocument
   return renderSingleBadge(`Badge de ${admin.user.firstName} ${admin.user.lastName}`, async (doc) => drawAdminBadge(doc, admin, BADGE_SIZE));
 }
 
+export async function renderAdminsBadges(admins: Admin[]): Promise<PDFKit.PDFDocument> {
+  return renderBadgeGridEntries(
+    toBadgeGridEntries(admins, async (doc, admin, origin) => drawAdminBadge(doc, admin, BADGE_SIZE, origin, true)),
+    "Badges des administrateurs",
+  );
+}
+
 /**
  * Renders a PDF document containing participant badges arranged on A4 sheets, with team participants rendered first.
  *
