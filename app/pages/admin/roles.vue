@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/roles/BulkRemoveModal.vue";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Row } from "@tanstack/vue-table";
 import { UBadge, UButton, UDropdownMenu } from "#components";
@@ -27,6 +28,20 @@ const overlay = useOverlay();
 const dayjs = useDayjs();
 const globalFilter = useSearchQuery();
 
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
+
+const {rowSelection, columnFilters, selectedItems: selectedRoles} = useTableSelection(roles, globalFilter);
+
+const canDeleteSelection = computed(() => selectedRoles.value.length > 0 && selectedRoles.value.every(canDeleteRole));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedRoles} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({roles: [...selectedRoles.value]});
+  if (removedIds) await refresh();
+}, undefined, {immediate: false});
+
+const isBulkActionPending = isRemovingSelection;
+
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
@@ -41,6 +56,7 @@ const groupedPermissions = computed(() => (permissions: PermissionDb[] | undefin
 }, {}));
 
 const columns: NamedTableColumn<Role>[] = [
+  getSelectionColumn<Role>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les rôles"),
   {
     id: "expand",
     enableHiding: false,
@@ -137,9 +153,29 @@ const columnVisibility = usePersistentColumnVisibility("admin-roles-table", {
 });
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("delete", "Role")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      description: canDeleteSelection.value ? undefined : "La sélection contient des rôles système, assignés ou que vous ne pouvez pas gérer.",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedRoles(),
+    });
+  }
+  return items;
+});
+
+function canDeleteRole(item: Role) {
+  return can("delete", "Role") && !item.system && item._count.assignments === 0
+      && canDelegatePermissionKeys(currentAdmin, item.permissions.map((permission) => permission.key));
+}
+
 function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   const canUpdateRole = can("update", "Role");
-  const canDeleteRole = can("delete", "Role");
+  const canDeleteThisRole = canDeleteRole(row.original);
   const canManageThisRole = canDelegatePermissionKeys(currentAdmin, row.original.permissions.map((permission) => permission.key));
 
   return [{
@@ -164,9 +200,9 @@ function getRowItems(row: Row<Role>): Array<DropdownMenuItem> {
   }, {
     label: "Supprimer le rôle",
     icon: "i-lucide-trash-2",
-    disabled: row.original.system || row.original._count.assignments > 0 || !canDeleteRole || !canManageThisRole,
+    disabled: !canDeleteThisRole || isBulkActionPending.value,
     onSelect: async () => {
-      if (row.original.system || row.original._count.assignments > 0 || !canDeleteRole || !canManageThisRole) return;
+      if (!canDeleteThisRole || isBulkActionPending.value) return;
       const result = await removeModal.open({role: row.original});
       if (result) await refresh();
     },
@@ -196,8 +232,10 @@ setActions(computed(() => [{
   <UContainer>
     <div class="flex flex-col gap-4 lg:gap-6">
       <div class="flex flex-col gap-1 lg:gap-2">
-        <div v-if="status === 'success'" class="flex justify-between">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+          <AdminBulkActions :count="selectedRoles.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                            @clear="rowSelection = {}"/>
           <TourHelperPopover title="Astuce : colonnes personnalisables"
                              description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                              status-key="admin-table-column-visibility" placement="top">
@@ -208,8 +246,9 @@ setActions(computed(() => [{
           </TourHelperPopover>
         </div>
 
-        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                v-model:column-visibility="columnVisibility" :columns="columns" :data="roles"
+        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+                v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="roles" :get-row-id="(item) => item.id"
                 sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
           <template #empty>
             <div class="max-w-1/2 mx-auto">

@@ -37,9 +37,10 @@ export const useRolesActions = () => {
     });
   };
 
-  const removeRole = async (id: string) => {
+  const removeRole = async (id: string, silent = false) => {
     return $api(`/api/roles/${id}`, {
       method: "DELETE" as never,
+      silent,
     });
   };
 
