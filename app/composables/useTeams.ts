@@ -50,10 +50,10 @@ export const useTeamsActions = () => {
     });
   };
 
-  const removeTeam = async (id: string) => {
+  const removeTeam = async (id: string, silent = false) => {
     return $api(`/api/teams/${id}`, {
-      //@ts-expect-error wtf?
-      method: "DELETE",
+      method: "DELETE" as never,
+      silent,
     });
   };
 

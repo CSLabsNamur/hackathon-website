@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/teams/BulkRemoveModal.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
@@ -25,12 +26,25 @@ const {can} = useAbility(currentAdmin);
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const {copyWithToast} = useCopyWithToast();
+const globalFilter = useSearchQuery();
 
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const globalFilter = useSearchQuery();
+const {rowSelection, columnFilters, selectedItems: selectedTeams} = useTableSelection(teams, globalFilter);
+
+const canDeleteSelection = computed(() => selectedTeams.value.length > 0 && selectedTeams.value.every(canDeleteTeam));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedTeams} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({teams: [...selectedTeams.value]});
+  if (removedIds) await refresh();
+}, undefined, {immediate: false});
+
+const isBulkActionPending = isRemovingSelection;
+
 const validityItems = [
   {label: "Valide", value: "Valide"},
   {label: "Invalide", value: "Invalide"},
@@ -41,6 +55,7 @@ const getTeamValidity = (team: AdminTeam) => {
 };
 
 const columns: NamedTableColumn<AdminTeam>[] = [
+  getSelectionColumn<AdminTeam>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les équipes"),
   {
     id: "name",
     name: "Nom",
@@ -129,9 +144,28 @@ setActions(computed(() => [{
   disabled: !can("export", "Team"),
 }]));
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("delete", "Team")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      description: canDeleteSelection.value ? undefined : "La sélection contient des équipes qui ont encore des membres.",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedTeams(),
+    });
+  }
+  return items;
+});
+
+function canDeleteTeam(item: AdminTeam) {
+  return can("delete", "Team") && item.members.length === 0;
+}
+
 function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
   const canUpdateTeam = can("update", "Team");
-  const canDeleteTeam = can("delete", "Team");
+  const canDeleteThisTeam = canDeleteTeam(row.original);
 
   return [
     {
@@ -176,9 +210,9 @@ function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
-      disabled: !canDeleteTeam,
+      disabled: !canDeleteThisTeam || isBulkActionPending.value,
       onSelect: async () => {
-        if (!canDeleteTeam) return;
+        if (!canDeleteThisTeam || isBulkActionPending.value) return;
         const result = await removeModal.open({team: row.original});
         if (result) await refresh();
       },
@@ -192,8 +226,10 @@ function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
     <div class="flex flex-col gap-4 lg:gap-6">
       <AdminTeamStats/>
       <div class="flex flex-col gap-1 lg:gap-2">
-        <div v-if="status === 'success'" class="flex justify-between">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+          <AdminBulkActions :count="selectedTeams.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                            @clear="rowSelection = {}"/>
           <TourHelperPopover title="Astuce : colonnes personnalisables"
                              description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                              status-key="admin-table-column-visibility" placement="top">
@@ -203,8 +239,9 @@ function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
-                :columns="columns" :data="teams" sticky :loading="status === 'pending'">
+        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+                v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
+                :columns="columns" :data="teams" :get-row-id="(item) => item.id" sticky :loading="status === 'pending'">
           <template #empty>
             <div class="max-w-1/2 mx-auto">
               <UEmpty title="Aucune équipe"
