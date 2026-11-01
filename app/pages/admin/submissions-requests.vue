@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/submission-request/BulkRemoveModal.vue";
 import CreateSubmissionRequestModal from "~/components/admin/submission-request/CreateModal.vue";
 import EditSubmissionRequestModal from "~/components/admin/submission-request/EditModal.vue";
 import RemoveSubmissionRequestModal from "~/components/admin/submission-request/RemoveModal.vue";
@@ -26,17 +27,35 @@ const {
   refresh: refreshSubmissionRequests,
 } = await useSubmissionsRequests({lazy: true});
 const {status: participantsStatus, data: participants} = await useParticipants({lazy: false});
-const {data: currentAdmin} = await useCurrentAdmin();
+const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
 const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
+const globalFilter = useSearchQuery();
+
 const createModal = overlay.create(CreateSubmissionRequestModal);
 const editModal = overlay.create(EditSubmissionRequestModal);
 const removeModal = overlay.create(RemoveSubmissionRequestModal);
 const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const globalFilter = useSearchQuery();
+const {
+  rowSelection,
+  columnFilters,
+  selectedItems: selectedSubmissionRequests,
+} = useTableSelection(submissionRequests, globalFilter);
+
+const canDeleteSelection = computed(() => selectedSubmissionRequests.value.length > 0 && selectedSubmissionRequests.value.every(canDeleteSubmissionRequest));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedSubmissionRequests} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({submissionRequests: [...selectedSubmissionRequests.value]});
+  if (removedIds) await refreshSubmissionRequests();
+}, undefined, {immediate: false});
+
+const isBulkActionPending = isRemovingSelection;
+
 const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
   label: submissionTypeTranslateMap[type],
   value: type,
@@ -59,6 +78,7 @@ const getSubmissionRate = (submissionRequest: SubmissionRequest) => {
 };
 
 const columns: NamedTableColumn<SubmissionRequest>[] = [
+  getSelectionColumn<SubmissionRequest>(isBulkActionPending, (item) => `Sélectionner ${item.title}`, "Sélectionner les demandes de soumission"),
   {
     id: "title",
     name: "Titre",
@@ -169,9 +189,28 @@ const openExportModal = async () => {
   await exportModal.open({resource: "submissionRequests"});
 };
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("delete", "SubmissionRequest")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      description: canDeleteSelection.value ? undefined : "La sélection contient des demandes qui ont déjà des soumissions associées.",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedSubmissionRequests(),
+    });
+  }
+  return items;
+});
+
+function canDeleteSubmissionRequest(item: SubmissionRequest) {
+  return can("delete", "SubmissionRequest") && (isSuperAdmin.value || item.submissions.length === 0);
+}
+
 function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
   const canUpdateSubmissionRequest = can("update", "SubmissionRequest");
-  const canDeleteSubmissionRequest = can("delete", "SubmissionRequest");
+  const canDeleteThisSubmissionRequest = canDeleteSubmissionRequest(row.original);
 
   return [
     {
@@ -203,9 +242,9 @@ function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
     {
       label: "Supprimer",
       icon: "i-lucide-trash",
-      disabled: !canDeleteSubmissionRequest,
+      disabled: !canDeleteThisSubmissionRequest || isBulkActionPending.value,
       onSelect: async () => {
-        if (!canDeleteSubmissionRequest) return;
+        if (!canDeleteThisSubmissionRequest || isBulkActionPending.value) return;
         const result = await removeModal.open({submissionRequest: row.original});
         if (result) await refreshSubmissionRequests();
       },
@@ -230,8 +269,12 @@ setActions(computed(() => [{
 <template>
   <UContainer>
     <div class="flex flex-col gap-1 lg:gap-2">
-      <div v-if="submissionsStatus === 'success' && participantsStatus === 'success'" class="flex justify-between">
-        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+      <div v-if="submissionsStatus === 'success' && participantsStatus === 'success'"
+           class="flex flex-wrap items-center justify-between gap-2">
+        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+        <AdminBulkActions :count="selectedSubmissionRequests.length" :items="bulkActionItems"
+                          :pending="isBulkActionPending"
+                          @clear="rowSelection = {}"/>
         <TourHelperPopover title="Astuce : colonnes personnalisables"
                            description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                            status-key="admin-table-column-visibility" placement="top">
@@ -241,8 +284,9 @@ setActions(computed(() => [{
           </UDropdownMenu>
         </TourHelperPopover>
       </div>
-      <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
-              :data="submissionRequests" sticky
+      <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+              v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
+              :data="submissionRequests" :get-row-id="(item) => item.id" sticky
               :loading="submissionsStatus === 'pending' || participantsStatus === 'pending'">
         <template #empty>
           <div class="max-w-1/2 mx-auto">

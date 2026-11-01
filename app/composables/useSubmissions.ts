@@ -32,9 +32,10 @@ export const useSubmissionsRequestsActions = () => {
     });
   };
 
-  const removeSubmissionRequest = async (id: string) => {
+  const removeSubmissionRequest = async (id: string, silent = false) => {
     return await $api(`/api/submissions/requests/${id}`, {
       method: "DELETE",
+      silent,
     });
   };
 
