@@ -6,7 +6,7 @@ import {
   type EditParticipantSchema,
 } from "#shared/schemas/participants/edit";
 
-const props = defineProps<{ participant: CurrentParticipant | AdminParticipant, adminEdit?: boolean }>();
+const props = defineProps<{ participant: CurrentParticipant | AdminParticipant, adminEdit?: boolean, canEditSensitive?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
@@ -18,8 +18,10 @@ const state = reactive<EditParticipantFormState>({
   githubAccount: props.participant.githubAccount || undefined,
   linkedInAccount: props.participant.linkedInAccount || undefined,
   school: props.participant.school || undefined,
-  diet: props.participant.diet || undefined,
-  needs: props.participant.needs || undefined,
+  ...(!props.adminEdit || props.canEditSensitive ? {
+    diet: props.participant.diet || undefined,
+    needs: props.participant.needs || undefined,
+  } : {}),
   // TODO: implement CV upload/removal
   //curriculumVitae: false,
 });
@@ -95,11 +97,12 @@ async function onError(event: FormErrorEvent) {
         <HybridSelectInput v-model="state.school" label="École" name="school"
                            :options="['UNamur', 'Henallux', 'HEAJ', 'UCLouvain', 'ULiège', 'UMons', 'ULB', 'Autre']"
                            icon="i-lucide-graduation-cap" placeholder="Précisez votre école..."/>
-        <HybridSelectInput v-model="state.diet" label="Régime alimentaire spécifique" name="diet"
+        <HybridSelectInput v-if="!adminEdit || canEditSensitive" v-model="state.diet"
+                           label="Régime alimentaire spécifique" name="diet"
                            :options="['Végétarien', 'Vegan', 'Sans gluten', 'Halal', 'Kasher', 'Autre']"
                            icon="i-lucide-apple" placeholder="Précisez votre régime alimentaire..."/>
 
-        <UFormField label="Besoins spécifiques" name="needs">
+        <UFormField v-if="!adminEdit || canEditSensitive" label="Besoins spécifiques" name="needs">
           <UTextarea v-model="state.needs" class="w-full" :rows="1" :maxrows="3"/>
         </UFormField>
 

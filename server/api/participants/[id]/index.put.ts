@@ -5,9 +5,16 @@ import idParamSchema from "#shared/schemas/id";
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
-  await requirePermission(event, "participants.update.sensitive");
+  const {ability} = await requirePermission(event, "participants.update");
 
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
+  const body = await readValidatedBody(event, v.parser(schema));
+  const sensitiveFields = ["diet", "needs", "newsletter"] as const;
+
+  if (sensitiveFields.some((field) => body[field] !== undefined)
+    && !canUsePermission(ability, "participants.update.sensitive")) {
+    throw createError({statusCode: 403, statusMessage: "Vous ne pouvez pas modifier les données sensibles des participants."});
+  }
 
   const {
     firstName,
@@ -16,7 +23,7 @@ export default defineEventHandler(async (event) => {
     githubAccount,
     linkedInAccount,
     ...data
-  } = await readValidatedBody(event, v.parser(schema));
+  } = body;
   const payload: ParticipantUpdateInput = {
     ...data,
     githubAccount: githubAccount ?? null,
@@ -41,8 +48,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const dbUser = await prisma.user.findUniqueOrThrow({where: {id: oldParticipant.userId}});
-
   try {
     const authUpdate = await supabase.auth.admin.updateUserById(oldParticipant.user.supabaseAuthId, {
       email,
@@ -59,7 +64,10 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    return prisma.participant.update({where: {userId: dbUser.id}, data: payload});
+    const participant = await prisma.participant.update({where: {id}, data: payload});
+    return canUsePermission(ability, "participants.read.sensitive")
+      ? participant
+      : {...participant, diet: null, needs: null, imageAgreement: null, newsletter: null};
   } catch {
     // Try to rollback the email update in case of error
     try {
@@ -72,7 +80,7 @@ export default defineEventHandler(async (event) => {
       });
 
       await prisma.participant.update({
-        where: {userId: dbUser.id}, data: {
+        where: {id}, data: {
           user: {
             update: {
               firstName: oldParticipant.user.firstName,

@@ -248,7 +248,8 @@ setActions(computed(() => [{
 }]));
 
 function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
-  const canUpdateParticipant = can("updateSensitive", "Participant");
+  const canUpdateParticipant = can("update", "Participant");
+  const canEditSensitive = canReadSensitiveParticipants.value && can("updateSensitive", "Participant");
   const canUpdateCaution = can("updateCaution", "Participant");
   const canDeleteParticipant = can("delete", "Participant");
   const canPrintBadge = can("print", "Badge");
@@ -293,7 +294,7 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
       disabled: !canUpdateParticipant,
       onSelect: async () => {
         if (!canUpdateParticipant) return;
-        const result = await editModal.open({participant: row.original, adminEdit: true});
+        const result = await editModal.open({participant: row.original, adminEdit: true, canEditSensitive});
         if (result) await refresh();
       },
     },
