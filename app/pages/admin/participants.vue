@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/participants/BulkRemoveModal.vue";
 import type { BadgeProps } from "#ui/components/Badge.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
@@ -27,8 +28,8 @@ definePageMeta({
 });
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
-const {data: currentAdmin} = await useCurrentAdmin();
-const {renderParticipantBadge, downloadParticipantCv} = useParticipantsActions();
+const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
+const {renderParticipantsBadges, renderParticipantBadge, downloadParticipantCv} = useParticipantsActions();
 const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
@@ -36,19 +37,39 @@ const canReadSensitiveParticipants = computed(() => can("readSensitive", "Partic
 const toast = useToast();
 const dayjs = useDayjs();
 const overlay = useOverlay();
+const globalFilter = useSearchQuery();
 
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
 const removeModal = overlay.create(AdminParticipantsRemoveModal);
 const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const globalFilter = useSearchQuery();
+const {rowSelection, columnFilters, selectedItems: selectedParticipants} = useTableSelection(participants, globalFilter);
+
+const canPrintSelection = computed(() => can("print", "Badge") && selectedParticipants.value.length > 0);
+const canDeleteSelection = computed(() => selectedParticipants.value.length > 0 && selectedParticipants.value.every(canDeleteParticipant));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedParticipants} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({participants: [...selectedParticipants.value]});
+  if (removedIds) await refresh();
+}, undefined, {immediate: false});
+
+const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} = useAsyncState(async () => {
+  if (!canPrintSelection.value) return;
+  const badges = await renderParticipantsBadges(selectedParticipants.value.map((item) => item.id));
+  downloadBlob(badges, "badges-participants.pdf");
+}, undefined, {immediate: false});
+const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
+
 const cautionItems = Object.values(CautionStatus).map((status) => ({
   label: cautionStatusTranslateMap[status],
   value: status,
 }));
 
 const allColumns: NamedTableColumn<AdminParticipant>[] = [
+  getSelectionColumn<AdminParticipant>(isBulkActionPending, (item) => `Sélectionner ${item.user.firstName} ${item.user.lastName}`, "Sélectionner les participants"),
   {
     id: "name",
     name: "Nom",
@@ -247,11 +268,38 @@ setActions(computed(() => [{
   disabled: !can("export", "Participant"),
 }]));
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("print", "Badge")) {
+    items.push({
+      label: "Générer les badges",
+      icon: "i-lucide-id-card",
+      disabled: !canPrintSelection.value || isBulkActionPending.value,
+      onSelect: () => generateSelectedBadges(),
+    });
+  }
+  if (can("delete", "Participant")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      description: canDeleteSelection.value ? undefined : "La sélection contient des participants dont la caution est payée.",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedParticipants(),
+    });
+  }
+  return items;
+});
+
+function canDeleteParticipant(item: AdminParticipant) {
+  return can("delete", "Participant") && (item.caution !== CautionStatus.PAID || isSuperAdmin.value);
+}
+
 function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
   const canUpdateParticipant = can("update", "Participant");
   const canEditSensitive = canReadSensitiveParticipants.value && can("updateSensitive", "Participant");
   const canUpdateCaution = can("updateCaution", "Participant");
-  const canDeleteParticipant = can("delete", "Participant");
+  const canDeleteThisParticipant = canDeleteParticipant(row.original);
   const canPrintBadge = can("print", "Badge");
 
   return [
@@ -301,9 +349,9 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
     {
       label: "Supprimer l'utilisateur",
       icon: "i-lucide-trash-2",
-      disabled: !canDeleteParticipant,
+      disabled: !canDeleteThisParticipant || isBulkActionPending.value,
       onSelect: async () => {
-        if (!canDeleteParticipant) return;
+        if (!canDeleteThisParticipant || isBulkActionPending.value) return;
         const result = await removeModal.open({participant: row.original});
         if (result) await refresh();
       },
@@ -335,8 +383,10 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
     <div class="flex flex-col gap-4 lg:gap-6">
       <AdminParticipantStats/>
       <div class="flex flex-col gap-1 lg:gap-2">
-        <div v-if="status === 'success'" class="flex justify-between">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+          <AdminBulkActions :count="selectedParticipants.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                            @clear="rowSelection = {}"/>
           <TourHelperPopover title="Astuce : colonnes personnalisables"
                              description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                              status-key="admin-table-column-visibility" placement="top">
@@ -346,8 +396,9 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
-                :data="participants" sticky :loading="status === 'pending'">
+        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+                v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
+                :data="participants" :get-row-id="(item) => item.id" sticky :loading="status === 'pending'">
           <template #empty>
             <div class="max-w-1/2 mx-auto">
               <UEmpty title="Aucun participant"

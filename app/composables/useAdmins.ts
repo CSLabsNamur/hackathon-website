@@ -42,7 +42,6 @@ export const useAdminsActions = () => {
   const removeAdmin = async (id: string, silent = false) => {
     return $api(`/api/admins/${id}`, {
       method: "DELETE",
-      retry: 0,
       silent,
     });
   };

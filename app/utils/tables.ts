@@ -1,7 +1,7 @@
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Column, Row, VisibilityState } from "@tanstack/vue-table";
 import { type MaybeRefOrGetter, type Ref, toValue } from "vue";
-import { UButton, UDropdownMenu } from "#components";
+import { UButton, UCheckbox, UDropdownMenu } from "#components";
 import type { TableColumn } from "@nuxt/ui";
 
 // For tables, we often want to have a "name" property for columns, which is not part of the TableColumn type.
@@ -153,4 +153,25 @@ export function useColumnVisibilityDropdownItems<T>(columns: MaybeRefOrGetter<Na
 
     return dropdownItems;
   });
+}
+
+export function getSelectionColumn<T>(disabled: MaybeRefOrGetter<boolean>, getLabel: (item: T) => string, selectAllLabel = "Tout sélectionner"): NamedTableColumn<T> {
+  return {
+    id: "select",
+    enableGlobalFilter: false,
+    enableHiding: false,
+    enableSorting: false,
+    header: ({table}) => h(UCheckbox, {
+      modelValue: table.getIsSomePageRowsSelected() ? "indeterminate" : table.getIsAllPageRowsSelected(),
+      "onUpdate:modelValue": (value: unknown) => table.toggleAllPageRowsSelected(!!value),
+      "aria-label": selectAllLabel,
+      disabled: toValue(disabled),
+    }),
+    cell: ({row}) => h(UCheckbox, {
+      modelValue: row.getIsSelected(),
+      "onUpdate:modelValue": (value: unknown) => row.toggleSelected(!!value),
+      "aria-label": getLabel(row.original),
+      disabled: toValue(disabled),
+    }),
+  };
 }

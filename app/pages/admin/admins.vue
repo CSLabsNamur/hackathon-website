@@ -19,7 +19,6 @@ definePageMeta({
 });
 
 const UBadge = resolveComponent("UBadge");
-const UCheckbox = resolveComponent("UCheckbox");
 
 const {setActions} = useDashboardNavbar();
 
@@ -38,17 +37,8 @@ const bulkRemoveModal = overlay.create(BulkRemoveAdminModal);
 const toast = useToast();
 const globalFilter = useSearchQuery();
 
-const rowSelection = ref<Record<string, boolean>>({});
-const selectedAdmins = computed(() => (admins.value ?? []).filter((admin) => rowSelection.value[admin.id]));
-
+const {rowSelection, columnFilters, selectedItems: selectedAdmins} = useTableSelection(admins, globalFilter);
 const canDeleteSelection = computed(() => selectedAdmins.value.length > 0 && selectedAdmins.value.every(canDeleteAdmin));
-
-watch(globalFilter, () => {
-  rowSelection.value = {};
-});
-watch(admins, (items) => {
-  rowSelection.value = Object.fromEntries((items ?? []).filter((admin) => rowSelection.value[admin.id]).map((admin) => [admin.id, true]));
-});
 
 const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} = useAsyncState(async () => {
   if (!can("print", "Badge") || !selectedAdmins.value.length) return;
@@ -64,29 +54,7 @@ const {isLoading: isRemovingSelection, executeImmediate: removeSelectedAdmins} =
 const isBulkActionPending = computed(() => isGeneratingBadges.value || isRemovingSelection.value);
 
 const columns: NamedTableColumn<Admin>[] = [
-  {
-    id: "select",
-    enableGlobalFilter: false,
-    enableHiding: false,
-    header: ({table}) =>
-        h(UCheckbox, {
-          modelValue: table.getIsSomePageRowsSelected()
-              ? "indeterminate"
-              : table.getIsAllPageRowsSelected(),
-          "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-              table.toggleAllPageRowsSelected(!!value),
-          "aria-label": "Sélectionner tous les administrateurs",
-          disabled: isBulkActionPending.value,
-        }),
-    cell: ({row}) => {
-      return h(UCheckbox, {
-        modelValue: row.getIsSelected(),
-        "onUpdate:modelValue": (value: boolean | "indeterminate") => row.toggleSelected(!!value),
-        "aria-label": `Sélectionner l'administrateur ${row.original.user.firstName} ${row.original.user.lastName}`,
-        disabled: isBulkActionPending.value,
-      });
-    },
-  },
+  getSelectionColumn<Admin>(isBulkActionPending, (admin) => `Sélectionner l'administrateur ${admin.user.firstName} ${admin.user.lastName}`, "Sélectionner tous les administrateurs"),
   {
     id: "name",
     name: "Nom",
@@ -265,19 +233,12 @@ setActions(computed(() => [
       <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
         <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
 
-        <div v-if="selectedAdmins.length" class="flex flex-wrap items-center gap-2">
-          <UButton variant="ghost" icon="i-lucide-x" color="neutral" :disabled="isBulkActionPending"
-                   @click="rowSelection = {}">
-            <span class="text-sm text-muted">{{ selectedAdmins.length }} sélectionné(s)</span>
-          </UButton>
-          <UDropdownMenu v-if="bulkActionItems.length" :items="bulkActionItems" :content="{align: 'end'}">
-            <UButton color="neutral" variant="soft" icon="i-lucide-settings" label="Actions"
-                     :loading="isBulkActionPending" :disabled="isBulkActionPending"/>
-          </UDropdownMenu>
-        </div>
+        <AdminBulkActions :count="selectedAdmins.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                          @clear="rowSelection = {}"/>
       </div>
 
-      <UTable v-model:global-filter="globalFilter" v-model:row-selection="rowSelection" :columns="columns"
+      <UTable v-model:global-filter="globalFilter" v-model:row-selection="rowSelection"
+              v-model:column-filters="columnFilters" :columns="columns"
               :data="admins" :get-row-id="(admin) => admin.id" sticky :loading="status === 'pending'">
         <template #empty>
           <div class="max-w-1/2 mx-auto">

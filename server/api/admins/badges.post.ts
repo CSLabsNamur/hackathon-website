@@ -1,6 +1,6 @@
 import * as v from "valibot";
 import { createError, defineEventHandler, readValidatedBody, setHeader } from "h3";
-import { adminBadgeSelectionSchema } from "../../../shared/schemas/admins/badges";
+import { badgeSelectionSchema } from "../../../shared/schemas/badges/selection";
 import { requirePermission } from "../../utils/ability";
 import { renderAdminsBadges } from "../../utils/badges";
 import prisma from "../../utils/prisma";
@@ -8,7 +8,7 @@ import prisma from "../../utils/prisma";
 export default defineEventHandler(async (event) => {
   await requirePermission(event, "badges.print");
   await requirePermission(event, "admins.read");
-  const {ids} = await readValidatedBody(event, v.parser(adminBadgeSelectionSchema));
+  const {ids} = await readValidatedBody(event, v.parser(badgeSelectionSchema));
 
   const admins = await prisma.admin.findMany({
     where: {id: {in: ids}},

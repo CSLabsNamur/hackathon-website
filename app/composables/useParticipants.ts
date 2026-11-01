@@ -48,9 +48,10 @@ export const useParticipantsActions = () => {
     });
   };
 
-  const removeParticipant = async (id: string) => {
+  const removeParticipant = async (id: string, silent = false) => {
     return $api(`/api/participants/${id}`, {
       method: "DELETE" as never,
+      silent,
     });
   };
 
@@ -58,8 +59,9 @@ export const useParticipantsActions = () => {
     return $api<Blob>(`/api/participants/${participant.id}/badge`);
   };
 
-  const renderParticipantsBadges = async () => {
-    return $api<Blob>(`/api/participants/badges`);
+  const renderParticipantsBadges = async (ids?: string[]) => {
+    if (ids) return $api<Blob>("/api/participants/badges", {method: "POST", body: {ids}});
+    return $api<Blob>("/api/participants/badges");
   };
 
   const downloadParticipantCv = async (curriculumVitae?: string | null) => {
