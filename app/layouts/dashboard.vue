@@ -81,7 +81,7 @@ const topLinks: RestrictedNavigationItem[] = [
     label: "Soumissions",
     icon: "i-lucide-file-text",
     to: "/admin/submissions-requests",
-    requiredPermissions: ["submissionRequests.read", "participants.read"],
+    requiredPermissions: ["submissionRequests.read"],
     onSelect: () => {
       open.value = false;
     },

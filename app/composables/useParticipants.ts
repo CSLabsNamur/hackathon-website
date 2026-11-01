@@ -4,6 +4,7 @@ import type { CreateParticipantSchema } from "#shared/schemas/participants/creat
 
 interface UseParticipantsParams {
   lazy?: boolean;
+  immediate?: boolean;
 }
 
 export const useParticipants = async (params?: UseParticipantsParams) => {
@@ -11,6 +12,7 @@ export const useParticipants = async (params?: UseParticipantsParams) => {
     key: "participants",
     dedupe: "defer",
     lazy: params?.lazy ?? false,
+    immediate: params?.immediate ?? true,
   });
 };
 

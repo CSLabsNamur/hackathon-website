@@ -17,7 +17,7 @@ definePageMeta({
     },
   },
   middleware: "admin-auth",
-  requiredPermissions: ["submissionRequests.read", "participants.read"],
+  requiredPermissions: ["submissionRequests.read"],
 });
 
 const {setActions} = useDashboardNavbar();
@@ -26,9 +26,14 @@ const {
   data: submissionRequests,
   refresh: refreshSubmissionRequests,
 } = await useSubmissionsRequests({lazy: true});
-const {status: participantsStatus, data: participants} = await useParticipants({lazy: false});
 const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
 const {can} = useAbility(currentAdmin);
+const canReadParticipants = computed(() => can("read", "Participant"));
+const {status: participantsStatus, data: participants, refresh: refreshParticipants} = await useParticipants({lazy: true, immediate: canReadParticipants.value});
+
+watch(canReadParticipants, async (allowed) => {
+  if (allowed) await refreshParticipants();
+});
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
@@ -69,16 +74,16 @@ const submissionScopeItems = [{
 }];
 const totalTeams = computed(() => new Set((participants.value ?? []).flatMap((participant) => participant.teamId ? [participant.teamId] : [])).size);
 
-const getSubmissionRate = (submissionRequest: SubmissionRequest) => {
+const getSubmissionRate = (submissionRequest: AdminSubmissionRequest) => {
   const totalParticipants = participants.value?.length || 0;
   const totalTargets = submissionRequest.teamRequest ? totalTeams.value : totalParticipants;
-  const submissionsCount = submissionRequest.submissions.length;
+  const submissionsCount = submissionRequest._count.submissions;
 
   return totalTargets === 0 ? 0 : (submissionsCount / totalTargets) * 100;
 };
 
-const columns: NamedTableColumn<SubmissionRequest>[] = [
-  getSelectionColumn<SubmissionRequest>(isBulkActionPending, (item) => `Sélectionner ${item.title}`, "Sélectionner les demandes de soumission"),
+const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
+  getSelectionColumn<AdminSubmissionRequest>(isBulkActionPending, (item) => `Sélectionner ${item.title}`, "Sélectionner les demandes de soumission"),
   {
     id: "title",
     name: "Titre",
@@ -140,7 +145,7 @@ const columns: NamedTableColumn<SubmissionRequest>[] = [
     id: "submissionRate",
     name: "Taux de soumission",
     header: ({column}) => getStrSortedHeader(column, "Taux de soumission"),
-    accessorFn: (row: SubmissionRequest) => `${getSubmissionRate(row).toFixed(2)} %`,
+    accessorFn: (row: AdminSubmissionRequest) => `${getSubmissionRate(row).toFixed(2)} %`,
     sortingFn: (rowA, rowB, columnId) => {
       return parseFloat(rowA.getValue(columnId)) - parseFloat(rowB.getValue(columnId));
     },
@@ -174,6 +179,8 @@ const columns: NamedTableColumn<SubmissionRequest>[] = [
   },
 ];
 
+const columns = computed(() => canReadParticipants.value ? allColumns : allColumns.filter((column) => column.id !== "submissionRate"));
+
 const columnVisibility = usePersistentColumnVisibility("admin-submission-requests-table-column-visibility");
 const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
 
@@ -204,12 +211,12 @@ const bulkActionItems = computed<DropdownMenuItem[]>(() => {
   return items;
 });
 
-function canDeleteSubmissionRequest(item: SubmissionRequest) {
-  return can("delete", "SubmissionRequest") && (isSuperAdmin.value || item.submissions.length === 0);
+function canDeleteSubmissionRequest(item: AdminSubmissionRequest) {
+  return can("delete", "SubmissionRequest") && (isSuperAdmin.value || item._count.submissions === 0);
 }
 
-function getRowItems(row: Row<SubmissionRequest>): Array<DropdownMenuItem> {
-  const canUpdateSubmissionRequest = can("update", "SubmissionRequest");
+function getRowItems(row: Row<AdminSubmissionRequest>): Array<DropdownMenuItem> {
+  const canUpdateSubmissionRequest = can("update", "SubmissionRequest") && row.original._count.submissions === 0;
   const canDeleteThisSubmissionRequest = canDeleteSubmissionRequest(row.original);
 
   return [
@@ -287,7 +294,7 @@ setActions(computed(() => [{
       <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
               v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
               :data="submissionRequests" :get-row-id="(item) => item.id" sticky
-              :loading="submissionsStatus === 'pending' || participantsStatus === 'pending'">
+              :loading="submissionsStatus === 'pending' || (canReadParticipants && participantsStatus === 'pending')">
         <template #empty>
           <div class="max-w-1/2 mx-auto">
             <UEmpty title="Aucune demande de soumission"

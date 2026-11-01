@@ -227,6 +227,8 @@ export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPaylo
   include: { submissions: true }
 }>>;
 
+export type AdminSubmissionRequest = SubmissionRequest & {_count: {submissions: number}};
+
 export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];
 
