@@ -42,9 +42,10 @@ export const useGuestsActions = () => {
     });
   };
 
-  const removeGuest = async (id: string) => {
+  const removeGuest = async (id: string, silent = false) => {
     return $api(`/api/guests/${id}`, {
       method: "DELETE" as never,
+      silent,
     });
   };
 
@@ -52,7 +53,8 @@ export const useGuestsActions = () => {
     return $api<Blob>(`/api/guests/${guest.id}/badge`);
   };
 
-  const renderGuestsBadges = async () => {
+  const renderGuestsBadges = async (ids?: string[]) => {
+    if (ids) return $api<Blob>("/api/guests/badges", {method: "POST", body: {ids}});
     return $api<Blob>("/api/guests/badges");
   };
 

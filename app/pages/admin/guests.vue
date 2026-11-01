@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BulkRemoveModal from "~/components/admin/guests/BulkRemoveModal.vue";
 import type { Row } from "@tanstack/vue-table";
 import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
@@ -20,19 +21,39 @@ definePageMeta({
 const {setActions} = useDashboardNavbar();
 const {status, data: guests, refresh} = await useGuests({lazy: true});
 const {data: currentAdmin} = await useCurrentAdmin();
-const {renderGuestBadge} = useGuestsActions();
+const {renderGuestsBadges, renderGuestBadge} = useGuestsActions();
 const {can} = useAbility(currentAdmin);
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
+const globalFilter = useSearchQuery();
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const globalFilter = useSearchQuery();
+const {rowSelection, columnFilters, selectedItems: selectedGuests} = useTableSelection(guests, globalFilter);
+
+const canPrintSelection = computed(() => can("print", "Badge") && selectedGuests.value.length > 0);
+const canDeleteSelection = computed(() => selectedGuests.value.length > 0 && selectedGuests.value.every(function () {
+  return can("delete", "Guest");
+}));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedGuests} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({guests: [...selectedGuests.value]});
+  if (removedIds) await refresh();
+}, undefined, {immediate: false});
+
+const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} = useAsyncState(async () => {
+  if (!canPrintSelection.value) return;
+  const badges = await renderGuestsBadges(selectedGuests.value.map((item) => item.id));
+  downloadBlob(badges, "badges-guests.pdf");
+}, undefined, {immediate: false});
+const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
 
 const guestTypeItems = Object.values(GuestType).map((type) => ({
   label: translateGuestType(type),
@@ -48,6 +69,7 @@ const companyItems = computed(() => {
 });
 
 const columns: NamedTableColumn<Guest>[] = [
+  getSelectionColumn<Guest>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les invités"),
   {
     id: "expand",
     enableHiding: false,
@@ -131,9 +153,31 @@ const columns: NamedTableColumn<Guest>[] = [
   },
 ];
 
+const bulkActionItems = computed<DropdownMenuItem[]>(() => {
+  const items: DropdownMenuItem[] = [];
+  if (can("print", "Badge")) {
+    items.push({
+      label: "Générer les badges",
+      icon: "i-lucide-id-card",
+      disabled: !canPrintSelection.value || isBulkActionPending.value,
+      onSelect: () => generateSelectedBadges(),
+    });
+  }
+  if (can("delete", "Guest")) {
+    items.push({
+      label: "Supprimer la sélection",
+      icon: "i-lucide-trash",
+      color: "error",
+      disabled: !canDeleteSelection.value || isBulkActionPending.value,
+      onSelect: () => removeSelectedGuests(),
+    });
+  }
+  return items;
+});
+
 function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
   const canUpdateGuest = can("update", "Guest");
-  const canDeleteGuest = can("delete", "Guest");
+  const canDeleteThisGuest = can("delete", "Guest");
   const canPrintBadge = can("print", "Badge");
 
   return [
@@ -159,9 +203,9 @@ function getRowItems(row: Row<Guest>): Array<DropdownMenuItem> {
     {
       label: "Supprimer l'invité",
       icon: "i-lucide-trash-2",
-      disabled: !canDeleteGuest,
+      disabled: !canDeleteThisGuest || isBulkActionPending.value,
       onSelect: async () => {
-        if (!canDeleteGuest) return;
+        if (!canDeleteThisGuest || isBulkActionPending.value) return;
         const result = await removeModal.open({guest: row.original});
         if (result) await refresh();
       },
@@ -222,8 +266,10 @@ setActions(computed(() => [{
   <UContainer>
     <div class="flex flex-col gap-4 lg:gap-6">
       <div class="flex flex-col gap-1 lg:gap-2">
-        <div v-if="status === 'success'" class="flex justify-between">
-          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
+        <div v-if="status === 'success'" class="flex flex-wrap items-center justify-between gap-2">
+          <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
+          <AdminBulkActions :count="selectedGuests.length" :items="bulkActionItems" :pending="isBulkActionPending"
+                            @clear="rowSelection = {}"/>
           <TourHelperPopover title="Astuce : colonnes personnalisables"
                              description="Vous pouvez choisir les colonnes à afficher dans le tableau."
                              status-key="admin-table-column-visibility" placement="top">
@@ -233,8 +279,9 @@ setActions(computed(() => [{
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter"
-                v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" sticky
+        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+                v-model:expanded="expanded" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" :get-row-id="(item) => item.id" sticky
                 :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
           <template #empty>
             <div class="max-w-1/2 mx-auto">
