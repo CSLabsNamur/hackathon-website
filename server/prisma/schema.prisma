@@ -21,6 +21,7 @@ model User {
   admin           Admin?
   participant     Participant?
   roleAssignments UserRoleAssignment[]
+  authSyncJob     AuthSyncJob?
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
@@ -330,6 +331,21 @@ enum SupabaseCleanupJobType {
 enum SupabaseCleanupJobScope {
   GENERAL
   ROLLOVER
+}
+
+model AuthSyncJob {
+  userId      String    @id
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lockToken   String?
+  lockedUntil DateTime?
+  attempts    Int       @default(0)
+  scheduledAt DateTime  @default(now())
+  lastError   String?
+  failed      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([failed, scheduledAt])
 }
 
 model SupabaseCleanupJob {

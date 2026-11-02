@@ -9,9 +9,7 @@ export default defineEventHandler(async (event) => {
 
   const supabaseAuthId = await deleteParticipantWithCleanup(id, isSuperAdmin(dbUser));
 
-  await invalidateUserAuthorization(supabaseAuthId).catch((error) => {
-    console.error("Erreur lors de l'invalidation des autorisations du participant:", error);
-  });
+  await invalidateUserAuthorization(supabaseAuthId);
   event.waitUntil(Promise.resolve().then(() => processSupabaseCleanup(serverSupabaseServiceRole(event), "GENERAL")).catch((error) => {
     console.error("Erreur lors du nettoyage des données Supabase du participant:", error);
   }));

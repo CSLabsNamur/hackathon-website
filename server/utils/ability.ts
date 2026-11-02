@@ -86,7 +86,9 @@ export async function getDbUser(authUser: JwtPayload): Promise<DbUser> {
 }
 
 export async function invalidateUserAuthorization(supabaseAuthId: string) {
-  await useStorage("cache").removeItem(`nitro:functions:db-user-authorization:${supabaseAuthId}.json`);
+  await useStorage("cache").removeItem(`nitro:functions:db-user-authorization:${supabaseAuthId}.json`).catch((error) => {
+    console.error("Erreur lors de l'invalidation des autorisations de l'utilisateur :", error);
+  });
 }
 
 export function getGrantedPermissionKeys(dbUser: DbUser): PermissionKey[] {

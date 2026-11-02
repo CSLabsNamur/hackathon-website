@@ -73,9 +73,7 @@ export default defineEventHandler(async (event) => {
   });
 
   if (supabaseAuthId) {
-    await invalidateUserAuthorization(supabaseAuthId).catch((error) => {
-      console.error("Erreur lors de l'invalidation des autorisations de l'administrateur:", error);
-    });
+    await invalidateUserAuthorization(supabaseAuthId);
     event.waitUntil(Promise.resolve().then(() => processSupabaseCleanup(serverSupabaseServiceRole(event), "GENERAL")).catch((error) => {
       console.error("Erreur lors du nettoyage des comptes Supabase:", error);
     }));

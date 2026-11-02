@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     },
     scheduledTasks: {
       "*/5 * * * *": ["emails:process"],
-      "*/2 * * * *": ["supabase:cleanup"],
+      "*/2 * * * *": ["supabase:cleanup", "supabase:sync"],
     },
     externals: {
       external: [/^@prisma\//],

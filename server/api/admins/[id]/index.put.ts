@@ -1,7 +1,6 @@
 import schema from "#shared/schemas/admins/edit";
 import idParamSchema from "#shared/schemas/id";
 import * as v from "valibot";
-import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "admins.update");
@@ -44,66 +43,26 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!admin.user.supabaseAuthId) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Le compte d'authentification de l'administrateur n'est pas lié. Exécutez le script de backfill.",
-    });
-  }
-
   const existingUser = await prisma.user.findUnique({where: {email: data.email}, select: {id: true}});
   if (existingUser && existingUser.id !== admin.userId) {
     throw createError({statusCode: 400, statusMessage: "Cet email existe déjà dans la base de données."});
   }
 
-  const supabase = serverSupabaseServiceRole(event);
-  const authUpdate = await supabase.auth.admin.updateUserById(admin.user.supabaseAuthId, {
-    email: data.email,
-    user_metadata: {
-      firstName: data.firstName,
-      lastName: data.lastName,
-    },
-  });
+  const supabase = createSupabaseAdminClient();
+  const syncJob = await prepareAuthSync(admin.userId);
 
-  if (authUpdate.error) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Impossible de mettre à jour le compte d'authentification de cet administrateur.",
-    });
-  }
-
-  let updatedAdmin;
   try {
-    updatedAdmin = await prisma.admin.update({
-      where: {id},
-      data: {
-        user: {
-          update: data,
-        },
-      },
-    });
-  } catch {
-    try {
-      const rollback = await supabase.auth.admin.updateUserById(admin.user.supabaseAuthId, {
-        email: admin.user.email,
-        user_metadata: {
-          firstName: admin.user.firstName,
-          lastName: admin.user.lastName,
-        },
-      });
-      if (rollback.error) {
-        console.error("Erreur lors de la restauration du compte d'authentification de l'administrateur :", rollback.error);
-      }
-    } catch (rollbackError) {
-      console.error("Erreur lors de la restauration du compte d'authentification de l'administrateur :", rollbackError);
-    }
+    await updateAuthProfile(supabase, syncJob.supabaseAuthId, data);
 
-    throw createError({
-      statusCode: 500,
-      statusMessage: "Une erreur est survenue lors de la mise à jour de l'administrateur.",
+    const updatedAdmin = await prisma.$transaction(async (db) => {
+      await finishAuthSync(db, syncJob);
+      return db.admin.update({where: {id}, data: {user: {update: data}}});
     });
+
+    await invalidateUserAuthorization(syncJob.supabaseAuthId);
+    return updatedAdmin;
+  } catch (error) {
+    await retryAuthSync(syncJob, error);
+    throw createError({statusCode: 500, statusMessage: "Impossible de modifier le profil. La synchronisation du compte sera réessayée."});
   }
-
-  await invalidateUserAuthorization(admin.user.supabaseAuthId);
-  return updatedAdmin;
 });
