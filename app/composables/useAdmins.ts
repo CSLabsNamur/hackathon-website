@@ -1,4 +1,5 @@
 import type { InviteAdminSchema } from "#shared/schemas/admins/invite";
+import type { EditAdminSchema } from "#shared/schemas/admins/edit";
 import type { UpdateAdminRolesSchema } from "#shared/schemas/admins/updateRoles";
 
 interface UseAdminsParams {
@@ -20,6 +21,13 @@ export const useAdminsActions = () => {
   const inviteAdmin = async (data: InviteAdminSchema) => {
     return $api("/api/admins", {
       method: "POST",
+      body: data,
+    });
+  };
+
+  const updateAdmin = async (id: string, data: EditAdminSchema) => {
+    return $api(`/api/admins/${id}`, {
+      method: "PUT",
       body: data,
     });
   };
@@ -48,6 +56,7 @@ export const useAdminsActions = () => {
 
   return {
     inviteAdmin,
+    updateAdmin,
     updateAdminRoles,
     renderAdminBadge,
     renderAdminsBadges,

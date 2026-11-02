@@ -3,6 +3,7 @@ import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
 import type { Row } from "@tanstack/vue-table";
 import { UButton, UDropdownMenu } from "#components";
 import EditRolesModal from "~/components/admin/admins/EditRolesModal.vue";
+import EditAdminModal from "~/components/admin/admins/EditModal.vue";
 import InviteAdminModal from "~/components/admin/admins/InviteAdminModal.vue";
 import RemoveAdminModal from "~/components/admin/admins/RemoveModal.vue";
 import BulkRemoveAdminModal from "~/components/admin/admins/BulkRemoveModal.vue";
@@ -31,6 +32,7 @@ const {can} = useAbility(currentAdmin);
 const overlay = useOverlay();
 const inviteModal = overlay.create(InviteAdminModal);
 const editRolesModal = overlay.create(EditRolesModal);
+const editModal = overlay.create(EditAdminModal);
 const removeModal = overlay.create(RemoveAdminModal);
 const bulkRemoveModal = overlay.create(BulkRemoveAdminModal);
 
@@ -156,6 +158,8 @@ async function openBulkRemoveModal(items: Admin[]) {
 function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
   const canUpdateAdmin = can("update", "Admin");
   const canManageThisAdminRoles = canManageRoleAssignments(row.original, currentAdmin, roles);
+  const targetIsSuperAdmin = row.original.user.roleAssignments.some((assignment) => assignment.role.key === "super_admin");
+  const canEditAdmin = canUpdateAdmin && canManageThisAdminRoles && (!targetIsSuperAdmin || isSuperAdmin.value);
   const canDeleteThisAdmin = canDeleteAdmin(row.original);
 
   return [
@@ -181,6 +185,20 @@ function getRowItems(row: Row<Admin>): Array<DropdownMenuItem> {
     {
       type: "label",
       label: "Administration",
+    }, {
+      label: "Modifier l'administrateur",
+      icon: "i-lucide-edit-2",
+      disabled: !canEditAdmin,
+      onSelect: async () => {
+        if (!canEditAdmin) return;
+        const result = await editModal.open({admin: row.original});
+        if (result) {
+          await refresh();
+          if (row.original.id === currentAdmin.value?.id) {
+            await refreshNuxtData(["current-admin", "current-user"]);
+          }
+        }
+      },
     }, {
       label: "Gérer les rôles",
       icon: "i-lucide-shield-user",
