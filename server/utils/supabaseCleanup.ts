@@ -1,12 +1,32 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { SupabaseCleanupJobScope } from "../prisma/generated/prisma/client";
+import { createError } from "h3";
+import type { Prisma, SupabaseCleanupJobScope } from "../prisma/generated/prisma/client";
 import prisma from "./prisma";
+
+const SUPABASE_CREATION_TIMEOUT_MS = 15 * 60 * 1000;
+
+export function prepareSupabaseCreation(data: Pick<Prisma.SupabaseCleanupJobCreateInput, "type" | "target" | "bucket">) {
+  // Record the exact external target before creating it, even if the response is lost.
+  return prisma.supabaseCleanupJob.create({data: {...data, scheduledAt: new Date(Date.now() + SUPABASE_CREATION_TIMEOUT_MS)}});
+}
+
+export async function finishSupabaseCreation(db: Prisma.TransactionClient, cleanupJobIds: string[]) {
+  // Must share the transaction that links the external resources to their local owner.
+  const completed = await db.supabaseCleanupJob.deleteMany({where: {id: {in: cleanupJobIds}, scheduledAt: {gt: new Date()}}});
+  if (completed.count !== cleanupJobIds.length) {
+    throw createError({statusCode: 409, statusMessage: "La création du compte a expiré. Réessayez plus tard."});
+  }
+}
+
+export function retrySupabaseCleanup(cleanupJobIds: string[]) {
+  return prisma.supabaseCleanupJob.updateMany({where: {id: {in: cleanupJobIds}}, data: {scheduledAt: new Date()}});
+}
 
 export async function processSupabaseCleanup(supabase: SupabaseClient, scope?: SupabaseCleanupJobScope) {
   let failed = 0;
   let processed = 0;
 
-  const jobs = await prisma.supabaseCleanupJob.findMany({where: {scope}, take: 25, orderBy: [{createdAt: "asc"}, {id: "asc"}]});
+  const jobs = await prisma.supabaseCleanupJob.findMany({where: {scope, scheduledAt: {lte: new Date()}}, take: 25, orderBy: [{scheduledAt: "asc"}, {createdAt: "asc"}, {id: "asc"}]});
 
   for (const job of jobs) {
     try {
@@ -17,6 +37,11 @@ export async function processSupabaseCleanup(supabase: SupabaseClient, scope?: S
           result = await supabase.storage.from(job.bucket).remove([job.target]);
           break;
         case "AUTH_USER":
+          // Never remove an Auth account which a completed local account still owns.
+          if (await prisma.user.count({where: {supabaseAuthId: job.target}})) {
+            processed += (await prisma.supabaseCleanupJob.deleteMany({where: {id: job.id}})).count;
+            continue;
+          }
           result = await supabase.auth.admin.deleteUser(job.target);
           break;
         default:

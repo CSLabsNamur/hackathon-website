@@ -349,12 +349,15 @@ model AuthSyncJob {
 }
 
 model SupabaseCleanupJob {
-  id        String                  @id @default(cuid(2))
-  type      SupabaseCleanupJobType
-  scope     SupabaseCleanupJobScope @default(GENERAL)
-  bucket    String?
-  target    String
-  createdAt DateTime                @default(now())
+  id          String                  @id @default(cuid(2))
+  type        SupabaseCleanupJobType
+  scope       SupabaseCleanupJobScope @default(GENERAL)
+  bucket      String?
+  target      String
+  scheduledAt DateTime                @default(now())
+  createdAt   DateTime                @default(now())
+
+  @@index([scope, scheduledAt, createdAt])
 }
 
 model SocialLink {
