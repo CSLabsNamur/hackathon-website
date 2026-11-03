@@ -94,7 +94,6 @@ const participantsExportSchema = defineExportSchema<ParticipantExportRow>({
     {id: "school", name: "École", path: "school"},
     {id: "githubAccount", name: "GitHub", enabledByDefault: false, path: "githubAccount"},
     {id: "linkedInAccount", name: "LinkedIn", enabledByDefault: false, path: "linkedInAccount"},
-    {id: "curriculumVitae", name: "CV", enabledByDefault: false, path: "curriculumVitae"},
     {
       id: "diet",
       name: "Régime alimentaire",

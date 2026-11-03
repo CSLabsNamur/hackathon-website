@@ -30,7 +30,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("event rollover", () => {
       schedule: [{title: "Accueil", description: "Ouverture"}],
       sponsors: [{name: "Sponsor", logo: "sponsor/logo.png"}],
     });
-    expect(JSON.stringify(archive)).not.toMatch(/PRIVATE_|private@|participant-user|participant-auth|private-cv|private\.zip/);
+    expect(JSON.stringify(archive)).not.toMatch(/PRIVATE_|private@|participant-user|participant-auth|private\.zip/);
 
     expect(await prisma.participant.count()).toBe(0);
     expect(await prisma.team.count()).toBe(0);
@@ -65,8 +65,8 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("event rollover", () => {
     expect(settings.editionId).not.toBe(currentEdition.editionId);
     expect(settings.editionId).toMatch(/^[a-z][a-z0-9]{23}$/);
     expect(settings.startDate).toEqual(new Date("2099-10-23T08:00:00Z"));
-    expect(result.pendingCleanup).toBe(4);
-    expect(await prisma.supabaseCleanupJob.count({where: {scope: "ROLLOVER"}})).toBe(4);
+    expect(result.pendingCleanup).toBe(3);
+    expect(await prisma.supabaseCleanupJob.count({where: {scope: "ROLLOVER"}})).toBe(3);
     expect(await prisma.supabaseCleanupJob.findMany({
       select: {
         type: true,
@@ -74,7 +74,6 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("event rollover", () => {
         target: true,
       },
     })).toEqual(expect.arrayContaining([
-      {type: "STORAGE_OBJECT", bucket: "cvs", target: "participant/private-cv.pdf"},
       {type: "STORAGE_OBJECT", bucket: "submissions", target: "participant/private.zip"},
       {type: "STORAGE_OBJECT", bucket: "guests", target: "guests/private.png"},
       {type: "AUTH_USER", bucket: null, target: "participant-auth"},

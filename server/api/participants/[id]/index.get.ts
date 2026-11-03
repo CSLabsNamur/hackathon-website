@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
     select: {
       id: true,
       school: true,
-      curriculumVitae: true,
       githubAccount: true,
       linkedInAccount: true,
       team: {

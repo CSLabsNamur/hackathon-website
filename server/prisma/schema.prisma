@@ -55,7 +55,6 @@ model Participant {
   diet            String?
   needs           String?
   caution         CautionStatus @default(NOT_PAID)
-  curriculumVitae String?
   team            Team?         @relation(fields: [teamId], references: [id])
   teamId          String?
   imageAgreement  Boolean

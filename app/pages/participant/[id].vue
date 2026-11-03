@@ -16,7 +16,6 @@ if (!routeParticipantId) {
 const {data: currentParticipant} = await useCurrentParticipant();
 
 const {data: profile, status} = await useAPI<ParticipantPublicProfile>(`/api/participants/${routeParticipantId}`);
-const {downloadParticipantCv} = useParticipantsActions();
 
 const avatarUrl = computed(() => getAvatarUrl(profile));
 
@@ -57,13 +56,6 @@ useSeoMeta({
 
         <div class="grid gap-4 sm:grid-cols-2 *:w-full">
           <ParticipantProfileLabel label="École / Université" icon="i-lucide-graduation-cap" :value="profile.school"/>
-
-          <ParticipantProfileLabel label="CV" icon="i-lucide-file-user" :value="profile.curriculumVitae">
-            <UButton size="xs" variant="ghost" icon="i-lucide-download"
-                     @click="downloadParticipantCv(profile.curriculumVitae)">
-              Télécharger
-            </UButton>
-          </ParticipantProfileLabel>
 
           <ParticipantProfileLabel label="GitHub" icon="i-simple-icons-github" :value="profile.githubAccount"
                                    :url="githubUrl"/>

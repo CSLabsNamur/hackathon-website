@@ -162,10 +162,6 @@ const profileStatus = computed<DashboardProfileStatus>(() => {
       label: "votre établissement",
       done: !!currentParticipant.value!.school,
     },
-    {
-      label: "votre CV",
-      done: !!currentParticipant.value!.curriculumVitae,
-    },
   ];
 
   const missingSignals = signals

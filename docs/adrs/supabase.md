@@ -19,7 +19,7 @@ Use Supabase for authentication and object storage, on top of the main PostgreSQ
 
 - If we use Supabase for the database and the object storage, we might as well use its authentication system as well.
 - Supabase Auth gives the project a working sign-in flow without building auth from scratch.
-- Supabase Storage is a practical fit for CV uploads, submission files, and event assets.
+- Supabase Storage is a practical fit for submission files and event assets.
 - The PostgreSQL database remains accessible to Prisma.
 
 ## Alternatives considered

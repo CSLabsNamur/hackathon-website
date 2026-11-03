@@ -42,7 +42,7 @@ const archiveDownload = useObjectUrl(computed(() => props.archive && archivedEdi
             <div class="grid content-start gap-1">
               <h3 class="font-medium text-highlighted">Supprimé de l'édition active</h3>
               <p class="text-sm text-muted">
-                {{ preview.snapshot.counts.participants }} participants, leurs comptes, CV et soumissions,
+                {{ preview.snapshot.counts.participants }} participants, leurs comptes et soumissions,
                 {{ preview.snapshot.counts.teams }} équipes, {{ preview.snapshot.counts.guests }} invités,
                 {{ preview.requests }} demandes de soumission et {{ preview.emails }} emails.
                 Le programme et les sponsors sont transférés à l'archive.

@@ -72,44 +72,38 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("durable account creation", () =
     expect(await processSupabaseCleanup(supabase)).toMatchObject({processed: 1, failed: 0});
   });
 
-  it("retains Auth and CV cleanup when registration email enqueueing rolls back", async () => {
+  it("retains Auth cleanup when registration email enqueueing rolls back", async () => {
     const authJob = await prepareSupabaseCreation({type: "AUTH_USER", target: "registration-auth"});
-    const cvJob = await prepareSupabaseCreation({type: "STORAGE_OBJECT", bucket: "cvs", target: "participant/cv"});
     await expect(withEventTransaction(currentEdition.editionId, async (db) => {
-      await finishSupabaseCreation(db, [authJob.id, cvJob.id]);
+      await finishSupabaseCreation(db, [authJob.id]);
       await db.participant.create({data: {
-        id: "participant", imageAgreement: true, curriculumVitae: "participant/cv",
+        id: "participant", imageAgreement: true,
         user: {create: {email: "participant@example.test", firstName: "Test", lastName: "Participant", supabaseAuthId: "registration-auth"}},
       }});
       throw new Error("Email enqueue failed");
     })).rejects.toThrow("Email enqueue failed");
     expect(await prisma.user.count()).toBe(0);
     expect(await prisma.participant.count()).toBe(0);
-    expect(await prisma.supabaseCleanupJob.count()).toBe(2);
+    expect(await prisma.supabaseCleanupJob.count()).toBe(1);
 
-    const bucket = supabase.storage.from("cvs");
-    vi.spyOn(supabase.storage, "from").mockReturnValueOnce(bucket);
-    const removeFile = vi.spyOn(bucket, "remove").mockResolvedValue({data: [], error: null});
-    removeAuth.mockRejectedValue(new Error("Auth unavailable"));
-    await retrySupabaseCleanup([authJob.id, cvJob.id]);
-    expect(await processSupabaseCleanup(supabase)).toMatchObject({processed: 1, failed: 1, pending: 1});
-    expect(removeFile).toHaveBeenCalledWith(["participant/cv"]);
+    await retrySupabaseCleanup([authJob.id]);
+    expect(await processSupabaseCleanup(supabase)).toMatchObject({processed: 1, pending: 0});
+    expect(removeAuth).toHaveBeenCalledWith("registration-auth");
   });
 
-  it("does not commit a registration after rollover while its external resources were being created", async () => {
+  it("does not commit a registration after rollover while its Auth account was being created", async () => {
     const authJob = await prepareSupabaseCreation({type: "AUTH_USER", target: "late-auth"});
-    const cvJob = await prepareSupabaseCreation({type: "STORAGE_OBJECT", bucket: "cvs", target: "late/cv"});
     await rolloverEvent(await prepareRollover());
-    await expect(withEventTransaction(currentEdition.editionId, (db) => finishSupabaseCreation(db, [authJob.id, cvJob.id]))).rejects.toMatchObject({statusCode: 409});
+    await expect(withEventTransaction(currentEdition.editionId, (db) => finishSupabaseCreation(db, [authJob.id]))).rejects.toMatchObject({statusCode: 409});
     expect(await prisma.participant.count()).toBe(0);
-    expect(await prisma.supabaseCleanupJob.count({where: {scope: "GENERAL"}})).toBe(2);
+    expect(await prisma.supabaseCleanupJob.count({where: {scope: "GENERAL"}})).toBe(1);
   });
 
   it("keeps every recovery record if one external resource has expired before finalization", async () => {
     const authJob = await prepareSupabaseCreation({type: "AUTH_USER", target: "auth-id"});
-    const cvJob = await prepareSupabaseCreation({type: "STORAGE_OBJECT", bucket: "cvs", target: "participant/cv"});
-    await prisma.supabaseCleanupJob.update({where: {id: cvJob.id}, data: {scheduledAt: new Date(0)}});
-    await expect(prisma.$transaction((db) => finishSupabaseCreation(db, [authJob.id, cvJob.id]))).rejects.toMatchObject({statusCode: 409});
+    const fileJob = await prepareSupabaseCreation({type: "STORAGE_OBJECT", bucket: "submissions", target: "participant/file.pdf"});
+    await prisma.supabaseCleanupJob.update({where: {id: fileJob.id}, data: {scheduledAt: new Date(0)}});
+    await expect(prisma.$transaction((db) => finishSupabaseCreation(db, [authJob.id, fileJob.id]))).rejects.toMatchObject({statusCode: 409});
     expect(await prisma.supabaseCleanupJob.count()).toBe(2);
   });
 });

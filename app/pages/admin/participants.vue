@@ -29,7 +29,7 @@ definePageMeta({
 
 const {status, data: participants, refresh} = await useParticipants({lazy: true});
 const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
-const {renderParticipantsBadges, renderParticipantBadge, downloadParticipantCv} = useParticipantsActions();
+const {renderParticipantsBadges, renderParticipantBadge} = useParticipantsActions();
 const {setActions} = useDashboardNavbar();
 const {can} = useAbility(currentAdmin);
 const canReadSensitiveParticipants = computed(() => can("readSensitive", "Participant"));
@@ -141,24 +141,6 @@ const allColumns: NamedTableColumn<AdminParticipant>[] = [
         to: linkedInUrl,
       }) : null;
       return h("div", {}, [github, linkedIn]);
-    },
-  },
-  {
-    id: "curriculumVitae",
-    name: "CV",
-    header: "CV",
-    accessorKey: "curriculumVitae",
-    enableGlobalFilter: false,
-    cell: ({row}) => {
-      const cvLink = row.getValue("curriculumVitae") as string | null;
-      if (cvLink) {
-        return h(UButton, {
-          variant: "link",
-          size: "sm",
-          icon: "i-lucide-download",
-          onClick: () => downloadParticipantCv(row.original.curriculumVitae),
-        });
-      }
     },
   },
   {

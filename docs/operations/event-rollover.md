@@ -34,7 +34,7 @@ If the cleanup is stuck, check the logs of both the application and Supabase.
 | Programme and sponsors, including sponsor logos                                                          | Archived and cleared from the active event                                                          |
 | Total participants, teams, guests and submissions                                                        | Archived as totals, without identities or demographic breakdowns                                    |
 | Participants, participant-only users and role assignments, teams, submissions and requests               | Deleted                                                                                             |
-| CVs, submitted files, guest images and participant-only Supabase Auth accounts                           | Queued for deletion in Supabase                                                                     |
+| Submitted files, guest images and participant-only Supabase Auth accounts                                | Queued for deletion in Supabase                                                                     |
 | Guests and all email outbox entries, including sent/failed messages                                      | Deleted                                                                                             |
 | Rooms, social links, staff accounts/roles/permissions, website settings, venue and payment configuration | Preserved                                                                                           |
 | Next event                                                                                               | New edition identity, supplied title/slogan/dates, empty logo, teaser enabled, registrations closed |

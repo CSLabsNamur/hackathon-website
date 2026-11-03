@@ -94,7 +94,7 @@ You should think in terms of Prisma models first.
 
 ### Storage paths are references to Supabase Storage
 
-Fields such as uploaded CVs, submission files, and event assets are stored in Supabase Storage, and the database only
+Files such as submissions and event assets are stored in Supabase Storage, and the database only
 keeps references to their paths.
 The actual file content lives in Supabase Storage, not in the repository and not on the application container's local
 filesystem, and the application code is responsible for keeping those references in sync with the actual storage
@@ -102,7 +102,7 @@ content.
 
 If you were to add a new file field, you would need to:
 
-1. Create the corresponding path field in the Prisma schema, for example `cvPath` for a CV upload.
+1. Create the corresponding path field in the Prisma schema, for example `logoPath` for an event logo.
 2. Handle the file upload in the API route, by using the Supabase Storage client to upload the file and get its path.
 3. Store the path in the database through Prisma.
 4. When serving the file, use the Supabase Storage client to generate a signed URL from the stored path, and return that

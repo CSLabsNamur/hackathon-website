@@ -93,7 +93,6 @@ export async function seedParticipantData() {
       id: "participant",
       userId: "participant-user",
       teamId: "team",
-      curriculumVitae: "participant/private-cv.pdf",
       imageAgreement: true,
       caution: "REFUNDED",
       diet: "PRIVATE_DIET",

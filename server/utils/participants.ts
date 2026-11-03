@@ -30,9 +30,6 @@ export async function deleteParticipantWithCleanup(id: string, canDeletePaidCaut
     const cleanup: Prisma.SupabaseCleanupJobCreateManyInput[] = [
       {type: "AUTH_USER", target: participant.user.supabaseAuthId},
     ];
-    if (participant.curriculumVitae) {
-      cleanup.push({type: "STORAGE_OBJECT", bucket: "cvs", target: participant.curriculumVitae});
-    }
     for (const submission of participant.submissions) {
       for (const file of submission.files) {
         cleanup.push({type: "STORAGE_OBJECT", bucket: file.bucket, target: file.path});

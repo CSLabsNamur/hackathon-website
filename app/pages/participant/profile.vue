@@ -20,7 +20,6 @@ const canUpdateProfile = computed(() => can("updateOwn", "Participant"));
 
 const overlay = useOverlay();
 const editModal = overlay.create(ParticipantEditModal);
-const {downloadParticipantCv} = useParticipantsActions();
 
 const githubUrl = computed(() => currentParticipant.value?.githubAccount ? getParticipantGithubUrl(currentParticipant.value.githubAccount) : null);
 const linkedInUrl = computed(() => currentParticipant.value?.linkedInAccount ? getParticipantLinkedInUrl(currentParticipant.value.linkedInAccount) : null);
@@ -81,13 +80,6 @@ setActions([{
 
             <ParticipantProfileLabel label="Besoins spécifiques" icon="i-lucide-heart"
                                      :value="currentParticipant!.needs"/>
-
-            <ParticipantProfileLabel label="CV" icon="i-lucide-file-user" :value="currentParticipant!.curriculumVitae">
-              <UButton size="xs" variant="ghost" icon="i-lucide-download"
-                       @click="downloadParticipantCv(currentParticipant!.curriculumVitae)">
-                Télécharger
-              </UButton>
-            </ParticipantProfileLabel>
 
             <ParticipantProfileLabel label="Statut de la caution" icon="i-lucide-wallet">
               <UBadge :color="cautionStatusColor" variant="subtle">

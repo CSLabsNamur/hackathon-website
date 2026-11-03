@@ -126,7 +126,6 @@ export async function rolloverEvent(input: EventRolloverInput) {
     const [participants, files, guests] = await Promise.all([
       db.participant.findMany({
         select: {
-          curriculumVitae: true,
           user: {select: {supabaseAuthId: true, admin: {select: {id: true}}}},
         },
       }),
@@ -139,11 +138,6 @@ export async function rolloverEvent(input: EventRolloverInput) {
       target: file.path,
     }));
     for (const participant of participants) {
-      if (participant.curriculumVitae) cleanup.push({
-        type: "STORAGE_OBJECT",
-        bucket: "cvs",
-        target: participant.curriculumVitae,
-      });
       if (participant.user.supabaseAuthId && !participant.user.admin) cleanup.push({
         type: "AUTH_USER",
         target: participant.user.supabaseAuthId,

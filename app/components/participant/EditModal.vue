@@ -22,8 +22,6 @@ const state = reactive<EditParticipantFormState>({
     diet: props.participant.diet || undefined,
     needs: props.participant.needs || undefined,
   } : {}),
-  // TODO: implement CV upload/removal
-  //curriculumVitae: false,
 });
 
 const isSubmitting = ref(false);
@@ -105,11 +103,6 @@ async function onError(event: FormErrorEvent) {
         <UFormField v-if="!adminEdit || canEditSensitive" label="Besoins spécifiques" name="needs">
           <UTextarea v-model="state.needs" class="w-full" :rows="1" :maxrows="3"/>
         </UFormField>
-
-        <!-- CV -->
-        <!--        <UFormField class="md:col-span-2" label="Curriculum Vitae" name="curriculumVitae">-->
-        <!--          <UCheckbox label="Supprimer le CV" v-model="state.curriculumVitae"/>-->
-        <!--        </UFormField>-->
       </UForm>
     </template>
     <template #footer="{close}">

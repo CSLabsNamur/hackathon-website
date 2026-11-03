@@ -5,7 +5,6 @@ const editSchema = v.omit(createSchema, [
   "cautionAgreement",
   "codeOfConduct",
   "imageAgreement",
-  "curriculumVitae",
   "turnstileToken",
 ]);
 

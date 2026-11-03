@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
       school: true,
       caution: true,
       teamId: true,
-      curriculumVitae: true,
       createdAt: true,
       updatedAt: true,
       ...(includeSensitive

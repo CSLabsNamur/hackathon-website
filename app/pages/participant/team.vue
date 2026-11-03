@@ -27,7 +27,6 @@ const overlay = useOverlay();
 const editTeamModal = overlay.create(AdminTeamsEditModal);
 
 const {copyWithToast} = useCopyWithToast();
-const {downloadParticipantCv} = useParticipantsActions();
 
 //const removeMemberModal = overlay.create(RemoveTeamMemberModal);
 
@@ -57,21 +56,6 @@ const columns: TableColumn<CurrentParticipantTeamMember>[] = [
         to: linkedInUrl,
       }) : null;
       return h("div", {class: "flex space-x-2"}, [github, linkedIn]);
-    },
-  },
-  {
-    header: "CV",
-    accessorKey: "curriculumVitae",
-    cell: ({row}) => {
-      const cvLink = row.getValue("curriculumVitae") as string | null;
-      if (cvLink) {
-        return h(UButton, {
-          variant: "link",
-          size: "sm",
-          icon: "i-lucide-download",
-          onClick: () => downloadParticipantCv(row.original.curriculumVitae),
-        });
-      }
     },
   },
   {

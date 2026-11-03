@@ -100,7 +100,6 @@ export type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
         linkedInAccount: true;
         school: true;
         caution: true;
-        curriculumVitae: true;
         user: {
           select: {
             id: true;
@@ -137,7 +136,6 @@ export type ParticipantPublicProfile = SerializeObject<Prisma.ParticipantGetPayl
   select: {
     id: true;
     school: true;
-    curriculumVitae: true;
     githubAccount: true;
     linkedInAccount: true;
     team: {
@@ -163,7 +161,6 @@ type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
     school: true;
     caution: true;
     teamId: true;
-    curriculumVitae: true;
     createdAt: true;
     updatedAt: true;
     team: {

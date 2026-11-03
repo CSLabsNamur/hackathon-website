@@ -18,20 +18,11 @@ export const useParticipants = async (params?: UseParticipantsParams) => {
 
 export const useParticipantsActions = () => {
   const {$api} = useNuxtApp();
-  const supabase = useSupabaseClient();
-  const toast = useToast();
 
   const createParticipant = async (data: CreateParticipantSchema) => {
-    const formData = new FormData();
-    for (const [key, value] of Object.entries(data)) {
-      if (value === undefined || value === null) continue;
-
-      formData.append(key, value instanceof File ? value : String(value));
-    }
-
     return $api("/api/participants", {
       method: "POST",
-      body: formData,
+      body: data,
     });
   };
 
@@ -66,23 +57,6 @@ export const useParticipantsActions = () => {
     return $api<Blob>("/api/participants/badges");
   };
 
-  const downloadParticipantCv = async (curriculumVitae?: string | null) => {
-    if (!curriculumVitae) return;
-
-    const {data, error} = await supabase.storage.from("cvs").download(curriculumVitae);
-
-    if (error || !data) {
-      toast.add({
-        title: "Erreur",
-        description: "Impossible de télécharger le CV.",
-        color: "error",
-      });
-      return;
-    }
-
-    downloadBlob(data, curriculumVitae.split("/").pop() || "cv.pdf");
-  };
-
   return {
     createParticipant,
     updateParticipant,
@@ -90,6 +64,5 @@ export const useParticipantsActions = () => {
     removeParticipant,
     renderParticipantBadge,
     renderParticipantsBadges,
-    downloadParticipantCv,
   };
 };

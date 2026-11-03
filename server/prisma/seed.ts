@@ -55,7 +55,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: null,
 //    needs: null,
 //    caution: CautionStatus.NOT_PAID,
-//    curriculumVitae: "/cvs/aline.pdf",
 //    teamName: "Team Alpha",
 //    imageAgreement: true,
 //    newsletter: false,
@@ -70,7 +69,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: "Végétarien",
 //    needs: null,
 //    caution: CautionStatus.NOT_PAID,
-//    curriculumVitae: null,
 //    teamName: "Team Alpha",
 //    imageAgreement: true,
 //    newsletter: false,
@@ -85,7 +83,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: "Vegan",
 //    needs: "Wheelchair access",
 //    caution: CautionStatus.PAID,
-//    curriculumVitae: "/cvs/carol.pdf",
 //    teamName: "Team Beta",
 //    imageAgreement: true,
 //    newsletter: true,
@@ -100,7 +97,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: "Sans gluten",
 //    needs: null,
 //    caution: CautionStatus.REFUNDED,
-//    curriculumVitae: null,
 //    teamName: null, // no team
 //    imageAgreement: true,
 //    newsletter: false,
@@ -115,7 +111,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: null,
 //    needs: null,
 //    caution: CautionStatus.WAIVED,
-//    curriculumVitae: null,
 //    teamName: "Team Delta",
 //    imageAgreement: true,
 //    newsletter: false,
@@ -130,7 +125,6 @@ const prisma = new PrismaClient({adapter});
 //    diet: "Halal",
 //    needs: null,
 //    caution: CautionStatus.PAID,
-//    curriculumVitae: null,
 //    teamName: "Team Delta",
 //    imageAgreement: true,
 //    newsletter: true,
@@ -184,14 +178,6 @@ const systemRoles = [
 
 // Submission Requests
 //const submissionRequests: SubmissionRequestCreateInput[] = [
-//  //{
-//  //  title: "CV",
-//  //  type: SubmissionType.FILE,
-//  //  description: "Envoyez votre curriculum vitae au format PDF.",
-//  //  deadline: new Date("2026-03-28T23:59:59Z"),
-//  //  acceptedFormats: ".pdf",
-//  //  multiple: false,
-//  //},
 //  {
 //    title: "Objectifs et motivation",
 //    type: SubmissionType.TEXT,
