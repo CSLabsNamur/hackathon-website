@@ -3,6 +3,10 @@ title: Testing
 description: Run and extend the Nuxt test suite.
 ---
 
+> [!NOTE]
+> I'll be honest, *most* of the tests are AI-generated, tough I do reviewed them thoroughly of course.
+> But it's better than no tests at all.
+
 # Testing
 
 The suite uses Vitest projects following the [Nuxt testing guide](https://nuxt.com/docs/4.x/getting-started/testing):
