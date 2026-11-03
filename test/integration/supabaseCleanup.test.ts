@@ -40,6 +40,9 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("Supabase cleanup", () => {
 
     //@ts-ignore
     deleteUser.mockResolvedValue({data: {user: null}, error: null});
+    expect(await processSupabaseCleanup(supabase, "GENERAL")).toEqual({processed: 0, failed: 0, pending: 1});
+    expect((await prisma.supabaseCleanupJob.findFirstOrThrow()).scheduledAt.getTime()).toBeGreaterThan(Date.now());
+    await prisma.supabaseCleanupJob.updateMany({where: {scope: "GENERAL"}, data: {scheduledAt: new Date(0)}});
     expect(await processSupabaseCleanup(supabase, "GENERAL")).toEqual({processed: 1, failed: 0, pending: 0});
     expect(deleteUser).toHaveBeenCalledWith("participant-auth");
     expect(removeFile).toHaveBeenCalledTimes(2);
@@ -117,6 +120,8 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("Supabase cleanup", () => {
       error: new AuthApiError("User not found", 404, "user_not_found"),
     });
 
+    expect(await processSupabaseCleanup(supabase, "ROLLOVER")).toEqual({processed: 0, failed: 0, pending: 2});
+    await prisma.supabaseCleanupJob.updateMany({where: {scope: "ROLLOVER"}, data: {scheduledAt: new Date(0)}});
     expect(await processSupabaseCleanup(supabase, "ROLLOVER")).toEqual({processed: 2, failed: 0, pending: 0});
     expect(removeFile).toHaveBeenCalledWith(["participant/cv.pdf"]);
     expect(deleteUser).toHaveBeenCalledWith("participant-auth");
