@@ -45,11 +45,15 @@ export async function finishAuthSync(db: Prisma.TransactionClient, job: Pick<Aut
   }
 }
 
-export function retryAuthSync(job: Pick<AuthSyncJob, "userId" | "lockToken">, error: unknown) {
-  return prisma.authSyncJob.updateMany({
-    where: {userId: job.userId, lockToken: job.lockToken},
-    data: {lockToken: null, lockedUntil: null, lastError: error instanceof Error ? error.message : String(error)},
-  }).catch((recoveryError) => console.error("Impossible de libérer la synchronisation Auth :", recoveryError));
+export async function retryAuthSync(job: Pick<AuthSyncJob, "userId" | "lockToken">, error: unknown) {
+  try {
+    return await prisma.authSyncJob.updateMany({
+      where: {userId: job.userId, lockToken: job.lockToken},
+      data: {lockToken: null, lockedUntil: null, lastError: error instanceof Error ? error.message : String(error)},
+    });
+  } catch (recoveryError) {
+    return console.error("Impossible de libérer la synchronisation Auth :", recoveryError);
+  }
 }
 
 export async function processAuthSyncJobs(supabase: SupabaseClient) {

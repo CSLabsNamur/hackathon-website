@@ -354,6 +354,7 @@ model SupabaseCleanupJob {
   scope       SupabaseCleanupJobScope @default(GENERAL)
   bucket      String?
   target      String
+  attempts    Int                     @default(0)
   scheduledAt DateTime                @default(now())
   createdAt   DateTime                @default(now())
 
