@@ -80,7 +80,7 @@
     "handlebars": "^4.7.9",
     "ibantools": "^4.5.4",
     "mjml": "^5.0.1",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^10.1.4",
     "nuxt": "4.4.2",
     "nuxt-echarts": "1.0.1",
     "nuxt-nodemailer": "1.1.4",
