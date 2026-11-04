@@ -75,7 +75,6 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: checks
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
