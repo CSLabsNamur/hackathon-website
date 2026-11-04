@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import prisma from "../../server/utils/prisma";
-import { rolloverEvent } from "../../server/utils/eventArchives";
+import { getEventRolloverPreview, rolloverEvent } from "../../server/utils/eventArchives";
+import { setParticipantCheckIn } from "../../server/utils/participants";
 import { withEventTransaction } from "../../server/utils/eventEdition";
 import {
   prepareRollover,
@@ -91,12 +92,51 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("event rollover", () => {
     expect(await prisma.sponsor.findFirstOrThrow()).toMatchObject({name: "Updated sponsor"});
   });
 
-  it("keeps participants when their deposits have not been settled", async () => {
+  it("keeps checked-in participants when their deposits have not been settled", async () => {
     await seedParticipantData();
-    await prisma.participant.updateMany({data: {caution: "PAID"}});
+    await prisma.participant.updateMany({data: {caution: "PAID", checkedInAt: new Date()}});
+
+    expect((await getEventRolloverPreview()).paidCautions).toBe(1);
 
     await expect(rolloverEvent(await prepareRollover())).rejects.toMatchObject({statusCode: 409});
 
+    expect(await prisma.participant.count()).toBe(1);
+    expect(await prisma.eventArchive.count()).toBe(0);
+    expect(await prisma.supabaseCleanupJob.count()).toBe(0);
+  });
+
+  it("allows rollover with a paid deposit when the participant never checked in", async () => {
+    await seedParticipantData();
+    await prisma.participant.updateMany({data: {caution: "PAID"}});
+
+    expect((await getEventRolloverPreview()).paidCautions).toBe(0);
+    await rolloverEvent(await prepareRollover());
+
+    expect(await prisma.participant.count()).toBe(0);
+    expect(await prisma.eventArchive.count()).toBe(1);
+    expect(await prisma.supabaseCleanupJob.count()).toBe(2);
+  });
+
+  it("allows rollover after a checked-in participant's deposit has been refunded", async () => {
+    await seedParticipantData();
+    await setParticipantCheckIn("participant", true);
+
+    expect((await getEventRolloverPreview()).paidCautions).toBe(0);
+    await rolloverEvent(await prepareRollover());
+
+    expect(await prisma.participant.count()).toBe(0);
+    expect(await prisma.eventArchive.count()).toBe(1);
+  });
+
+  it("rejects a stale preview when a participant with a paid deposit checks in", async () => {
+    await seedParticipantData();
+    await prisma.participant.updateMany({data: {caution: "PAID"}});
+    const request = await prepareRollover();
+    await setParticipantCheckIn("participant", true);
+
+    await expect(rolloverEvent(request)).rejects.toMatchObject({
+      statusCode: 409, statusMessage: "Les données ont changé. Rechargez et vérifiez l'aperçu.",
+    });
     expect(await prisma.participant.count()).toBe(1);
     expect(await prisma.eventArchive.count()).toBe(0);
     expect(await prisma.supabaseCleanupJob.count()).toBe(0);

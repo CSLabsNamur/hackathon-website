@@ -16,6 +16,13 @@ export const useParticipants = async (params?: UseParticipantsParams) => {
   });
 };
 
+export const useParticipantCheckIn = async () => {
+  return useAPI("/api/participants/check-in", {
+    key: "participant-check-in",
+    lazy: true,
+  });
+};
+
 export const useParticipantsActions = () => {
   const {$api} = useNuxtApp();
 
@@ -41,6 +48,13 @@ export const useParticipantsActions = () => {
     });
   };
 
+  const updateCheckIn = async (id: string, checkedIn: boolean) => {
+    return $api(`/api/participants/${id}/check-in`, {
+      method: "PATCH",
+      body: {checkedIn},
+    });
+  };
+
   const removeParticipant = async (id: string, silent = false) => {
     return $api(`/api/participants/${id}`, {
       method: "DELETE" as never,
@@ -61,6 +75,7 @@ export const useParticipantsActions = () => {
     createParticipant,
     updateParticipant,
     updateCaution,
+    updateCheckIn,
     removeParticipant,
     renderParticipantBadge,
     renderParticipantsBadges,

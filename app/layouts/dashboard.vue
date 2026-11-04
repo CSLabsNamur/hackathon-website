@@ -42,6 +42,15 @@ const topLinks: RestrictedNavigationItem[] = [
     },
   },
   {
+    label: "Check-in",
+    icon: "i-lucide-clipboard-check",
+    to: "/admin/check-in",
+    requiredPermissions: ["participants.check_in"],
+    onSelect: () => {
+      open.value = false;
+    },
+  },
+  {
     label: "Équipes",
     icon: "i-lucide-users",
     to: "/admin/teams",

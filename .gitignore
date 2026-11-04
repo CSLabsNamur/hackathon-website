@@ -30,3 +30,6 @@ logs
 skills-lock.json
 
 /server/prisma/generated
+
+# Local Supabase development environment
+/supabase/

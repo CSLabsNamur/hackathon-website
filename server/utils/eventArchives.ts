@@ -29,7 +29,7 @@ export async function getEventRolloverPreview(db: Prisma.TransactionClient = pri
     db.guest.aggregate({_sum: {quantity: true}}),
     db.submission.count(),
     db.submissionRequest.count(),
-    db.participant.count({where: {caution: "PAID"}}),
+    db.participant.count({where: {caution: "PAID", checkedInAt: {not: null}}}),
     db.emailOutbox.count(),
     db.scheduleItem.findMany({
       select: {
@@ -108,7 +108,7 @@ export async function rolloverEvent(input: EventRolloverInput) {
     if (preview.paidCautions) {
       throw createError({
         statusCode: 409,
-        statusMessage: "Traitez les cautions encore payées avant de supprimer les participants.",
+        statusMessage: "Remboursez les cautions encore payées des participants présents avant de changer d'édition.",
       });
     }
     if (await db.emailOutbox.count({where: {status: "PROCESSING"}})) {

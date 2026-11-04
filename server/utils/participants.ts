@@ -2,6 +2,23 @@ import { createError } from "h3";
 import type { Prisma } from "../prisma/generated/prisma/client";
 import prisma from "./prisma";
 
+export async function setParticipantCheckIn(id: string, checkedIn: boolean) {
+  await prisma.participant.updateMany({
+    where: {id, ...(checkedIn ? {checkedInAt: null} : {})},
+    data: {checkedInAt: checkedIn ? new Date() : null},
+  });
+
+  const participant = await prisma.participant.findUnique({
+    where: {id},
+    select: {id: true, checkedInAt: true},
+  });
+  if (!participant) {
+    throw createError({statusCode: 404, statusMessage: "Participant introuvable."});
+  }
+
+  return participant;
+}
+
 export async function deleteParticipantWithCleanup(id: string, canDeletePaidCaution: boolean) {
   return prisma.$transaction(async (db) => {
     const participant = await db.participant.findUnique({

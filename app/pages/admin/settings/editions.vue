@@ -120,7 +120,7 @@ async function onSubmit(input: EventRolloverInput) {
         </UCard>
 
         <UAlert v-if="preview.paidCautions" color="warning" icon="i-lucide-alert-triangle" title="Cautions à traiter"
-                :description="`${preview.paidCautions} caution(s) sont encore marquées comme payées. Traitez-les avant de changer d'édition.`"/>
+                :description="`${preview.paidCautions} caution(s) de participants présents sont encore marquées comme payées. Remboursez-les avant de changer d'édition.`"/>
 
         <AdminEventRolloverForm :event="preview.event" :revision="preview.revision" :disabled="!canRollover"
                                 :loading="isSubmitting || isCleaning" @submit="onSubmit"/>

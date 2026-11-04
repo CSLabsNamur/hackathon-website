@@ -55,6 +55,7 @@ model Participant {
   diet            String?
   needs           String?
   caution         CautionStatus @default(NOT_PAID)
+  checkedInAt     DateTime?
   team            Team?         @relation(fields: [teamId], references: [id])
   teamId          String?
   imageAgreement  Boolean

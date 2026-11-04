@@ -9,6 +9,7 @@ const translateBoolean = (value?: boolean | null) => value ? "Oui" : "Non";
 type ParticipantExportRow = Prisma.ParticipantGetPayload<{
   select: {
     caution: true;
+    checkedInAt: true;
     newsletter: true;
     imageAgreement: true;
   };
@@ -84,6 +85,14 @@ const participantsExportSchema = defineExportSchema<ParticipantExportRow>({
     {id: "firstName", name: "Prénom", path: "user.firstName"},
     {id: "lastName", name: "Nom", path: "user.lastName"},
     {id: "email", name: "Email", path: "user.email"},
+    {
+      id: "attendance",
+      name: "Présence",
+      enabledByDefault: false,
+      selectPaths: ["checkedInAt"],
+      value: (row) => row.checkedInAt ? "Présent" : "Non enregistré",
+    },
+    {id: "checkedInAt", name: "Arrivée le", enabledByDefault: false, path: "checkedInAt"},
     {
       id: "caution",
       name: "Caution",
