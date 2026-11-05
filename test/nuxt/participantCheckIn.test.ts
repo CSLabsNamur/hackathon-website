@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockNuxtImport, mountSuspended } from "@nuxt/test-utils/runtime";
 import { DOMWrapper, flushPromises, type VueWrapper } from "@vue/test-utils";
 import { ref } from "vue";
-import { UApp } from "#components";
 import CheckInPage from "../../app/pages/admin/check-in.vue";
 
 const mocks = vi.hoisted(() => ({
