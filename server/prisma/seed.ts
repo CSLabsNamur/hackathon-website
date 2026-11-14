@@ -293,70 +293,43 @@ const toDateTime = (value: string | Date) => dayjs.tz(value, "Europe/Brussels").
 
 async function main() {
   //region Permissions and roles
-  // Upsert permissions to ensure they exist and are updated if the catalog changes
-  await prisma.$transaction(PERMISSION_CATALOG.map((permission) => prisma.permission.upsert({
-    where: {
-      key: permission.key,
-    },
-    create: permission,
-    update: {
-      group: permission.group,
-      name: permission.name,
-      description: null,
-    },
-  })));
+  // Each table is initialized independently; populated tables are left untouched.
+  if (await prisma.permission.count() === 0) {
+    await prisma.permission.createMany({data: [...PERMISSION_CATALOG]});
+  }
 
   // Create the two default system roles
-  await prisma.$transaction(systemRoles.map((role) => prisma.role.upsert({
-    where: {
-      key: role.key,
-    },
-    create: {
-      id: role.id,
-      key: role.key,
-      name: role.name,
-      description: role.description,
-      system: role.system,
-    },
-    update: {
-      name: role.name,
-      description: role.description,
-      system: role.system,
-    },
-  })));
-
-  // Fetch permissions to get their IDs for role-permission assignments
-  const permissionRows = await prisma.permission.findMany({
-    where: {
-      key: {
-        in: PERMISSION_CATALOG.map((permission) => permission.key),
-      },
-    },
-    select: {
-      id: true,
-      key: true,
-    },
-  });
-  const permissionIdByKey = new Map(permissionRows.map((permission) => [permission.key, permission.id]));
-
-  // Assign permissions to system roles
-  for (const roleSeed of systemRoles) {
-    const role = await prisma.role.findUniqueOrThrow({
-      where: {
-        key: roleSeed.key,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    await prisma.rolePermission.createMany({
-      data: roleSeed.permissionKeys.map((permissionKey) => ({
-        roleId: role.id,
-        permissionId: permissionIdByKey.get(permissionKey)!,
+  if (await prisma.role.count() === 0) {
+    await prisma.role.createMany({
+      data: systemRoles.map(role => ({
+        id: role.id, key: role.key, name: role.name, description: role.description, system: role.system,
       })),
-      skipDuplicates: true,
     });
+  }
+
+  if (await prisma.rolePermission.count() === 0) {
+    // Populated reference tables may contain only some of the default records.
+    const permissionRows = await prisma.permission.findMany({
+      where: {
+        key: {in: PERMISSION_CATALOG.map((permission) => permission.key)},
+      },
+      select: {id: true, key: true},
+    });
+    const permissionIdByKey = new Map(permissionRows.map((permission) => [permission.key, permission.id]));
+
+    // Check once for the whole table, before inserting either role's permissions.
+    for (const roleSeed of systemRoles) {
+      const role = await prisma.role.findUnique({where: {key: roleSeed.key}, select: {id: true}});
+      if (!role) continue;
+
+      await prisma.rolePermission.createMany({
+        data: roleSeed.permissionKeys.flatMap((permissionKey) => {
+          const permissionId = permissionIdByKey.get(permissionKey);
+          return permissionId ? [{roleId: role.id, permissionId}] : [];
+        }),
+        skipDuplicates: true,
+      });
+    }
   }
   //endregion
 
@@ -369,15 +342,17 @@ async function main() {
 
   //region Users
   // Create users for admins
-  const adminUserData = admins.map(({email, firstName, lastName}) => ({
-    email,
-    firstName,
-    lastName,
-  }));
-  await prisma.user.createMany({
-    data: adminUserData,
-    skipDuplicates: true,
-  });
+  if (await prisma.user.count() === 0) {
+    const adminUserData = admins.map(({email, firstName, lastName}) => ({
+      email,
+      firstName,
+      lastName,
+    }));
+    await prisma.user.createMany({
+      data: adminUserData,
+      skipDuplicates: true,
+    });
+  }
 
   // Create users for participants
   //const userData = participants.map(({email, firstName, lastName}) => ({
@@ -415,92 +390,54 @@ async function main() {
   //endregion
 
   //region Admins
-  const adminData: AdminCreateManyInput[] = admins.map(({firstName, lastName, email, ...rest}) => ({
-    ...rest,
-    userId: userIdByEmail.get(email)!,
-  }));
-  await prisma.admin.createMany({
-    data: adminData,
-    skipDuplicates: true,
-  });
-  //endregion
-
-  //region Role assignments backfill
-  const [participantRole, superAdminRole] = await prisma.$transaction([
-    prisma.role.findUniqueOrThrow({
-      where: {
-        key: "participant",
-      },
-      select: {
-        id: true,
-      },
-    }),
-    prisma.role.findUniqueOrThrow({
-      where: {
-        key: "super_admin",
-      },
-      select: {
-        id: true,
-      },
-    }),
-  ]);
-
-  const [participantUsers, adminUsers] = await prisma.$transaction([
-    prisma.participant.findMany({
-      select: {
-        userId: true,
-      },
-    }),
-    prisma.admin.findMany({
-      select: {
-        userId: true,
-      },
-    }),
-  ]);
-
-  if (participantUsers.length > 0) {
-    await prisma.userRoleAssignment.createMany({
-      data: participantUsers.map((participant) => ({
-        userId: participant.userId,
-        roleId: participantRole.id,
-      })),
+  if (await prisma.admin.count() === 0) {
+    const adminData: AdminCreateManyInput[] = admins.flatMap(({firstName, lastName, email, ...rest}) => {
+      const userId = userIdByEmail.get(email);
+      return userId ? [{...rest, userId}] : [];
+    });
+    await prisma.admin.createMany({
+      data: adminData,
       skipDuplicates: true,
     });
   }
+  //endregion
 
-  if (adminUsers.length > 0) {
-    await prisma.userRoleAssignment.createMany({
-      data: adminUsers.map((admin) => ({
-        userId: admin.userId,
-        roleId: superAdminRole.id,
-      })),
-      skipDuplicates: true,
-    });
+  //region Role assignments backfill
+  if (await prisma.userRoleAssignment.count() === 0) {
+    const [participantRole, superAdminRole] = await prisma.$transaction([
+      prisma.role.findUnique({where: {key: "participant"}, select: {id: true}}),
+      prisma.role.findUnique({where: {key: "super_admin"}, select: {id: true}}),
+    ]);
+
+    const [participantUsers, adminUsers] = await prisma.$transaction([
+      prisma.participant.findMany({select: {userId: true}}),
+      prisma.admin.findMany({select: {userId: true}}),
+    ]);
+
+    if (participantRole && participantUsers.length > 0) {
+      await prisma.userRoleAssignment.createMany({
+        data: participantUsers.map(participant => ({userId: participant.userId, roleId: participantRole.id})),
+        skipDuplicates: true,
+      });
+    }
+
+    if (superAdminRole && adminUsers.length > 0) {
+      await prisma.userRoleAssignment.createMany({
+        data: adminUsers.map(admin => ({userId: admin.userId, roleId: superAdminRole.id})),
+        skipDuplicates: true,
+      });
+    }
   }
   //endregion
 
   //region Settings
-  const [websiteSettings, eventSettings, socialLinksCount] = await prisma.$transaction([
-    prisma.websiteSettings.findUnique({
-      where: {
-        id: WEBSITE_SETTINGS_ID,
-      },
-      select: {
-        id: true,
-      },
-    }),
-    prisma.eventSettings.findUnique({
-      where: {
-        id: EVENT_SETTINGS_ID,
-      },
-      select: {
-        id: true,
-      },
-    }),
+  const [websiteSettingsCount, eventSettingsCount, socialLinksCount] = await prisma.$transaction([
+    prisma.websiteSettings.count(),
+    prisma.eventSettings.count(),
     prisma.socialLink.count(),
   ]);
 
-  if (!websiteSettings) {
+  if (websiteSettingsCount === 0) {
     await prisma.websiteSettings.create({
       data: {
         id: WEBSITE_SETTINGS_ID,
@@ -509,7 +446,7 @@ async function main() {
     });
   }
 
-  if (!eventSettings) {
+  if (eventSettingsCount === 0) {
     await prisma.eventSettings.create({
       data: {
         id: EVENT_SETTINGS_ID,
@@ -547,17 +484,21 @@ async function main() {
   //endregion
 
   //region Schedule Items
-  await prisma.scheduleItem.createMany({
-    data: scheduleItems,
-    skipDuplicates: true,
-  });
+  if (await prisma.scheduleItem.count() === 0) {
+    await prisma.scheduleItem.createMany({
+      data: scheduleItems,
+      skipDuplicates: true,
+    });
+  }
   //endregion
 
   //region Rooms
-  await prisma.room.createMany({
-    data: rooms,
-    skipDuplicates: true,
-  });
+  if (await prisma.room.count() === 0) {
+    await prisma.room.createMany({
+      data: rooms,
+      skipDuplicates: true,
+    });
+  }
   //endregion
 }
 
