@@ -43,7 +43,13 @@ const timeline: TimelineItem[] = [
     date: "27-29 Mars 2026",
     title: "7e édition – Hack the Narrative",
     icon: "i-lucide-moon-star",
-    description: "Le thème de cette année ! Les participants sont invités à réinventer l’éducation numérique par la fiction. L'objectif est de fusionner storytelling et technologie pour offrir des solutions éducatives innovantes. Nous avons hâte de vous y retrouver !",
+    description: "Les participants sont invités à réinventer l’éducation numérique par la fiction. L'objectif est de fusionner storytelling et technologie pour offrir des solutions éducatives innovantes.",
+  },
+  {
+    date: "19-21 Mars 2027",
+    title: "8e édition – AI for Good",
+    icon: "i-lucide-robot",
+    description: "Le thème de cette année ! L'intelligence artificielle est au cœur de cette édition. Les participants devront explorer comment l'IA peut être utilisée pour résoudre des problèmes sociaux et environnementaux, en mettant l'accent sur l'éthique et la responsabilité.",
   },
 ];
 
@@ -73,7 +79,7 @@ useSeoMeta({
 
   <UContainer class="max-w-[80vw]">
     <div class="flex flex-col md:flex-row items-center justify-between">
-      <UTimeline :items="timeline" orientation="vertical" :default-value="5" class="md:w-2xl">
+      <UTimeline :items="timeline" orientation="vertical" :default-value="6" class="md:w-2xl">
         <template #description="{item}">
           <MDC v-if="item.description" :value="item.description" unwrap class="whitespace-pre-line"/>
         </template>
