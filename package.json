@@ -81,7 +81,7 @@
     "ibantools": "^4.5.4",
     "mjml": "^5.0.1",
     "nodemailer": "^7.0.13",
-    "nuxt": "4.4.2",
+    "nuxt": "4.6.4",
     "nuxt-echarts": "1.0.1",
     "nuxt-nodemailer": "1.1.4",
     "nuxt-security": "2.5.1",
