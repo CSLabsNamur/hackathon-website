@@ -1,3 +1,9 @@
+export function formatDate(date: string | number | Date, format: string = "D MMMM YYYY"): string {
+  const dayjs = useDayjs();
+
+  return dayjs(date).tz().format(format);
+}
+
 export function formatDateRange(start: string | number | Date, end: string | number | Date, utc: boolean = true, capitalize: boolean = true): string {
   const dayjs = useDayjs();
 

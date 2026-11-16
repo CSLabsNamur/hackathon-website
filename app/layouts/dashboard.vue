@@ -14,11 +14,6 @@ const {canPermissions} = useAbility(currentAdmin);
 
 useRefreshOnPageReturn(refreshCurrentAdmin);
 
-const colorMode = useColorMode();
-// Provide theme to echarts components
-const theme = computed(() => colorMode.value === "dark" ? "dark" : "default");
-provide(THEME_KEY, theme);
-
 const open = ref(false);
 const dashboardLogoUrl = computed(() => settings.value?.event.logoUrl ?? "/images/logo-vide.png");
 

@@ -66,6 +66,7 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@takumi-rs/core": "^2.18.1",
+    "@tanstack/charts": "^1.5.0",
     "@tiptap/extension-character-count": "3.32.0",
     "@tiptap/extension-drag-handle-vue-3": "3.32.0",
     "@tiptap/extension-emoji": "3.32.0",
@@ -76,7 +77,6 @@
     "better-sqlite3": "^13.0.3",
     "clamscan": "^2.4.0",
     "dayjs-nuxt": "2.1.11",
-    "echarts": "^6.1.0",
     "eslint": "^10.13.0",
     "exceljs": "^4.4.0",
     "file-type": "^22.2.0",
@@ -87,7 +87,6 @@
     "mjml": "^5.4.1",
     "nodemailer": "^10.2.1",
     "nuxt": "4.6.2",
-    "nuxt-echarts": "1.1.0",
     "nuxt-nodemailer": "1.1.4",
     "nuxt-security": "2.7.0",
     "pdfkit": "^0.20.2",
@@ -100,7 +99,6 @@
     "valibot": "1.5.0",
     "vue": "^3.5.44",
     "vue-draggable-plus": "^0.6.1",
-    "vue-echarts": "^8.3.2",
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
