@@ -27,10 +27,11 @@ const {can} = useAbility(currentAdmin);
 const overlay = useOverlay();
 const dayjs = useDayjs();
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["name", "key"]});
 
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const {rowSelection, columnFilters, selectedItems: selectedRoles} = useTableSelection(roles, globalFilter);
+const {rowSelection, selectedItems: selectedRoles} = useTableSelection(roles, globalFilter, columnFilters);
 
 const canDeleteSelection = computed(() => selectedRoles.value.length > 0 && selectedRoles.value.every(canDeleteRole));
 
@@ -72,7 +73,7 @@ const columns: NamedTableColumn<Role>[] = [
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorKey: "name",
     cell: ({row}) => {
       return h("div", {class: "flex items-center gap-2"}, [
@@ -89,7 +90,7 @@ const columns: NamedTableColumn<Role>[] = [
   {
     id: "key",
     name: "Clé",
-    header: ({column}) => getStrSortedHeader(column, "Clé"),
+    header: ({column}) => getColumnHeader(column, "Clé", {sort: true}),
     accessorKey: "key",
   },
   {
@@ -246,7 +247,8 @@ setActions(computed(() => [{
           </TourHelperPopover>
         </div>
 
-        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters"
                 v-model:expanded="expanded" v-model:global-filter="globalFilter"
                 v-model:column-visibility="columnVisibility" :columns="columns" :data="roles" :get-row-id="(item) => item.id"
                 sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">

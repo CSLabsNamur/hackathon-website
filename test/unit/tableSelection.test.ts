@@ -42,4 +42,16 @@ describe("bulk table selection", () => {
     await nextTick();
     expect(state.selectedItems.value).toEqual([]);
   });
+
+  it("uses external column filters and clears selection when they change", async () => {
+    const scope = effectScope();
+    scopes.push(scope);
+    const filters = ref([{id: "caution", value: "PAID"}]);
+    const state = scope.run(() => useTableSelection(ref([{id: "first"}]), ref(""), filters))!;
+    expect(state.columnFilters).toBe(filters);
+    state.rowSelection.value = {first: true};
+    filters.value = [{id: "caution", value: "NOT_PAID"}];
+    await nextTick();
+    expect(state.selectedItems.value).toEqual([]);
+  });
 });

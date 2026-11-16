@@ -8,10 +8,8 @@ import type { TableColumn } from "@nuxt/ui";
 // If we use dynamic headers, we cannot get the name from the column definition, but we need it for the column visibility menu, for example.
 export type NamedTableColumn<T> = TableColumn<T> & { id: string; name?: string };
 
-type FilterHeaderItem<TValue extends string> = {
-  label: string;
-  value: TValue;
-};
+type FilterHeaderItem = { label: string; value: string };
+type ColumnHeaderOptions = { sort?: boolean; filters?: FilterHeaderItem[] };
 
 export function getWrappingColumnMeta() {
   return {
@@ -21,92 +19,65 @@ export function getWrappingColumnMeta() {
   };
 }
 
-export function getStrSortedHeader<T>(column: Column<T>, label: string) {
-  const isSorted = column.getIsSorted();
+export function getColumnHeader<T>(column: Column<T>, label: string, {sort = false, filters}: ColumnHeaderOptions) {
+  const direction = column.getIsSorted();
+  const selectedValue = column.getFilterValue();
+  const selectedItem = filters?.find(item => item.value === selectedValue);
 
-  return h(
-    UDropdownMenu,
-    {
-      content: {
-        align: "start",
+  const sortIcons = {
+    asc: "i-lucide-arrow-up-narrow-wide",
+    desc: "i-lucide-arrow-down-wide-narrow",
+    none: "i-lucide-arrow-up-down",
+  };
+
+  const items: DropdownMenuItem[][] = [];
+  const states: string[] = [];
+
+  if (sort) {
+    items.push([
+      {type: "label", label: "Tri"},
+      {
+        label: "Trier A → Z",
+        type: "checkbox",
+        icon: sortIcons.asc,
+        checked: direction === "asc",
+        onUpdateChecked: (checked: boolean) => checked ? column.toggleSorting(false) : column.clearSorting(),
       },
-      "aria-label": "Actions dropdown",
-      items: [
-        {
-          label: "Asc",
-          type: "checkbox",
-          icon: "i-lucide-arrow-up-narrow-wide",
-          checked: isSorted === "asc",
-          onSelect: () => {
-            if (isSorted === "asc") {
-              column.clearSorting();
-            } else {
-              column.toggleSorting(false);
-            }
-          },
-        },
-        {
-          label: "Desc",
-          icon: "i-lucide-arrow-down-wide-narrow",
-          type: "checkbox",
-          checked: isSorted === "desc",
-          onSelect: () => {
-            if (isSorted === "desc") {
-              column.clearSorting();
-            } else {
-              column.toggleSorting(true);
-            }
-          },
-        },
-      ],
-    },
-    () =>
-      h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        label,
-        icon: isSorted
-          ? isSorted === "asc"
-            ? "i-lucide-arrow-up-narrow-wide"
-            : "i-lucide-arrow-down-wide-narrow"
-          : "i-lucide-arrow-up-down",
-        class: "-mx-2.5 data-[state=open]:bg-elevated",
-        "aria-label": `Sort by ${isSorted === "asc" ? "descending" : "ascending"}`,
-      }),
-  );
-}
+      {
+        label: "Trier Z → A",
+        type: "checkbox",
+        icon: sortIcons.desc,
+        checked: direction === "desc",
+        onUpdateChecked: (checked: boolean) => checked ? column.toggleSorting(true) : column.clearSorting(),
+      },
+    ]);
+    states.push(`tri : ${direction === "asc" ? "croissant" : direction === "desc" ? "décroissant" : "aucun tri"}`);
+  }
+  if (filters) {
+    items.push([
+      {type: "label", label: "Filtre"},
+      ...filters.map(item => ({
+        label: item.label,
+        type: "checkbox" as const,
+        checked: selectedValue === item.value,
+        onUpdateChecked: (checked: boolean) => column.setFilterValue(checked ? item.value : undefined),
+      })),
+    ]);
+    states.push(`filtre : ${selectedItem?.label || "aucun filtre"}`);
+  }
 
-export function getSingleSelectFilterHeader<T, TValue extends string>(column: Column<T>, label: string, items: FilterHeaderItem<TValue>[], ariaLabel = `Filtrer la colonne ${label.toLowerCase()}`) {
-  const selectedValue = column.getFilterValue() as TValue | undefined;
-  const selectedItem = items.find(item => item.value === selectedValue);
-  const dropdownItems: DropdownMenuItem[] = items.map((item) => ({
-    label: item.label,
-    type: "checkbox",
-    checked: selectedValue === item.value,
-    onUpdateChecked: (checked: boolean) => {
-      column.setFilterValue(checked ? item.value : undefined);
-    },
+  const action = sort ? (filters ? "Trier et filtrer" : "Trier") : "Filtrer";
+  const ariaLabel = `${action} par ${label.toLowerCase()}, ${states.join(", ")}`;
+
+  return h(UDropdownMenu, {content: {align: "start"}, "aria-label": ariaLabel, items}, () => h(UButton, {
+    color: selectedItem ? "primary" : "neutral",
+    variant: "ghost",
+    label,
+    icon: sort ? sortIcons[direction || "none"] : "i-lucide-filter",
+    trailingIcon: sort && selectedItem ? "i-lucide-filter" : undefined,
+    class: "-mx-2.5 data-[state=open]:bg-elevated",
+    "aria-label": ariaLabel,
   }));
-
-  return h(
-    UDropdownMenu,
-    {
-      content: {
-        align: "start",
-      },
-      "aria-label": ariaLabel,
-      items: dropdownItems,
-    },
-    () =>
-      h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        label,
-        icon: selectedValue ? "i-lucide-filter-x" : "i-lucide-filter",
-        class: "-mx-2.5 data-[state=open]:bg-elevated",
-        "aria-label": `Filtrer par ${label.toLowerCase()}, actuellement ${selectedItem?.label || "aucun filtre"}`,
-      }),
-  );
 }
 
 export function getRowExpandButton<T>(row: Row<T>, expandedAriaLabel: string, collapsedAriaLabel: string) {

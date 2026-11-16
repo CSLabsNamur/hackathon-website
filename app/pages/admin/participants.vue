@@ -37,7 +37,25 @@ const canReadSensitiveParticipants = computed(() => can("readSensitive", "Partic
 const toast = useToast();
 const dayjs = useDayjs();
 const overlay = useOverlay();
+
+const cautionItems = Object.values(CautionStatus).map((status) => ({
+  label: cautionStatusTranslateMap[status],
+  value: status,
+}));
+const teamFilterItems = [{label: "Sans équipe", value: "none"}, {label: "Avec une équipe", value: "assigned"}];
+
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({
+  sort: ["name", "team"],
+  filters: {caution: cautionItems.map(item => item.value), team: teamFilterItems.map(item => item.value)},
+});
+
+// TODO: Filter badges?
+//const activeTeamFilter = computed(() => teamFilterItems.find(item => item.value === columnFilters.value.find(filter => filter.id === "team")?.value));
+//
+//function clearTeamFilter() {
+//  columnFilters.value = columnFilters.value.filter(filter => filter.id !== "team");
+//}
 
 const cautionModal = overlay.create(AdminParticipantCautionModal);
 const editModal = overlay.create(ParticipantEditModal);
@@ -45,7 +63,10 @@ const removeModal = overlay.create(AdminParticipantsRemoveModal);
 const exportModal = overlay.create(AdminExportModal);
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const {rowSelection, columnFilters, selectedItems: selectedParticipants} = useTableSelection(participants, globalFilter);
+const {
+  rowSelection,
+  selectedItems: selectedParticipants,
+} = useTableSelection(participants, globalFilter, columnFilters);
 
 const canPrintSelection = computed(() => can("print", "Badge") && selectedParticipants.value.length > 0);
 const canDeleteSelection = computed(() => selectedParticipants.value.length > 0 && selectedParticipants.value.every(canDeleteParticipant));
@@ -63,17 +84,12 @@ const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} 
 }, undefined, {immediate: false});
 const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
 
-const cautionItems = Object.values(CautionStatus).map((status) => ({
-  label: cautionStatusTranslateMap[status],
-  value: status,
-}));
-
 const allColumns: NamedTableColumn<AdminParticipant>[] = [
   getSelectionColumn<AdminParticipant>(isBulkActionPending, (item) => `Sélectionner ${item.user.firstName} ${item.user.lastName}`, "Sélectionner les participants"),
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
     meta: getWrappingColumnMeta(),
   },
@@ -86,7 +102,7 @@ const allColumns: NamedTableColumn<AdminParticipant>[] = [
   {
     id: "caution",
     name: "Caution",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Caution", cautionItems),
+    header: ({column}) => getColumnHeader(column, "Caution", {filters: cautionItems}),
     accessorKey: "caution",
     filterFn: "equalsString",
     enableGlobalFilter: false,
@@ -109,8 +125,9 @@ const allColumns: NamedTableColumn<AdminParticipant>[] = [
   {
     id: "team",
     name: "Équipe",
-    header: ({column}) => getStrSortedHeader(column, "Équipe"),
+    header: ({column}) => getColumnHeader(column, "Équipe", {sort: true, filters: teamFilterItems}),
     accessorFn: (row) => row.team?.name,
+    filterFn: (row, _columnId, value) => value === "none" ? row.original.teamId === null : row.original.teamId !== null,
     meta: getWrappingColumnMeta(),
   },
   {
@@ -378,7 +395,18 @@ function getRowItems(row: Row<AdminParticipant>): Array<DropdownMenuItem> {
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+<!--        <div v-if="activeTeamFilter" class="flex flex-wrap gap-2">-->
+<!--          <UBadge color="neutral" variant="subtle">-->
+<!--            Équipe : {{ activeTeamFilter.label }}-->
+<!--            <template #trailing>-->
+<!--              <UButton icon="i-lucide-x" color="neutral" variant="ghost" size="xs"-->
+<!--                       aria-label="Effacer le filtre d’équipe" :disabled="isBulkActionPending"-->
+<!--                       @click="clearTeamFilter"/>-->
+<!--            </template>-->
+<!--          </UBadge>-->
+<!--        </div>-->
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters"
                 v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
                 :data="participants" :get-row-id="(item) => item.id" sticky :loading="status === 'pending'">
           <template #empty>

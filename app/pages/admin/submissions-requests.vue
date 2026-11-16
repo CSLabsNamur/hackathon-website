@@ -37,30 +37,6 @@ watch(canReadParticipants, async (allowed) => {
 
 const dayjs = useDayjs();
 const overlay = useOverlay();
-const globalFilter = useSearchQuery();
-
-const createModal = overlay.create(CreateSubmissionRequestModal);
-const editModal = overlay.create(EditSubmissionRequestModal);
-const removeModal = overlay.create(RemoveSubmissionRequestModal);
-const exportModal = overlay.create(AdminExportModal);
-const bulkRemoveModal = overlay.create(BulkRemoveModal);
-
-const {
-  rowSelection,
-  columnFilters,
-  selectedItems: selectedSubmissionRequests,
-} = useTableSelection(submissionRequests, globalFilter);
-
-const canDeleteSelection = computed(() => selectedSubmissionRequests.value.length > 0 && selectedSubmissionRequests.value.every(canDeleteSubmissionRequest));
-
-const {isLoading: isRemovingSelection, executeImmediate: removeSelectedSubmissionRequests} = useAsyncState(async () => {
-  if (!canDeleteSelection.value) return;
-  const removedIds = await bulkRemoveModal.open({submissionRequests: [...selectedSubmissionRequests.value]});
-  if (removedIds) await refreshSubmissionRequests();
-}, undefined, {immediate: false});
-
-const isBulkActionPending = isRemovingSelection;
-
 const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
   label: submissionTypeTranslateMap[type],
   value: type,
@@ -72,6 +48,30 @@ const submissionScopeItems = [{
   label: "Équipe",
   value: "team",
 }];
+const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["title", "deadline", "createdAt", "submissionRate"], filters: {type: submissionTypeItems.map(item => item.value), scope: submissionScopeItems.map(item => item.value)}});
+
+const createModal = overlay.create(CreateSubmissionRequestModal);
+const editModal = overlay.create(EditSubmissionRequestModal);
+const removeModal = overlay.create(RemoveSubmissionRequestModal);
+const exportModal = overlay.create(AdminExportModal);
+const bulkRemoveModal = overlay.create(BulkRemoveModal);
+
+const {
+  rowSelection,
+  selectedItems: selectedSubmissionRequests,
+} = useTableSelection(submissionRequests, globalFilter, columnFilters);
+
+const canDeleteSelection = computed(() => selectedSubmissionRequests.value.length > 0 && selectedSubmissionRequests.value.every(canDeleteSubmissionRequest));
+
+const {isLoading: isRemovingSelection, executeImmediate: removeSelectedSubmissionRequests} = useAsyncState(async () => {
+  if (!canDeleteSelection.value) return;
+  const removedIds = await bulkRemoveModal.open({submissionRequests: [...selectedSubmissionRequests.value]});
+  if (removedIds) await refreshSubmissionRequests();
+}, undefined, {immediate: false});
+
+const isBulkActionPending = isRemovingSelection;
+
 const totalTeams = computed(() => new Set((participants.value ?? []).flatMap((participant) => participant.teamId ? [participant.teamId] : [])).size);
 
 const getSubmissionRate = (submissionRequest: AdminSubmissionRequest) => {
@@ -87,7 +87,7 @@ const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
   {
     id: "title",
     name: "Titre",
-    header: ({column}) => getStrSortedHeader(column, "Titre"),
+    header: ({column}) => getColumnHeader(column, "Titre", {sort: true}),
     accessorKey: "title",
     cell: ({row}) => h("div", {class: "truncate max-w-36", title: row.original.title}, row.original.title),
   },
@@ -101,7 +101,7 @@ const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
   {
     id: "type",
     name: "Type",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Type", submissionTypeItems),
+    header: ({column}) => getColumnHeader(column, "Type", {filters: submissionTypeItems}),
     accessorFn: (row) => submissionTypeTranslateMap[row.type],
     filterFn: (row, _columnId, filterValue) => row.original.type === filterValue,
     cell: ({row}) => {
@@ -117,7 +117,7 @@ const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
   {
     id: "scope",
     name: "Portée",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Portée", submissionScopeItems),
+    header: ({column}) => getColumnHeader(column, "Portée", {filters: submissionScopeItems}),
     accessorFn: (row) => row.teamRequest ? "Équipe" : "Participant",
     filterFn: (row, _columnId, filterValue) => {
       return filterValue === "team" ? row.original.teamRequest : !row.original.teamRequest;
@@ -130,21 +130,21 @@ const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
   {
     id: "deadline",
     name: "Date limite",
-    header: ({column}) => getStrSortedHeader(column, "Date limite"),
+    header: ({column}) => getColumnHeader(column, "Date limite", {sort: true}),
     accessorKey: "deadline",
     cell: ({row}) => h("div", {title: dayjs(row.original.deadline).format("DD/MM/YYYY HH:mm")}, dayjs(row.original.deadline).format("DD/MM/YYYY")),
   },
   {
     id: "createdAt",
     name: "Date de création",
-    header: ({column}) => getStrSortedHeader(column, "Date de création"),
+    header: ({column}) => getColumnHeader(column, "Date de création", {sort: true}),
     accessorKey: "createdAt",
     cell: ({row}) => dayjs(row.original.createdAt).format("DD/MM/YYYY"),
   },
   {
     id: "submissionRate",
     name: "Taux de soumission",
-    header: ({column}) => getStrSortedHeader(column, "Taux de soumission"),
+    header: ({column}) => getColumnHeader(column, "Taux de soumission", {sort: true}),
     accessorFn: (row: AdminSubmissionRequest) => `${getSubmissionRate(row).toFixed(2)} %`,
     sortingFn: (rowA, rowB, columnId) => {
       return parseFloat(rowA.getValue(columnId)) - parseFloat(rowB.getValue(columnId));
@@ -291,7 +291,8 @@ setActions(computed(() => [{
           </UDropdownMenu>
         </TourHelperPopover>
       </div>
-      <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+      <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+              v-model:column-filters="columnFilters"
               v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
               :data="submissionRequests" :get-row-id="(item) => item.id" sticky
               :loading="submissionsStatus === 'pending' || (canReadParticipants && participantsStatus === 'pending')">

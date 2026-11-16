@@ -14,7 +14,8 @@ definePageMeta({
 
 const {status, data: teams} = await useTeams({lazy: true});
 
-const globalFilter = ref("");
+const globalFilter = useSearchQuery();
+const {sorting} = useTableQuery({sort: ["name"]});
 const expanded = ref({});
 
 const columns: TableColumn<AdminTeam>[] = [
@@ -35,7 +36,7 @@ const columns: TableColumn<AdminTeam>[] = [
   },
   {
     id: "name",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorKey: "name",
   },
   {
@@ -52,7 +53,8 @@ const columns: TableColumn<AdminTeam>[] = [
       <div v-if="status === 'success'" class="flex justify-between">
         <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
       </div>
-      <UTable v-model:expanded="expanded" v-model:global-filter="globalFilter" :columns="columns" :data="teams"
+      <UTable v-model:sorting="sorting" v-model:expanded="expanded"
+              v-model:global-filter="globalFilter" :columns="columns" :data="teams"
               sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
         <template #expanded="{row}">
           <div class="flex flex-wrap gap-2 p-4">

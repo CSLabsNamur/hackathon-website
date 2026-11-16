@@ -27,7 +27,21 @@ const {can} = useAbility(currentAdmin);
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
+const guestTypeItems = Object.values(GuestType).map((type) => ({
+  label: translateGuestType(type),
+  value: translateGuestType(type),
+}));
+const companyItems = computed(() => {
+  return [...new Set((guests.value ?? []).map((guest) => guest.company || "Aucune"))]
+      .sort((a, b) => a.localeCompare(b, "fr"))
+      .map((company) => ({
+        label: company,
+        value: company,
+      }));
+});
+
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["name", "quantity"], filters: {type: guestTypeItems.map(item => item.value), company: () => companyItems.value.map(item => item.value)}});
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
@@ -35,7 +49,7 @@ const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const {rowSelection, columnFilters, selectedItems: selectedGuests} = useTableSelection(guests, globalFilter);
+const {rowSelection, selectedItems: selectedGuests} = useTableSelection(guests, globalFilter, columnFilters);
 
 const canPrintSelection = computed(() => can("print", "Badge") && selectedGuests.value.length > 0);
 const canDeleteSelection = computed(() => selectedGuests.value.length > 0 && selectedGuests.value.every(function () {
@@ -54,19 +68,6 @@ const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} 
   downloadBlob(badges, "badges-guests.pdf");
 }, undefined, {immediate: false});
 const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
-
-const guestTypeItems = Object.values(GuestType).map((type) => ({
-  label: translateGuestType(type),
-  value: translateGuestType(type),
-}));
-const companyItems = computed(() => {
-  return [...new Set((guests.value ?? []).map((guest) => guest.company || "Aucune"))]
-      .sort((a, b) => a.localeCompare(b, "fr"))
-      .map((company) => ({
-        label: company,
-        value: company,
-      }));
-});
 
 const columns: NamedTableColumn<Guest>[] = [
   getSelectionColumn<Guest>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les invités"),
@@ -89,13 +90,13 @@ const columns: NamedTableColumn<Guest>[] = [
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorKey: "name",
   },
   {
     id: "type",
     name: "Type",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Type", guestTypeItems),
+    header: ({column}) => getColumnHeader(column, "Type", {filters: guestTypeItems}),
     accessorFn: (row) => translateGuestType(row.type),
     filterFn: "equalsString",
     cell: ({row}) => {
@@ -109,7 +110,7 @@ const columns: NamedTableColumn<Guest>[] = [
   {
     id: "company",
     name: "Entreprise",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Entreprise", companyItems.value),
+    header: ({column}) => getColumnHeader(column, "Entreprise", {filters: companyItems.value}),
     accessorFn: (row) => row.company || "Aucune",
     filterFn: "equalsString",
     cell: ({row}) => row.original.company || "Aucune",
@@ -117,7 +118,7 @@ const columns: NamedTableColumn<Guest>[] = [
   {
     id: "quantity",
     name: "Badges",
-    header: ({column}) => getStrSortedHeader(column, "Badges"),
+    header: ({column}) => getColumnHeader(column, "Badges", {sort: true}),
     accessorFn: (row) => row.quantity,
     enableGlobalFilter: false,
     cell: ({row}) => h("span", {
@@ -279,7 +280,8 @@ setActions(computed(() => [{
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters"
                 v-model:expanded="expanded" v-model:global-filter="globalFilter"
                 v-model:column-visibility="columnVisibility" :columns="columns" :data="guests" :get-row-id="(item) => item.id" sticky
                 :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">

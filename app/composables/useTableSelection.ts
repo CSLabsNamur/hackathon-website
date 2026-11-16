@@ -1,9 +1,8 @@
 import type { ColumnFiltersState } from "@tanstack/vue-table";
-import { type MaybeRefOrGetter, toValue } from "vue";
+import { type MaybeRefOrGetter, type Ref, toValue } from "vue";
 
-export function useTableSelection<T extends {id: string}>(items: MaybeRefOrGetter<T[] | undefined>, globalFilter: MaybeRefOrGetter<string | undefined>) {
+export function useTableSelection<T extends {id: string}>(items: MaybeRefOrGetter<T[] | undefined>, globalFilter: MaybeRefOrGetter<string | undefined>, columnFilters: Ref<ColumnFiltersState> = ref([])) {
   const rowSelection = ref<Record<string, boolean>>({});
-  const columnFilters = ref<ColumnFiltersState>([]);
   const selectedItems = computed(() => (toValue(items) ?? []).filter((item) => rowSelection.value[item.id]));
 
   watch([() => toValue(globalFilter), columnFilters], () => {

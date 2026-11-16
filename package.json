@@ -74,6 +74,7 @@
     "@unhead/vue": "^3.4.3",
     "@vueuse/core": "15.0.0",
     "@vueuse/nuxt": "15.0.0",
+    "@vueuse/router": "15.0.0",
     "better-sqlite3": "^13.0.3",
     "clamscan": "^2.4.0",
     "dayjs-nuxt": "2.1.11",

@@ -38,8 +38,9 @@ const bulkRemoveModal = overlay.create(BulkRemoveAdminModal);
 
 const toast = useToast();
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["name"]});
 
-const {rowSelection, columnFilters, selectedItems: selectedAdmins} = useTableSelection(admins, globalFilter);
+const {rowSelection, selectedItems: selectedAdmins} = useTableSelection(admins, globalFilter, columnFilters);
 const canDeleteSelection = computed(() => selectedAdmins.value.length > 0 && selectedAdmins.value.every(canDeleteAdmin));
 
 const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} = useAsyncState(async () => {
@@ -60,7 +61,7 @@ const columns: NamedTableColumn<Admin>[] = [
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorFn: (row: Admin) => `${row.user.firstName} ${row.user.lastName}`,
     cell: ({row}) => `${row.original.user.firstName} ${row.original.user.lastName}`,
   },
@@ -255,8 +256,8 @@ setActions(computed(() => [
                           @clear="rowSelection = {}"/>
       </div>
 
-      <UTable v-model:global-filter="globalFilter" v-model:row-selection="rowSelection"
-              v-model:column-filters="columnFilters" :columns="columns"
+      <UTable v-model:sorting="sorting" v-model:global-filter="globalFilter"
+              v-model:row-selection="rowSelection" v-model:column-filters="columnFilters" :columns="columns"
               :data="admins" :get-row-id="(admin) => admin.id" sticky :loading="status === 'pending'">
         <template #empty>
           <div class="max-w-1/2 mx-auto">

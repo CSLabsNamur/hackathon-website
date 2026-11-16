@@ -26,14 +26,24 @@ const {can} = useAbility(currentAdmin);
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const {copyWithToast} = useCopyWithToast();
+const validityItems = [
+  {label: "Valide", value: "Valide"},
+  {label: "Invalide", value: "Invalide"},
+] as const;
+
+const getTeamValidity = (team: AdminTeam) => {
+  return isTeamValid(team) ? "Valide" : "Invalide";
+};
+
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["name"], filters: {valid: validityItems.map(item => item.value)}});
 
 const editModal = overlay.create(EditModal);
 const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const {rowSelection, columnFilters, selectedItems: selectedTeams} = useTableSelection(teams, globalFilter);
+const {rowSelection, selectedItems: selectedTeams} = useTableSelection(teams, globalFilter, columnFilters);
 
 const canDeleteSelection = computed(() => selectedTeams.value.length > 0 && selectedTeams.value.every(canDeleteTeam));
 
@@ -45,21 +55,12 @@ const {isLoading: isRemovingSelection, executeImmediate: removeSelectedTeams} = 
 
 const isBulkActionPending = isRemovingSelection;
 
-const validityItems = [
-  {label: "Valide", value: "Valide"},
-  {label: "Invalide", value: "Invalide"},
-] as const;
-
-const getTeamValidity = (team: AdminTeam) => {
-  return isTeamValid(team) ? "Valide" : "Invalide";
-};
-
 const columns: NamedTableColumn<AdminTeam>[] = [
   getSelectionColumn<AdminTeam>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les équipes"),
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorKey: "name",
   },
   {
@@ -72,7 +73,7 @@ const columns: NamedTableColumn<AdminTeam>[] = [
   {
     id: "valid",
     name: "Validité",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Validité", [...validityItems]),
+    header: ({column}) => getColumnHeader(column, "Validité", {filters: [...validityItems]}),
     accessorFn: (row) => getTeamValidity(row),
     enableGlobalFilter: false,
     filterFn: "equalsString",
@@ -239,7 +240,8 @@ function getRowItems(row: Row<AdminTeam>): Array<DropdownMenuItem> {
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters"
                 v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility"
                 :columns="columns" :data="teams" :get-row-id="(item) => item.id" sticky :loading="status === 'pending'">
           <template #empty>

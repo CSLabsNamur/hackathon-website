@@ -27,7 +27,13 @@ const {can} = useAbility(currentAdmin);
 const dayjs = useDayjs();
 const overlay = useOverlay();
 const toast = useToast();
+const badgeItems = [
+  {label: "Oui", value: "Oui"},
+  {label: "Non", value: "Non"},
+] as const;
+
 const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({sort: ["name"], filters: {hasBadge: badgeItems.map(item => item.value)}});
 
 const createModal = overlay.create(CreateModal);
 const editModal = overlay.create(EditModal);
@@ -35,7 +41,7 @@ const removeModal = overlay.create(RemoveModal);
 const exportModal = overlay.create(AdminExportModal);
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
 
-const {rowSelection, columnFilters, selectedItems: selectedSponsors} = useTableSelection(sponsors, globalFilter);
+const {rowSelection, selectedItems: selectedSponsors} = useTableSelection(sponsors, globalFilter, columnFilters);
 
 const canPrintSelection = computed(() => can("print", "Badge") && selectedSponsors.value.length > 0 && selectedSponsors.value.every((sponsor) => sponsor.hasBadge));
 const canDeleteSelection = computed(() => selectedSponsors.value.length > 0 && selectedSponsors.value.every(function () {
@@ -54,11 +60,6 @@ const {isLoading: isGeneratingBadges, executeImmediate: generateSelectedBadges} 
   downloadBlob(badges, "badges-sponsors.pdf");
 }, undefined, {immediate: false});
 const isBulkActionPending = computed(() => isRemovingSelection.value || isGeneratingBadges.value);
-
-const badgeItems = [
-  {label: "Oui", value: "Oui"},
-  {label: "Non", value: "Non"},
-] as const;
 
 const columns: NamedTableColumn<Sponsor>[] = [
   getSelectionColumn<Sponsor>(isBulkActionPending, (item) => `Sélectionner ${item.name}`, "Sélectionner les sponsors"),
@@ -81,7 +82,7 @@ const columns: NamedTableColumn<Sponsor>[] = [
   {
     id: "name",
     name: "Nom",
-    header: ({column}) => getStrSortedHeader(column, "Nom"),
+    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
     accessorKey: "name",
   },
   {
@@ -108,7 +109,7 @@ const columns: NamedTableColumn<Sponsor>[] = [
   {
     id: "hasBadge",
     name: "Badge",
-    header: ({column}) => getSingleSelectFilterHeader(column, "Badge", [...badgeItems]),
+    header: ({column}) => getColumnHeader(column, "Badge", {filters: [...badgeItems]}),
     accessorFn: (row) => row.hasBadge ? "Oui" : "Non",
     filterFn: "equalsString",
     cell: ({row}) => {
@@ -270,7 +271,8 @@ setActions(computed(() => [{
             </UDropdownMenu>
           </TourHelperPopover>
         </div>
-        <UTable v-model:row-selection="rowSelection" v-model:column-filters="columnFilters"
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters"
                 v-model:expanded="expanded" v-model:global-filter="globalFilter"
                 v-model:column-visibility="columnVisibility" :columns="columns" :data="sponsors" :get-row-id="(item) => item.id" sticky
                 :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">

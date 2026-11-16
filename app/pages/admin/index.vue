@@ -42,7 +42,7 @@ useRefreshOnPageReturn(() => {
       </div>
 
       <template v-if="currentAdminStatus === 'success'">
-        <AdminParticipantStats v-if="canReadParticipants"/>
+        <AdminParticipantStats v-if="canReadParticipants" links/>
         <AdminChartsRegistrationTimeline v-if="hasParticipantCharts && participants" :participants="participants"/>
         <div v-if="hasParticipantCharts || canReadTeams" class="grid items-start gap-6"
              :class="hasParticipantCharts && canReadTeams ? 'lg:grid-cols-2' : undefined">
