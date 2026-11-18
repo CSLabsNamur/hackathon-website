@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
+import Fuse from "fuse.js";
 
 definePageMeta({
   layout: {
@@ -12,58 +12,90 @@ definePageMeta({
   requiredPermissions: ["teams.read"],
 });
 
-const {status, data: teams} = await useTeams({lazy: true});
+const [
+  {status, data: teams, refresh},
+  {data: currentParticipant},
+] = await Promise.all([useTeams({lazy: true}), useCurrentParticipant()]);
 
-const globalFilter = useSearchQuery();
+const search = useSearchQuery();
 const {sorting} = useTableQuery({sort: ["name"]});
-const expanded = ref({});
 
-const columns: TableColumn<AdminTeam>[] = [
-  {
-    id: "expand",
-    enableGlobalFilter: false,
-    cell: ({row}) => {
-      if (!row.original.members.length) {
-        return null;
-      }
+const sortOptions = [{label: "Nom : A → Z", value: "asc"}, {label: "Nom : Z → A", value: "desc"}];
+const sortOrder = computed({
+  get: () => sorting.value[0]?.desc ? "desc" : "asc",
+  set: (value: string) => {
+    sorting.value = [{id: "name", desc: value === "desc"}];
+  },
+});
 
-      return getRowExpandButton(
-          row,
-          "Réduire la liste des membres",
-          "Développer la liste des membres",
-      );
-    },
-  },
-  {
-    id: "name",
-    header: ({column}) => getColumnHeader(column, "Nom", {sort: true}),
-    accessorKey: "name",
-  },
-  {
-    header: "Description",
-    accessorKey: "description",
-    meta: getWrappingColumnMeta(),
-  },
-];
+const otherTeams = computed(() => (teams.value ?? [])
+    .filter((team) => team.id !== currentParticipant.value?.team?.id),
+);
+const searchableTeams = computed(() => otherTeams.value.map((team) => ({
+  team,
+  members: team.members.map((member) => `${member.user.firstName} ${member.user.lastName}`),
+})));
+const searchIndex = computed(() => new Fuse(searchableTeams.value, {
+  keys: ["team.name", "team.description", "members", "team.room.name"],
+  ignoreDiacritics: true,
+  ignoreLocation: true,
+  threshold: 0.3,
+}));
+const nameCollator = new Intl.Collator("fr", {sensitivity: "base", numeric: true});
+const filteredTeams = computed(() => {
+  const query = search.value.trim();
+  const matches = query ? searchIndex.value.search(query).map((result) => result.item.team) : otherTeams.value;
+  const direction = sortOrder.value === "desc" ? -1 : 1;
+
+  return [...matches].sort((a, b) => direction * nameCollator.compare(a.name, b.name));
+});
+
+useRefreshOnPageReturn(refresh);
 </script>
 
 <template>
-  <UContainer>
-    <div class="flex flex-col gap-1 lg:gap-2">
-      <div v-if="status === 'success'" class="flex justify-between">
-        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."/>
-      </div>
-      <UTable v-model:sorting="sorting" v-model:expanded="expanded"
-              v-model:global-filter="globalFilter" :columns="columns" :data="teams"
-              sticky :loading="status === 'pending'" :ui="{tr: 'data-[expanded=true]:bg-elevated/50'}">
-        <template #expanded="{row}">
-          <div class="flex flex-wrap gap-2 p-4">
-            <UBadge v-for="member in row.original.members" :key="member.id" color="neutral" variant="subtle">
-              {{ member.user.firstName }} {{ member.user.lastName }}
-            </UBadge>
-          </div>
+  <UContainer class="grid gap-6 max-w-7xl">
+    <header>
+      <h1 class="text-2xl font-semibold text-highlighted">Autres équipes</h1>
+    </header>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <UInput v-model="search" icon="i-lucide-search" class="w-full sm:max-w-md"
+              placeholder="Rechercher une équipe ou un membre…"
+              aria-label="Rechercher une équipe ou un membre">
+        <template v-if="search" #trailing>
+          <UButton color="neutral" variant="link" icon="i-lucide-x" size="xs"
+                   aria-label="Effacer la recherche" @click="search = ''"/>
         </template>
-      </UTable>
+      </UInput>
+      <USelect v-model="sortOrder" :items="sortOptions" class="w-full sm:w-44"
+               aria-label="Trier les équipes"/>
     </div>
+
+    <UAlert v-if="status === 'error'" color="error" variant="soft" icon="i-lucide-circle-alert"
+            title="Impossible de charger les équipes"
+            :actions="[{label: 'Réessayer', color: 'error', variant: 'soft', onClick: () => refresh()}]"/>
+
+    <div v-else-if="!teams" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <USkeleton v-for="n in 6" :key="n" class="h-64"/>
+    </div>
+
+    <UEmpty v-else-if="!otherTeams.length" title="Aucune autre équipe" icon="i-lucide-users"/>
+
+    <UEmpty v-else-if="!filteredTeams.length" title="Aucune équipe trouvée"
+            icon="i-lucide-search" description="Essayez un autre nom d'équipe ou de participant."
+            :actions="[{label: 'Effacer la recherche', color: 'neutral', variant: 'soft', onClick: () => search = ''}]"/>
+
+    <template v-else>
+      <p class="text-sm text-muted" role="status">
+        {{ filteredTeams.length }} équipe{{ filteredTeams.length > 1 ? "s" : "" }}
+        <span v-if="search.trim()">sur {{ otherTeams.length }}</span>
+      </p>
+      <ul class="grid items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <li v-for="team in filteredTeams" :key="team.id" class="min-w-0">
+          <ParticipantTeamDirectoryCard :team/>
+        </li>
+      </ul>
+    </template>
   </UContainer>
 </template>
