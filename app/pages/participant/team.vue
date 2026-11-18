@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn } from "#ui/components/Table.vue";
-import type { ButtonProps } from "#ui/components/Button.vue";
 import { AdminTeamsEditModal } from "#components";
-//import { RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
   layout: {
@@ -15,129 +12,24 @@ definePageMeta({
   requiredPermissions: ["teams.read.own"],
 });
 
-const {setActions} = useDashboardNavbar();
-const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
-const {can} = useAbility(currentParticipant);
+const {status, data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
+const team = computed(() => currentParticipant.value?.team);
+
+const {can, canPermission} = useAbility(currentParticipant);
 const canUpdateOwnTeam = computed(() => can("updateOwn", "Team"));
-
-const UButton = resolveComponent("UButton");
-//const UDropdownMenu = resolveComponent("UDropdownMenu");
-
+const {setActions} = useDashboardNavbar();
 const overlay = useOverlay();
+
 const editTeamModal = overlay.create(AdminTeamsEditModal);
 
-const {copyWithToast} = useCopyWithToast();
-
-//const removeMemberModal = overlay.create(RemoveTeamMemberModal);
-
-const columns: TableColumn<CurrentParticipantTeamMember>[] = [
-  {
-    id: "name",
-    header: "Nom",
-    accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
-  },
-  {
-    header: "Réseaux",
-    cell: ({row}) => {
-      const githubUrl = row.original.githubAccount ? getParticipantGithubUrl(row.original.githubAccount) : null;
-      const linkedInUrl = row.original.linkedInAccount ? getParticipantLinkedInUrl(row.original.linkedInAccount) : null;
-      const github = githubUrl ? h(UButton, {
-        variant: "link",
-        size: "sm",
-        icon: "i-simple-icons-github",
-        external: true,
-        to: githubUrl,
-      }) : null;
-      const linkedIn = linkedInUrl ? h(UButton, {
-        variant: "link",
-        size: "sm",
-        icon: "i-simple-icons-linkedin",
-        external: true,
-        to: linkedInUrl,
-      }) : null;
-      return h("div", {class: "flex space-x-2"}, [github, linkedIn]);
-    },
-  },
-  {
-    header: "École",
-    accessorKey: "school",
-  },
-  //TODO: Profile button?
-  //{
-  //  header: "Profil",
-  //  cell: ({row}) => {
-  //    return h(UButton, {
-  //      variant: "ghost",
-  //      size: "sm",
-  //      icon: "i-lucide-user",
-  //      //onClick: () => editModal.open({participant: row.original}),
-  //    });
-  //  },
-  //},
-  //{
-  //  id: "actions",
-  //  cell: ({row}) => {
-  //    return h(
-  //        "div",
-  //        {class: "text-right"},
-  //        h(
-  //            UDropdownMenu,
-  //            {
-  //              content: {align: "end"},
-  //              items: getRowItems(row),
-  //              "aria-label": `Actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
-  //            },
-  //            () => h(UButton, {
-  //              icon: "i-lucide-ellipsis-vertical",
-  //              color: "neutral",
-  //              variant: "ghost",
-  //              class: "ml-auto",
-  //              "aria-label": `Ouvrir le menu des actions pour l'utilisateur ${row.original.user.firstName} ${row.original.user.lastName}`,
-  //            }),
-  //        ),
-  //    );
-  //  },
-  //},
-];
-
-// TODO: Do we allow participants to remove others from their team?
-//function getRowItems(row: Row<CurrentParticipantTeamMember>): Array<DropdownMenuItem> {
-//  return [
-//    {
-//      label: "Retirer de l'équipe",
-//      icon: "i-lucide-user-minus",
-//      onClick: () => {
-//        removeMemberModal.open({participant: row.original});
-//      },
-//    },
-//  ];
-//}
-
-const noMembersLinks: ButtonProps[] = [
-  {
-    label: "Inviter des membres",
-    icon: "i-lucide-user-plus",
-    onClick: () => copyToken(),
-  },
-];
-
-const copyToken = () => {
-  if (!currentParticipant.value?.team) return;
-
-  copyWithToast(currentParticipant.value.team.token, {
-    title: "Code d'invitation copié",
-    description: "Le code d'invitation de l'équipe a été copié dans le presse-papiers. Partagez-le avec vos amis pour les inviter dans votre équipe !",
-  });
-};
-
 const openEditTeamModal = async () => {
-  if (!currentParticipant.value?.team || !canUpdateOwnTeam.value) return;
+  if (!team.value || !canUpdateOwnTeam.value) return;
 
-  const result = await editTeamModal.open({team: currentParticipant.value.team});
+  const result = await editTeamModal.open({team: team.value});
   if (result) await refreshCurrentParticipant();
 };
 
-setActions(computed(() => currentParticipant.value?.team ? [{
+setActions(computed(() => team.value ? [{
   icon: "i-lucide-edit-2",
   label: "Modifier",
   disabled: !canUpdateOwnTeam.value,
@@ -146,51 +38,37 @@ setActions(computed(() => currentParticipant.value?.team ? [{
 </script>
 
 <template>
-  <UContainer>
-    <UCard v-if="!currentParticipant">
-      <template #default>
-        <USkeleton class="h-20 w-40"/>
-      </template>
-    </UCard>
+  <UContainer class="grid gap-6 max-w-7xl">
+    <UAlert v-if="status === 'error'" color="error" variant="soft" icon="i-lucide-circle-alert"
+            title="Impossible de charger votre équipe"
+            :actions="[{label: 'Réessayer', color: 'error', variant: 'soft', onClick: () => refreshCurrentParticipant()}]"/>
 
-    <ParticipantNoTeamCTA v-else-if="!currentParticipant!.team"/>
-
-    <UPageGrid v-else>
-      <UCard class="col-span-2 row-span-2" variant="subtle">
-        <div class="grid gap-6">
-          <p class="text-3xl font-semibold text-center">{{ currentParticipant.team.name }}</p>
-          <div class="grid grid-cols-2 gap-3">
-            <UPageCard variant="subtle" title="Description" icon="i-lucide-text">
-              {{ currentParticipant.team.description || "Aucune description fournie." }}
-            </UPageCard>
-            <UPageCard variant="subtle" title="Code d'invitation" icon="i-lucide-key">
-              <div class="flex items-center gap-2">
-                <p class="font-mono text-lg truncate w-1/4" :title="currentParticipant.team.token">
-                  {{ currentParticipant.team.token }}
-                </p>
-                <UButton variant="soft" color="neutral" icon="i-lucide-copy" size="sm"
-                         @click="copyToken">
-                  Copier
-                </UButton>
-              </div>
-            </UPageCard>
-          </div>
-        </div>
-      </UCard>
-      <div class="grid gap-2 row-span-2">
-        <ParticipantTeamStatusCard :team="currentParticipant.team"/>
-        <ParticipantScheduleCard/>
+    <div v-else-if="!currentParticipant" class="grid gap-6">
+      <USkeleton class="h-20 w-full"/>
+      <div class="grid gap-6 lg:grid-cols-3">
+        <USkeleton class="h-80 lg:col-span-2"/>
+        <USkeleton class="h-56"/>
       </div>
-      <UTable :columns :data="currentParticipant.team.members" class="col-span-full">
-        <template #empty>
-          <div class="max-w-1/2 mx-auto">
-            <UEmpty title="Aucun membre dans l'équipe"
-                    description="Ne restez pas solo... Invitez des gens dans votre équipe !"
-                    icon="i-lucide-circle-slash"
-                    :actions="noMembersLinks"/>
-          </div>
-        </template>
-      </UTable>
-    </UPageGrid>
+    </div>
+
+    <ParticipantNoTeamCTA v-else-if="!team"/>
+
+    <template v-else>
+      <header class="grid gap-2">
+        <h1 class="text-2xl font-semibold text-highlighted wrap-anywhere">{{ team.name }}</h1>
+        <p v-if="team.description" class="text-sm text-muted whitespace-pre-line wrap-anywhere">
+          {{ team.description }}
+        </p>
+      </header>
+
+      <div class="grid items-start gap-6 lg:grid-cols-3">
+        <ParticipantTeamMembersCard :members="team.members" class="min-w-0 lg:col-span-2"/>
+        <div class="min-w-0 grid gap-6">
+          <ParticipantTeamInviteCard :token="team.token"/>
+          <ParticipantTeamStatusCard :key="canPermission('submissionRequests.read') ? 'full' : 'basic'"
+                                     :participant="currentParticipant"/>
+        </div>
+      </div>
+    </template>
   </UContainer>
 </template>

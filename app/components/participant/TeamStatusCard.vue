@@ -1,54 +1,44 @@
 <script setup lang="ts">
-const props = defineProps<{ team: CurrentParticipantTeam }>();
+const props = defineProps<{ participant: CurrentParticipant }>();
 
-const { data: submissionsRequests } = await useSubmissionsRequests();
+const {canPermissions} = useAbility(() => props.participant);
+const canReadRequests = computed(() => canPermissions(["submissionRequests.read"]));
 
-const validation = computed(() => getTeamValidationResult(props.team, submissionsRequests.value));
-
-const teamIssues = computed(() => validation.value.issues);
-const highestSeverity = computed(() => validation.value.highestSeverity);
-
-const iconsSeverityMap = {
-  info: "i-lucide-info-circle",
-  warning: "i-lucide-alert-triangle",
-  error: "i-lucide-circle-x",
-};
-
-const colorsSeverityMap = (severity: typeof highestSeverity.value) => {
-  return {
-    "text-blue-500": severity === "info",
-    "text-orange-500": severity === "warning",
-    "font-semibold text-red-500": severity === "error",
-  };
-};
-
-const statusIcon = computed(() => teamIssues.value.length === 0 ? "i-lucide-circle-check-big" : iconsSeverityMap[highestSeverity.value]);
-const statusColor = computed(() => teamIssues.value.length === 0
-  ? { "font-semibold text-green-500": true }
-  : colorsSeverityMap(highestSeverity.value),
+const requestsState = canReadRequests.value ? await useSubmissionsRequests({lazy: true}) : null;
+const submissionsStatus = computed(() => canReadRequests.value ? requestsState?.status.value : undefined);
+const teamIssues = computed(() => props.participant.team
+    ? getTeamValidationIssues(props.participant.team, canReadRequests.value ? requestsState?.data.value : undefined)
+    : [],
 );
+
+const refreshRequests = () => {
+  if (canReadRequests.value) return requestsState?.refresh();
+};
+
+useRefreshOnPageReturn(refreshRequests);
 </script>
 
 <template>
   <UCard>
-    <div class="grid gap-3 place-items-center justify-items-center">
-      <UIcon :name="statusIcon" class="text-6xl" :class="statusColor"/>
-      <div v-auto-animate class="text-center">
-        <template v-if="teamIssues.length === 0">
-          <p class="font-medium text-green-600">Votre équipe est valide.</p>
-          <p class="text-sm text-muted">Tous les points bloquants sont actuellement levés.</p>
-        </template>
-        <template v-else>
-          <div v-auto-animate class="flex flex-col gap-3 text-left">
-            <template v-for="(issue, index) in teamIssues" :key="`issue-${index}`">
-              <div>
-                <p :class="colorsSeverityMap(issue.severity)">{{ issue.message }}</p>
-                <p v-if="issue.description" class="text-sm text-muted">{{ issue.description }}</p>
-              </div>
-            </template>
-          </div>
-        </template>
-      </div>
+    <template #header>
+      <h2 class="text-lg font-semibold text-highlighted">Situation de l'équipe</h2>
+    </template>
+
+    <div class="grid gap-3">
+      <UAlert v-for="issue in teamIssues" :key="issue.code" variant="soft"
+              :color="issue.severity === 'error' ? 'error' : 'warning'"
+              icon="i-lucide-circle-alert" :title="issue.message" :description="issue.description"/>
+
+      <UAlert v-if="submissionsStatus === 'error'" color="warning" variant="soft"
+              icon="i-lucide-circle-alert" title="Vérification des dépôts indisponible"
+              description="Le statut des livrables de l'équipe n'a pas pu être vérifié."
+              :actions="[{label: 'Réessayer', color: 'warning', variant: 'soft', onClick: refreshRequests}]"/>
+
+      <USkeleton v-else-if="canReadRequests && submissionsStatus !== 'success'" class="h-20"/>
+
+      <UAlert v-else-if="!teamIssues.length" color="success" variant="soft"
+              icon="i-lucide-circle-check"
+              :title="canReadRequests ? 'Aucun point à corriger' : 'Effectif et cautions en ordre'"/>
     </div>
   </UCard>
 </template>

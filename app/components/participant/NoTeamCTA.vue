@@ -7,7 +7,6 @@ const createModal = overlay.create(ParticipantCreateTeamModal);
 const joinModal = overlay.create(ParticipantJoinTeamModal);
 
 const {data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
-const {refresh: refreshTeams} = await useTeams({lazy: true});
 const {can} = useAbility(currentParticipant);
 
 const links = computed<ButtonProps[]>(() => [
@@ -20,7 +19,8 @@ const links = computed<ButtonProps[]>(() => [
 
       const result = await createModal.open();
       if (result) {
-        await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
+        await refreshCurrentParticipant();
+        if (can("read", "Team")) await refreshNuxtData("teams");
       }
     },
   },
@@ -33,7 +33,8 @@ const links = computed<ButtonProps[]>(() => [
 
       const result = await joinModal.open();
       if (result) {
-        await Promise.all([refreshCurrentParticipant(), refreshTeams()]);
+        await refreshCurrentParticipant();
+        if (can("read", "Team")) await refreshNuxtData("teams");
       }
     },
   },
@@ -41,6 +42,9 @@ const links = computed<ButtonProps[]>(() => [
 </script>
 
 <template>
-  <UPageCTA title="Vous n'avez pas encore d'équipe !"
-            description="Créez ou rejoignez une équipe pour participer aux compétitions." :links/>
+  <UCard>
+    <UEmpty title="Vous n'avez pas encore d'équipe" icon="i-lucide-users" class="border-0"
+            :description="`Créez ou rejoignez une équipe pour participer. Il faut au moins ${TEAM_MINIMUM_MEMBERS} membres.`"
+            :actions="links"/>
+  </UCard>
 </template>
