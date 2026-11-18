@@ -1,61 +1,64 @@
 <script setup lang="ts">
-import { isScheduleItemLive } from "~/utils/schedule";
+const props = defineProps<{ now: Date }>();
 
-const props = defineProps<{
-  spotlight: ScheduleItem | null;
-  secondaryItems: ScheduleItem[];
-}>();
+const {data: schedule, status, refresh} = await useSchedule({lazy: true});
+const dayjs = useDayjs();
+const upcomingItems = computed(() => sortScheduleItems(schedule.value)
+    .filter((item) => dayjs(item.endTime).isAfter(props.now))
+    .slice(0, 4),
+);
+
+useRefreshOnPageReturn(refresh);
 </script>
 
 <template>
-  <UCard :ui="{body: 'p-6'}">
-    <div class="grid gap-5">
-      <div class="space-y-1">
-        <p class="text-xs font-medium uppercase tracking-wide text-primary/80">Programme</p>
-        <h2 class="text-2xl font-semibold text-highlighted">À venir</h2>
+  <UCard :ui="{body: 'p-0 sm:p-0'}">
+    <template #header>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-lg font-semibold text-highlighted">Au programme</h2>
+        <UButton to="/participant/schedule" color="neutral" variant="ghost" size="sm"
+                 trailing-icon="i-lucide-arrow-right"/>
       </div>
+    </template>
 
-      <template v-if="props.spotlight">
-        <div class="rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div class="flex flex-wrap items-center gap-2">
-            <UBadge :color="isScheduleItemLive(props.spotlight) ? 'success' : props.spotlight.special ? 'warning' : 'primary'"
-                    variant="soft">
-              {{ isScheduleItemLive(props.spotlight) ? "En direct" : props.spotlight.special ? "Temps fort" : "À venir" }}
-            </UBadge>
-            <UBadge color="neutral" variant="soft">
-              {{ props.spotlight.dateString }}
-            </UBadge>
-          </div>
+    <div v-if="status === 'error'" class="p-4 sm:p-6">
+      <UAlert color="error" variant="soft" icon="i-lucide-circle-alert"
+              title="Impossible de charger le programme"
+              :actions="[{label: 'Réessayer', color: 'error', variant: 'soft', onClick: () => refresh()}]"/>
+    </div>
 
-          <div class="mt-4 grid gap-2">
-            <p class="text-xl font-semibold text-highlighted">{{ props.spotlight.title }}</p>
-            <p class="text-sm leading-relaxed text-muted">{{ props.spotlight.description }}</p>
-          </div>
+    <div v-else-if="!schedule" class="grid gap-4 p-4 sm:p-6">
+      <USkeleton v-for="n in 3" :key="n" class="h-16"/>
+    </div>
 
-          <p class="mt-4 text-sm text-muted">
-            {{ $dayjs(props.spotlight.startTime).format("H[h]mm") }} - {{ $dayjs(props.spotlight.endTime).format("H[h]mm") }}
+    <ul v-else-if="upcomingItems.length" class="divide-y divide-default">
+      <li v-for="item in upcomingItems" :key="item.id" class="flex gap-4 p-4 sm:p-6"
+          :class="{'bg-primary/5': isScheduleItemLive(item, now)}">
+        <div class="w-16 shrink-0 space-y-1 text-sm">
+          <p class="text-xs text-muted">{{ $dayjs(item.startTime).format("ddd D MMM") }}</p>
+          <p class="font-semibold text-highlighted">
+            {{ $dayjs(item.startTime).format("HH[h]mm") }}
           </p>
         </div>
-
-        <div v-if="props.secondaryItems.length" class="grid gap-3">
-          <div v-for="item in props.secondaryItems" :key="item.id"
-               class="rounded-lg bg-elevated px-4 py-3">
-            <div class="flex items-start justify-between gap-3">
-              <div>
-                <p class="font-medium text-highlighted">{{ item.title }}</p>
-                <p class="text-sm text-muted">{{ item.dateString }}</p>
-              </div>
-              <p class="shrink-0 text-sm text-muted">
-                {{ $dayjs(item.startTime).format("H[h]mm") }}
-              </p>
-            </div>
+        <div class="min-w-0 flex-1 grid gap-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="font-medium text-highlighted">{{ item.title }}</h3>
+            <UBadge v-if="isScheduleItemLive(item, now)" color="success" variant="subtle" size="sm">
+              En cours
+            </UBadge>
           </div>
+          <p v-if="item.description" class="text-sm text-muted">{{ item.description }}</p>
+          <p class="text-xs text-muted">
+            Jusqu'à
+            {{
+              $dayjs(item.endTime).format($dayjs(item.startTime).isSame(item.endTime, "day") ? "HH[h]mm" : "ddd D MMM à HH[h]mm")
+            }}
+          </p>
         </div>
-      </template>
+      </li>
+    </ul>
 
-      <UAlert v-else color="neutral" variant="soft" icon="i-lucide-calendar-fold"
-              title="Programme indisponible"
-              description="Le prochain temps fort apparaîtra ici dès qu'il sera configuré."/>
-    </div>
+    <UEmpty v-else :title="schedule.length ? 'Programme terminé' : 'Aucune activité publiée'"
+            icon="i-lucide-calendar-days" class="border-0"/>
   </UCard>
 </template>
