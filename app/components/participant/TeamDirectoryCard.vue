@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ team: AdminTeam }>();
+defineProps<{ team: ParticipantDirectoryTeam }>();
 </script>
 
 <template>

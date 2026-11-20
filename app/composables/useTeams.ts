@@ -9,6 +9,15 @@ interface UseTeamsParams {
 export const useTeams = async (params?: UseTeamsParams) => {
   return useAPI<AdminTeam[]>("/api/teams", {
     key: "teams",
+    query: {view: "admin"},
+    dedupe: "defer",
+    lazy: params?.lazy ?? false,
+  });
+};
+
+export const useParticipantTeamDirectory = async (params?: UseTeamsParams) => {
+  return useAPI<ParticipantDirectoryTeam[]>("/api/teams", {
+    key: "participant-team-directory",
     dedupe: "defer",
     lazy: params?.lazy ?? false,
   });

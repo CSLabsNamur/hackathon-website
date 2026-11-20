@@ -2,10 +2,25 @@ export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "teams.read.own");
 
   return prisma.participant.findUnique({where: {userId: dbUser.id}}).team({
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      token: true,
+      room: {
+        select: {
+          name: true,
+        },
+      },
       members: {
-        include: {
-          user: true,
+        select: {
+          id: true,
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
         },
       },
     },

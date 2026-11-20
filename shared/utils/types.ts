@@ -27,6 +27,27 @@ export type AdminTeam = SerializeObject<Prisma.TeamGetPayload<{
   members: AdminTeamMember[];
 };
 export type AdminTeamWithoutRelations = Omit<AdminTeam, "members" | "room">;
+
+export type ParticipantDirectoryTeam = SerializeObject<Prisma.TeamGetPayload<{
+  select: {
+    id: true,
+    name: true,
+    description: true,
+    room: { select: { name: true } },
+    members: {
+      select: {
+        id: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    },
+  },
+}>>;
+
 export type DbUser = Prisma.UserGetPayload<{
   select: {
     id: true;

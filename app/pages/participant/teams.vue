@@ -15,7 +15,7 @@ definePageMeta({
 const [
   {status, data: teams, refresh},
   {data: currentParticipant},
-] = await Promise.all([useTeams({lazy: true}), useCurrentParticipant()]);
+] = await Promise.all([useParticipantTeamDirectory({lazy: true}), useCurrentParticipant()]);
 
 const search = useSearchQuery();
 const {sorting} = useTableQuery({sort: ["name"]});

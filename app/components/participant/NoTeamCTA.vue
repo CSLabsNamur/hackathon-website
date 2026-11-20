@@ -20,7 +20,7 @@ const links = computed<ButtonProps[]>(() => [
       const result = await createModal.open();
       if (result) {
         await refreshCurrentParticipant();
-        if (can("read", "Team")) await refreshNuxtData("teams");
+        if (can("read", "Team")) await refreshNuxtData("participant-team-directory");
       }
     },
   },
@@ -34,7 +34,7 @@ const links = computed<ButtonProps[]>(() => [
       const result = await joinModal.open();
       if (result) {
         await refreshCurrentParticipant();
-        if (can("read", "Team")) await refreshNuxtData("teams");
+        if (can("read", "Team")) await refreshNuxtData("participant-team-directory");
       }
     },
   },
