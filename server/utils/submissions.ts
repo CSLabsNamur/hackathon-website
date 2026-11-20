@@ -1,3 +1,7 @@
+import { createError } from "h3";
+import prisma from "./prisma";
+import dayjs from "./dayjs";
+import { withEventTransaction } from "./eventEdition";
 import type { Prisma } from "~~/server/prisma/generated/prisma/client";
 
 export const accessibleSubmissionInclude: Readonly<Prisma.SubmissionInclude> = {
@@ -17,7 +21,7 @@ export const accessibleSubmissionInclude: Readonly<Prisma.SubmissionInclude> = {
   },
 };
 
-type SubmissionActor = Prisma.ParticipantGetPayload<{
+export type SubmissionActor = Prisma.ParticipantGetPayload<{
   select: {
     id: true;
     team: {
@@ -33,9 +37,9 @@ type SubmissionActor = Prisma.ParticipantGetPayload<{
   };
 }>;
 
-export const getSubmissionActor = async (userId: string): Promise<SubmissionActor> => {
+export const getSubmissionActor = async (userId: string, db: Pick<Prisma.TransactionClient, "participant"> = prisma): Promise<SubmissionActor> => {
   try {
-    return await prisma.participant.findUniqueOrThrow({
+    return await db.participant.findUniqueOrThrow({
       where: {userId},
       select: {
         id: true,
@@ -60,8 +64,11 @@ type FindAccessibleSubmissionParams = {
   requestId: string;
   participantIds: string[];
 };
-export const findAccessibleSubmission = async ({requestId, participantIds}: FindAccessibleSubmissionParams) => {
-  const submissions = await prisma.submission.findMany({
+
+export async function findAccessibleSubmission(params: FindAccessibleSubmissionParams, db: Pick<Prisma.TransactionClient, "submission"> = prisma) {
+  const {requestId, participantIds} = params;
+
+  const submissions = await db.submission.findMany({
     where: {
       requestId,
       participantId: {in: participantIds},
@@ -74,7 +81,7 @@ export const findAccessibleSubmission = async ({requestId, participantIds}: Find
   });
 
   return submissions[0] ?? null;
-};
+}
 
 export const getAccessibleSubmissionsForParticipant = async (participant: SubmissionActor) => {
   const submissions = await prisma.submission.findMany({
@@ -119,3 +126,58 @@ export const getAccessibleSubmissionsForParticipant = async (participant: Submis
 
   return [...submissionsByRequest.values()];
 };
+
+type SubmissionTransactionContext = {
+  editionId: string;
+  userId: string;
+  request: Prisma.SubmissionRequestGetPayload<object>;
+  teamId: string | null;
+  expectedUpdatedAt?: string | null;
+  expectedTeamId?: string | null;
+};
+
+type AccessibleSubmission = Prisma.SubmissionGetPayload<{ include: typeof accessibleSubmissionInclude }>;
+type SubmissionMutation = (db: Prisma.TransactionClient, existing: AccessibleSubmission | null, actor: SubmissionActor) => Promise<AccessibleSubmission | null>;
+
+export async function withSubmissionTransaction(context: SubmissionTransactionContext, mutate: SubmissionMutation) {
+  return withEventTransaction(context.editionId, async (db) => {
+    const request = await db.submissionRequest.findUnique({where: {id: context.request.id}});
+    if (!request || request.updatedAt.getTime() !== context.request.updatedAt.getTime()) {
+      throw createError({statusCode: 409, statusMessage: "Cette demande a changé. Rechargez-la avant de continuer."});
+    }
+    if (dayjs().isAfter(dayjs(request.deadline))) {
+      throw createError({statusCode: 403, statusMessage: "La date limite de soumission est dépassée."});
+    }
+
+    const actor = await getSubmissionActor(context.userId, db);
+    if (request.teamRequest && (!actor.team || actor.team.id !== context.teamId || (context.expectedTeamId !== undefined && actor.team.id !== context.expectedTeamId))) {
+      throw createError({statusCode: 409, statusMessage: "Votre équipe a changé. Rechargez la page."});
+    }
+    const existing = await findAccessibleSubmission({
+      requestId: request.id,
+      participantIds: request.teamRequest ? actor.team!.members.map((member) => member.id) : [actor.id],
+    }, db);
+    if (context.expectedUpdatedAt !== undefined && (existing?.updatedAt.toISOString() ?? null) !== context.expectedUpdatedAt) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: "Une autre réponse a été enregistrée. Rechargez-la avant de continuer.",
+      });
+    }
+
+    return mutate(db, existing, actor);
+  });
+}
+
+export async function queueSubmissionFilesCleanup(db: Prisma.TransactionClient, files: {
+  bucket: string;
+  path: string
+}[]) {
+  if (!files.length) return;
+  await db.supabaseCleanupJob.createMany({
+    data: files.map((file) => ({
+      type: "STORAGE_OBJECT",
+      bucket: file.bucket,
+      target: file.path,
+    })),
+  });
+}

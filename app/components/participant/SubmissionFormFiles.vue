@@ -1,157 +1,83 @@
 <script setup lang="ts">
-import type { FormErrorEvent } from "#ui/types";
-import { createUploadSchema, type UploadSchema } from "#shared/schemas/submissions/upload";
+import * as v from "valibot";
+import { createUploadSchema } from "#shared/schemas/submissions/upload";
+import type { CurrentParticipantSubmission } from "#shared/utils/types";
 
+const draft = defineModel<SubmissionDraft>({required: true});
 const props = defineProps<{
-  // TODO: Use Submission instead of CurrentParticipant
-  participant: CurrentParticipant;
   submissionRequest: SubmissionRequest;
-  canSubmit?: boolean;
-  canDelete?: boolean;
+  submission?: CurrentParticipantSubmission;
+  disabled: boolean;
+  busy: boolean;
+  canDelete: boolean;
+  canSubmit: boolean;
+  canSkip: boolean;
 }>();
-const emit = defineEmits<{ submit: [boolean], deleteFile: [] }>();
+const emit = defineEmits<{
+  submit: [];
+  skip: [];
+  deleteFile: [id: string];
+}>();
 
-const toast = useToast();
-const actions = useSubmissionsActions();
-
-const participantSubmission = computed(() => props.participant.submissions.find(s => s.requestId === props.submissionRequest.id));
-const existingFiles = computed(() => participantSubmission.value?.files ?? []);
-
-const canSubmitThisRequest = computed(() => Boolean(props.canSubmit));
-const canDeleteThisRequest = computed(() => Boolean(props.canDelete));
-
-const scopeDescription = computed(() => {
-  if (!props.submissionRequest.teamRequest) {
-    return "Chaque participant doit envoyer son propre fichier.";
-  }
-
-  const user = participantSubmission.value?.participant.user;
-  return user
-      ? `Une seule soumission est attendue pour toute l'équipe. La version actuelle a été déposée par ${user.firstName} ${user.lastName}.`
-      : "Une seule soumission est attendue pour toute l'équipe.";
+const selectedFiles = computed({
+  get: () => props.submissionRequest.multiple ? draft.value.files : draft.value.files[0] ?? null,
+  set: (value: File | File[] | null | undefined) => {
+    draft.value.files = Array.isArray(value) ? value : value ? [value] : [];
+  },
 });
 
-const state = reactive<UploadSchema>({
-  skipped: participantSubmission.value?.skipped ?? false,
-  files: undefined,
-});
+const formState = computed(() => ({files: draft.value.files, skipped: false}));
+const formSchema = computed(() => createUploadSchema(props.submissionRequest.acceptedFormats, !!props.submissionRequest.multiple));
 
-watch(participantSubmission, (submission) => {
-  state.skipped = submission?.skipped ?? false;
-  state.files = undefined;
-}, {immediate: true});
-
-const isSubmitting = ref(false);
-const isDeletingFileId = ref<string | null>(null);
-
-const acceptAttr = computed(() => acceptedFormatsToHtmlAccept(props.submissionRequest.acceptedFormats));
+const accept = computed(() => acceptedFormatsToHtmlAccept(props.submissionRequest.acceptedFormats));
 const acceptedLabel = computed(() => acceptedFormatsToLabel(props.submissionRequest.acceptedFormats));
 
-const formSchema = computed(() => createUploadSchema(props.submissionRequest.acceptedFormats));
+const validation = computed(() => v.safeParse(formSchema.value, formState.value));
+const validationError = computed(() => draft.value.files.length && !validation.value.success ? validation.value.issues[0]?.message : undefined);
 
-async function onSubmit() {
-  if (!canSubmitThisRequest.value) return;
-
-  try {
-    isSubmitting.value = true;
-    if (!state.files || state.files.length === 0) {
-      toast.add({
-        title: "Erreur de soumission",
-        description: "Veuillez sélectionner au moins un fichier à soumettre.",
-        color: "error",
-      });
-      return;
-    }
-    await actions.uploadFiles(props.submissionRequest.id, {files: state.files, skipped: false});
-    toast.add({title: "Soumission réussie", description: "Votre document a été soumis avec succès.", color: "success"});
-    emit("submit", true);
-  } finally {
-    isSubmitting.value = false;
-  }
-}
-
-async function onSkip() {
-  if (!canSubmitThisRequest.value) return;
-
-  await actions.uploadFiles(props.submissionRequest.id, {files: undefined, skipped: true});
-  emit("submit", true);
-}
-
-async function onDeleteFile(fileId: string) {
-  if (!canDeleteThisRequest.value) return;
-
-  try {
-    isDeletingFileId.value = fileId;
-    await actions.deleteSubmissionFile(props.submissionRequest.id, fileId);
-    toast.add({
-      title: "Fichier supprimé",
-      description: "Le fichier a été supprimé avec succès.",
-      color: "success",
-    });
-    emit("deleteFile");
-  } finally {
-    isDeletingFileId.value = null;
-  }
-}
-
-async function onError(event: FormErrorEvent) {
-  console.log("Form error:", event.errors);
-  if (event?.errors?.[0]?.id) {
-    const element = document.getElementById(event.errors[0].id);
-    element?.focus();
-    element?.scrollIntoView({behavior: "smooth", block: "center"});
-  }
-}
+const canSubmit = computed(() => props.canSubmit && !props.disabled && !props.busy && validation.value.success);
 </script>
 
 <template>
-  <UForm :schema="formSchema" :state class="grid gap-6" @submit="onSubmit" @error="onError">
-    <UAlert
-        :title="submissionRequest.teamRequest ? 'Soumission d’équipe' : 'Soumission individuelle'"
-        :description="scopeDescription"
-        color="info"
-        variant="soft"
-        :icon="submissionRequest.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
-    />
-
-    <UFormField :label="submissionRequest.title" :description="submissionRequest.description || undefined" name="files"
-                :error-pattern="/files\.\d*/" :required="submissionRequest.required">
-      <div v-auto-animate class="grid gap-2">
-        <UFileUpload v-model="state.files" :disabled="isSubmitting || !canSubmitThisRequest"
-                     description="Choisir un fichier..."
-                     :accept="acceptAttr" layout="list"
-                     :required="submissionRequest.required" class="w-full" :multiple="!!submissionRequest.multiple"/>
-
-        <div v-if="existingFiles.length" class="grid gap-1">
-          <p class="text-sm text-muted">Fichier(s) déjà envoyé(s) :</p>
-          <ul v-auto-animate class="grid gap-1">
-            <li v-for="f in existingFiles" :key="f.id" class="flex items-center justify-between gap-2 text-sm">
-              <span class="truncate" :title="f.originalName">{{ f.originalName }}</span>
-              <UButton size="xs" color="error" variant="ghost"
-                       :loading="isDeletingFileId === f.id"
-                       :disabled="isSubmitting || !canDeleteThisRequest"
-                       @click="onDeleteFile(f.id)">
-                Supprimer
-              </UButton>
-            </li>
-          </ul>
-        </div>
-
-        <p v-if="acceptedLabel" class="text-xs text-gray-500">
-          Formats acceptés : {{ acceptedLabel }}
-        </p>
-      </div>
-    </UFormField>
-
-    <div class="flex gap-1.5 place-self-end">
-      <UButton v-if="!submissionRequest.required" variant="subtle" color="secondary"
-               :disabled="isSubmitting || !canSubmitThisRequest"
-               loading-auto @click="onSkip">
-        Passer
-      </UButton>
-      <UButton type="submit" :loading="isSubmitting" :disabled="!canSubmitThisRequest">
-        Soumettre
-      </UButton>
+  <div class="grid gap-5">
+    <div v-if="submission?.files.length" class="grid gap-3">
+      <h3 class="text-sm font-medium text-highlighted">Fichiers enregistrés</h3>
+      <ul class="divide-y divide-default rounded-md border border-default">
+        <li v-for="file in submission.files" :key="file.id" class="flex items-center gap-3 p-3">
+          <UIcon name="i-lucide-file" class="size-5 shrink-0 text-muted"/>
+          <div class="min-w-0 flex-1 grid gap-1">
+            <span class="text-sm wrap-anywhere">{{ file.originalName }}</span>
+            <span class="text-xs text-muted">{{ Math.ceil(file.size / 1024) }} Ko</span>
+          </div>
+          <UButton v-if="canDelete" color="error" variant="ghost" icon="i-lucide-trash-2" size="sm"
+                   :aria-label="`Supprimer ${file.originalName}`" :disabled="disabled || busy"
+                   @click="emit('deleteFile', file.id)"/>
+        </li>
+      </ul>
     </div>
-  </UForm>
+
+    <UForm :schema="formSchema" :state="formState" :disabled="disabled || busy || !props.canSubmit" class="grid gap-5"
+           @submit="canSubmit && emit('submit')">
+      <UFormField :label="submissionRequest.multiple ? 'Ajouter des fichiers' : 'Fichier à envoyer'" name="files"
+                  :error-pattern="/files\.\d*/" :error="validationError" required>
+        <UFileUpload v-model="selectedFiles" :multiple="!!submissionRequest.multiple" :accept
+                     :label="submissionRequest.multiple ? 'Choisir des fichiers' : 'Choisir un fichier'"
+                     description="Cliquez ou glissez-déposez vos fichiers ici."
+                     layout="list" class="w-full" :disabled="disabled || busy || !props.canSubmit"/>
+        <template #hint>5 Mo maximum par envoi</template>
+        <template #help>
+          <span v-if="acceptedLabel">Formats acceptés : {{ acceptedLabel }}.</span>
+          <span v-if="submissionRequest.multiple"> Maximum {{ MAX_SUBMISSION_FILES }} fichiers par envoi.</span>
+          <span v-else-if="submission?.files.length"> Le nouveau fichier remplacera le précédent.</span>
+        </template>
+      </UFormField>
+      <div class="flex flex-wrap justify-end gap-2">
+        <UButton v-if="canSkip" color="neutral" variant="soft"
+                 :disabled="disabled || busy || !props.canSubmit" @click="emit('skip')">
+          Ne pas remettre
+        </UButton>
+        <UButton type="submit" :loading="busy" :disabled="!canSubmit">Envoyer</UButton>
+      </div>
+    </UForm>
+  </div>
 </template>

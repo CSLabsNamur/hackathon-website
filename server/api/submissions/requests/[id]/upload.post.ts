@@ -1,21 +1,24 @@
 import * as v from "valibot";
 import idParamSchema from "#shared/schemas/id";
 import createUploadSchema from "#shared/schemas/submissions/upload";
+import { MAX_SUBMISSION_FILES, MAX_SUBMISSION_UPLOAD_SIZE } from "#shared/utils/fileUploads";
 import formidable from "formidable";
-import { fileTypeFromFile } from "file-type";
-import fs from "node:fs";
+import { randomUUID } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { unlink } from "node:fs/promises";
 import { serverSupabaseServiceRole } from "#supabase/server";
+import type { Prisma } from "~~/server/prisma/generated/prisma/client";
 
 export default defineEventHandler(async (event) => {
   const {dbUser} = await requirePermission(event, "submissions.update.own");
+
   const editionId = await getCurrentEditionId();
+
   const {id} = await getValidatedRouterParams(event, v.parser(idParamSchema));
   const participant = await getSubmissionActor(dbUser.id);
-
   const request = await prisma.submissionRequest.findUnique({where: {id}});
-  if (!request) {
-    throw createError({statusCode: 404, statusMessage: "Demande de soumission introuvable."});
-  }
+
+  if (!request) throw createError({statusCode: 404, statusMessage: "Demande de soumission introuvable."});
 
   if (dayjs().isAfter(dayjs(request.deadline))) {
     throw createError({statusCode: 403, statusMessage: "La date limite de soumission est dépassée."});
@@ -31,226 +34,141 @@ export default defineEventHandler(async (event) => {
   }
 
   const acceptedExts = normalizeAcceptedFormats(request.acceptedFormats);
-
-  const [bodyRaw, files] = await formidable({
+  const temporaryFiles: string[] = [];
+  const cleanupJobIds: string[] = [];
+  const multipart = formidable({
     allowEmptyFiles: false,
     keepExtensions: true,
-    maxFileSize: MAX_SUBMISSION_FILE_SIZE,
-    maxFiles: request.multiple ? 20 : 1,
-    multiples: !!request.multiple,
-  }).parse(event.node.req);
+    maxFileSize: MAX_SUBMISSION_UPLOAD_SIZE,
+    maxTotalFileSize: MAX_SUBMISSION_UPLOAD_SIZE,
+    maxFiles: request.multiple ? MAX_SUBMISSION_FILES : 1,
+  });
+  multipart.on("fileBegin", (_name, file) => temporaryFiles.push(file.filepath));
 
-  const bodyFlat = Object.fromEntries(Object.entries(bodyRaw ?? {}).map(([key, value]) => {
-    if (Array.isArray(value)) return [key, value[0]];
-    return [key, value];
-  }));
+  const supabase = serverSupabaseServiceRole(event);
+  try {
+    const [bodyRaw, files] = await multipart.parse(event.node.req);
+    const body = Object.fromEntries(Object.entries(bodyRaw).map(([key, value]) => [key, value?.[0]]));
+    const parsed = v.safeParse(createUploadSchema(acceptedExts, !!request.multiple), {
+      ...body, ...(body.expectedUpdatedAt === "null" ? {expectedUpdatedAt: null} : {}),
+      ...(body.expectedTeamId === "null" ? {expectedTeamId: null} : {}),
+    });
+    if (!parsed.success) throw createError({statusCode: 400, statusMessage: parsed.issues[0]!.message});
 
-  const form = v.parse(createUploadSchema(acceptedExts), bodyFlat);
+    const form = parsed.output;
 
-  if (form.skipped) {
-    if (request.required) {
+    if (request.teamRequest && form.expectedTeamId !== undefined && form.expectedTeamId !== team?.id) {
+      throw createError({statusCode: 409, statusMessage: "Votre équipe a changé. Rechargez la page."});
+    }
+    if (request.required && form.skipped) {
       throw createError({statusCode: 400, statusMessage: "Cette soumission est obligatoire."});
     }
 
-    const existingSubmission = await findAccessibleSubmission({
-      requestId: id,
-      participantIds: team?.members.map((member) => member.id) ?? [participant.id],
-    });
-
-    const upserted = existingSubmission
-      ? await prisma.submission.update({
-        where: {id: existingSubmission.id},
-        data: {
-          skipped: true,
-          content: null,
-          participant: {connect: {id: participant.id}},
-        },
-        include: {files: true},
-      })
-      : await prisma.submission.create({
-        data: {
-          skipped: true,
-          content: null,
-          request: {connect: {id}},
-          participant: {connect: {id: participant.id}},
-        },
-        include: {files: true},
-      });
-
-    // Delete DB records and storage objects
-    if (upserted.files.length) {
-      const supabase = serverSupabaseServiceRole(event);
-      await supabase.storage
-        .from(SUBMISSIONS_BUCKET)
-        .remove(upserted.files.map((f) => f.path));
-
-      await prisma.submissionFile.deleteMany({where: {submissionId: upserted.id}});
+    const fileList = files.files ?? [];
+    if (!form.skipped && !fileList.length) {
+      throw createError({statusCode: 400, statusMessage: "Aucun fichier reçu."});
+    }
+    if (Object.keys(files).some((key) => key !== "files") || (form.skipped && fileList.length)) {
+      throw createError({statusCode: 400, statusMessage: "Contenu de l'envoi invalide."});
     }
 
-    return prisma.submission.findUnique({where: {id: upserted.id}, include: accessibleSubmissionInclude});
-  }
-
-  const fileList = (files.files ?? []) as formidable.File[];
-  if (!fileList.length) {
-    throw createError({statusCode: 400, statusMessage: "Aucun fichier reçu."});
-  }
-
-  // TODO: Check if necessary, given formidable config
-  if (!request.multiple && fileList.length > 1) {
-    throw createError({statusCode: 400, statusMessage: "Un seul fichier est autorisé."});
-  }
-
-  const existingSubmission = await findAccessibleSubmission({
-    requestId: id,
-    participantIds: team?.members.map((member) => member.id) ?? [participant.id],
-  });
-  const existingFilePaths = new Set(existingSubmission?.files.map((file) => file.path) ?? []);
-
-  const supabase = serverSupabaseServiceRole(event);
-  const uploadedFiles = [] as {
-    bucket: string;
-    path: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    sha256: string;
-  }[];
-
-  try {
-    for (const f of fileList) {
-      const detected = await fileTypeFromFile(f.filepath);
-      if (!detected) {
-        throw createError({statusCode: 400, statusMessage: "Type de fichier non reconnu."});
-      }
-
-      if (!isAllowedExt(detected.ext, acceptedExts)) {
-        throw createError({statusCode: 400, statusMessage: "Format de fichier non autorisé."});
-      }
-
-      // AV scan
+    const uploadedFiles: Prisma.SubmissionFileCreateManySubmissionInput[] = [];
+    if (!form.skipped) {
       const scanner = await clamscan;
-      if (scanner) {
-        const scan = await scanner.scanFile(f.filepath);
-        if (scan.isInfected) {
+
+      for (const file of fileList) {
+        const originalName = file.originalFilename || "fichier";
+        const detected = await detectSubmissionFileType(file.filepath, originalName);
+
+        if (!detected || !isAllowedExt(detected.ext, acceptedExts)) {
+          throw createError({statusCode: 400, statusMessage: "Type de fichier non reconnu ou format non autorisé."});
+        }
+
+        if (scanner && (await scanner.scanFile(file.filepath)).isInfected) {
           throw createError({statusCode: 400, statusMessage: "Le fichier est infecté par un virus."});
         }
-      } else {
-        console.warn("[submissions] ClamAV unavailable; skipping virus scan.");
+
+        const sha256 = await sha256File(file.filepath);
+        if (uploadedFiles.some((uploaded) => uploaded.sha256 === sha256 && uploaded.originalName === originalName)) {
+          throw createError({statusCode: 400, statusMessage: "Un fichier est présent plusieurs fois dans l'envoi."});
+        }
+
+        const path = `${team ? `team/${team.id}` : participant.id}/${id}/${randomUUID()}_${sanitizeFilename(originalName)}`;
+        const job = await prepareSupabaseCreation({type: "STORAGE_OBJECT", bucket: SUBMISSIONS_BUCKET, target: path});
+        cleanupJobIds.push(job.id);
+
+        const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).upload(path, createReadStream(file.filepath), {
+          cacheControl: "3600", upsert: false, contentType: detected.mime,
+        });
+
+        if (error) throw createError({statusCode: 500, statusMessage: "Erreur lors du téléversement du fichier."});
+
+        uploadedFiles.push({
+          bucket: SUBMISSIONS_BUCKET,
+          path,
+          originalName,
+          mimeType: detected.mime,
+          size: file.size,
+          sha256,
+        });
+      }
+    }
+
+    return await withSubmissionTransaction({
+      editionId,
+      userId: dbUser.id,
+      request,
+      teamId: participant.team?.id ?? null,
+      expectedUpdatedAt: form.expectedUpdatedAt,
+      expectedTeamId: form.expectedTeamId,
+    }, async (db, existing, actor) => {
+      if (request.multiple && !form.skipped && uploadedFiles.some((file) => existing?.files.some((saved) => saved.sha256 === file.sha256 && saved.originalName === file.originalName))) {
+        throw createError({statusCode: 400, statusMessage: "Ce fichier est déjà présent dans le dépôt."});
       }
 
-      const sha256 = await sha256File(f.filepath);
-      const originalName = f.originalFilename || `file.${detected.ext}`;
-      const safeName = sanitizeFilename(originalName);
+      if (cleanupJobIds.length) await finishSupabaseCreation(db, cleanupJobIds);
 
-      // Deterministic-ish path to avoid collisions and allow upsert
-      // TODO: change this to use UUID
-      const storagePath = `${team ? `team/${team.id}/${id}` : `${participant.id}/${id}`}/${sha256}_${safeName}`;
+      const replace = !!(form.skipped || !request.multiple);
+      if (replace && existing) await queueSubmissionFilesCleanup(db, existing.files);
 
-      if (uploadedFiles.some((file) => file.path === storagePath) || (request.multiple && existingFilePaths.has(storagePath))) {
-        throw createError({
-          statusCode: 400,
-          statusMessage: "Un fichier est présent plusieurs fois dans la soumission.",
+      const data = {skipped: form.skipped ?? false, content: null};
+
+      if (existing) {
+        return db.submission.update({
+          where: {id: existing.id},
+          data: {
+            ...data,
+            files: {...(replace ? {deleteMany: {}} : {}), ...(uploadedFiles.length ? {createMany: {data: uploadedFiles}} : {})},
+          },
+          include: accessibleSubmissionInclude,
         });
       }
 
-      const {data, error} = await supabase.storage
-        .from(SUBMISSIONS_BUCKET)
-        .upload(storagePath, fs.createReadStream(f.filepath), {
-          cacheControl: "3600",
-          upsert: true,
-          contentType: detected.mime,
-        });
+      return db.submission.create({
+        data: {
+          ...data,
+          request: {connect: {id}},
+          participant: {connect: {id: actor.id}}, ...(uploadedFiles.length ? {files: {createMany: {data: uploadedFiles}}} : {}),
+        },
+        include: accessibleSubmissionInclude,
+      });
+    });
+  } catch (error) {
+    if (cleanupJobIds.length) await retrySupabaseCleanup(cleanupJobIds);
 
-      if (error || !data) {
-        throw createError({statusCode: 500, statusMessage: "Erreur lors du téléversement du fichier."});
-      }
-
-      uploadedFiles.push({
-        bucket: SUBMISSIONS_BUCKET,
-        path: data.path,
-        originalName,
-        mimeType: detected.mime,
-        size: f.size,
-        sha256,
+    if (error && typeof error === "object" && "httpCode" in error && typeof error.httpCode === "number") {
+      throw createError({
+        statusCode: error.httpCode,
+        statusMessage: "Envoi invalide : vérifiez le nombre de fichiers et la limite de 5 Mo par envoi.",
       });
     }
-  } catch (e) {
-    const editionChanged = await getCurrentEditionId() !== editionId;
-    const uploadedPathsToRemove = uploadedFiles.map((file) => file.path).filter((path) => editionChanged || !existingFilePaths.has(path));
-    if (uploadedPathsToRemove.length) {
-      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(uploadedPathsToRemove);
-      if (error) {
-        await prisma.supabaseCleanupJob.createMany({data: uploadedPathsToRemove.map((target) => ({type: "STORAGE_OBJECT", bucket: SUBMISSIONS_BUCKET, target}))});
-        console.error("Erreur lors de la suppression des fichiers téléversés après échec:", error);
-      }
-    }
-    throw e;
+
+    throw error;
   } finally {
-    for (const f of fileList) {
-      try {
-        fs.unlinkSync(f.filepath);
-      } catch (error) {
-        console.warn("[submissions] Failed to remove temporary submission file.", error);
-      }
-    }
-  }
-
-  const uploadedFilePaths = uploadedFiles.map((file) => file.path);
-  const newUploadedFilePaths = uploadedFilePaths.filter((path) => !existingFilePaths.has(path));
-  const replacedFilePaths = request.multiple ? [] : existingSubmission?.files.map((file) => file.path) ?? [];
-
-  try {
-    const submission = await withEventTransaction(editionId, (db) => existingSubmission
-      ? db.submission.update({
-        where: {id: existingSubmission.id},
-        data: {
-          skipped: false,
-          content: null,
-          participant: {connect: {id: participant.id}},
-          files: {
-            ...(request.multiple ? {} : {deleteMany: {}}),
-            createMany: {
-              data: uploadedFiles,
-            },
-          },
-        },
-        include: accessibleSubmissionInclude,
-      })
-      : db.submission.create({
-        data: {
-          skipped: false,
-          content: null,
-          request: {connect: {id}},
-          participant: {connect: {id: participant.id}},
-          files: {
-            createMany: {
-              data: uploadedFiles,
-            },
-          },
-        },
-        include: accessibleSubmissionInclude,
-      }));
-
-    const replacedStoragePaths = replacedFilePaths.filter((path) => !uploadedFilePaths.includes(path));
-    if (replacedStoragePaths.length > 0) {
-      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(replacedStoragePaths);
-      if (error) {
-        console.error("Erreur lors de la suppression des anciens fichiers de soumission:", error);
-      }
-    }
-
-    return submission;
-  } catch (e) {
-    const editionChanged = await getCurrentEditionId() !== editionId;
-    const pathsToRemove = editionChanged ? uploadedFilePaths : newUploadedFilePaths;
-    if (pathsToRemove.length) {
-      const {error} = await supabase.storage.from(SUBMISSIONS_BUCKET).remove(pathsToRemove);
-      if (error) {
-        await prisma.supabaseCleanupJob.createMany({data: pathsToRemove.map((target) => ({type: "STORAGE_OBJECT", bucket: SUBMISSIONS_BUCKET, target}))});
-        console.error("Erreur lors de la suppression des fichiers téléversés après échec de l'enregistrement:", error);
-      }
-    }
-
-    throw e;
+    await Promise.all(temporaryFiles.map((path) => unlink(path).catch(() => {
+    })));
+    event.waitUntil(Promise.resolve().then(() => processSupabaseCleanup(supabase, "GENERAL")).catch((error) => {
+      console.error("Erreur lors du nettoyage des fichiers de soumission:", error);
+    }));
   }
 });

@@ -1,4 +1,5 @@
 import { createRequire } from "node:module";
+import { MAX_SUBMISSION_UPLOAD_BODY_SIZE } from "./shared/utils/fileUploads";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -125,6 +126,9 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    "/api/submissions/requests/*/upload": {
+      security: {requestSizeLimiter: {maxUploadFileRequestInBytes: MAX_SUBMISSION_UPLOAD_BODY_SIZE}},
+    },
     "/__nuxt_content/pages/**": {
       csurf: false,
     },

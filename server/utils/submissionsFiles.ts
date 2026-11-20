@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { fileTypeFromFile } from "file-type";
 
 export const SUBMISSIONS_BUCKET = "submissions";
-
-export const MAX_SUBMISSION_FILE_SIZE = 5 * 1024 * 1024; // 5MB (kept in sync with nuxt-security requestSizeLimiter)
 
 export const sha256File = async (filePath: string): Promise<string> => {
   const hash = crypto.createHash("sha256");
@@ -14,3 +14,16 @@ export const sha256File = async (filePath: string): Promise<string> => {
   });
   return hash.digest("hex");
 };
+
+export async function detectSubmissionFileType(filepath: string, originalName: string) {
+  const detected = await fileTypeFromFile(filepath);
+  if (detected) return detected;
+  if (!originalName.toLowerCase().endsWith(".txt")) return null;
+
+  try {
+    new TextDecoder("utf-8", {fatal: true}).decode(await readFile(filepath));
+    return {ext: "txt", mime: "text/plain"};
+  } catch {
+    return null;
+  }
+}

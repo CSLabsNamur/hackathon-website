@@ -9,6 +9,9 @@ The main Nuxt 4 app lives in `app/`: page routes in `app/pages/`, shared UI in `
 and schemas belong in `shared/`. Static assets live in `public/`, content pages in `content/`, and the separate
 VitePress docs site in `docs/`.
 
+Keep route-level data loading and coordination in pages, focused UI in components, and reusable reactive state in
+composables. Keep pure helpers in the existing utility layer and contracts used by both client and server in `shared/`.
+
 ## Build, Test, and Development Commands
 
 Use `pnpm install` after enabling Corepack, then copy `.env.example` to `.env`.
@@ -29,13 +32,17 @@ page and API filenames aligned with Nuxt/Nitro routing conventions such as `app/
 `server/api/roles/[id]/index.put.ts`. Do not hand-edit generated files in `server/prisma/generated/prisma/` or
 `server/mail/generated/`; regenerate them instead.
 
-You need to use Nuxt UI's components when building UI, and VueUse composables whenever you can.
-You can also use Tailwind CSS utility classes for styling, but you need to follow the existing design direction. For
-example, we do not need gradiants here.
+Build UI with Nuxt UI components and use VueUse composables where they fit. Use the project's dayjs helpers for dates
+and reuse existing domain logic, such as `useEventPhase`, `useAbility`, and `useCopyWithToast`.
+Use Tailwind utilities with Nuxt UI's semantic colors and the app's existing borders and spacing. Avoid gradients.
 
-For Vue nodes, do not line-break every attributes or properties. Put them on the same line when the whole line fit
-within 100 characters, and only break them into multiple lines when they exceed that limit. For example, prefer this
-style:
+Prefer `grid gap-*` for stacked sections and card content, and `flex ... gap-*` for inline groups. Use `min-w-0` and
+appropriate text wrapping for long values in flex or grid layouts. Use `place-self-start` when a grid action should
+keep its natural width.
+
+Keep Vue tag attributes on one line when the tag fits within 100 characters. For longer tags, group related
+attributes on each line and align continuation lines with the first attribute. Use `/>` for empty components.
+For example:
 
 ```vue
 
@@ -76,8 +83,9 @@ For classes, if you need to break them into multiple lines, indent the new line 
 </template>
 ```
 
-In TypeScript parts, do not break function parameters or object properties into multiple lines. Keep them on the same
-line. For example, prefer this style:
+Keep short TypeScript parameter lists and simple object literals inline. Use spaces inside inline Vue prop and emit
+types, as in `defineProps<{ participant: CurrentParticipant }>()`. Separate related groups of declarations and handlers
+with blank lines. For example:
 
 ```ts
 function createUser(name: string, email: string): User {
@@ -95,6 +103,18 @@ function createUser(
   return {name, email};
 }
 ```
+
+## Participant Dashboard UI
+
+Match the adjacent participant pages. Use simple cards and compact actions, put page-level edit actions in the
+dashboard navbar via `useDashboardNavbar`, and give icon-only controls accessible labels. Use actual event or
+participant data, omit optional content when it is unavailable, and distinguish loading, empty, error, and success
+states. Check the layout at narrow and desktop widths.
+
+See [the participant homepage](app/pages/participant/index.vue) and
+[its team card](app/components/participant/DashboardTeamCard.vue) for spacing and markup, [My team](app/pages/participant/team.vue)
+for page and card structure, and [Submissions](app/pages/participant/submit.vue) for keeping forms separate from
+workspace state and preserving drafts through refreshes.
 
 ## Testing Guidelines
 

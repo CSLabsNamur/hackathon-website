@@ -1,4 +1,6 @@
 import * as v from "valibot";
+import idSchema from "../id";
+import { MAX_SUBMISSION_FILES, MAX_SUBMISSION_UPLOAD_SIZE, normalizeAcceptedFormats } from "../../utils/fileUploads";
 
 /**
  * Upload schema used for FILE submission requests.
@@ -8,24 +10,13 @@ import * as v from "valibot";
  *   (it lives in formidable's separate `files` output).
  * - On the client, this schema is used to validate the UForm state.
  */
-export const createUploadSchema = (acceptedFormats?: string[] | null) => {
-  const allowedExts = (acceptedFormats ?? []).map((e) => String(e).toLowerCase());
-
-  const errType = allowedExts.length
-    ? `Veuillez sélectionner un fichier au format: ${allowedExts.join(", ")}.`
-    : "Veuillez sélectionner un fichier valide.";
-
+export const createUploadSchema = (acceptedFormats?: string[] | null, multiple = true) => {
+  const allowedExts = normalizeAcceptedFormats(acceptedFormats);
   const fileSchema = v.pipe(
     v.file(),
-    v.maxSize(1024 * 1024 * 5, "Le fichier est trop volumineux (max 5MB)"),
-    v.check((file) => {
-      // If no constraints, accept anything
-      if (!allowedExts.length) return true;
-
-      const name = file.name || "";
-      const ext = name.split(".").pop()?.toLowerCase() ?? "";
-      return allowedExts.includes(ext);
-    }, errType),
+    v.maxSize(MAX_SUBMISSION_UPLOAD_SIZE, "Le fichier est trop volumineux (5 Mo maximum)."),
+    v.check((file) => !allowedExts.length || allowedExts.includes(file.name.split(".").pop()?.toLowerCase() ?? ""),
+      `Formats acceptés : ${allowedExts.join(", ")}.`),
   );
 
   return v.strictObject({
@@ -35,13 +26,18 @@ export const createUploadSchema = (acceptedFormats?: string[] | null) => {
         v.transform((x) => x === true || x === "true"),
       ),
     ),
+    expectedUpdatedAt: v.optional(v.nullable(v.pipe(v.string(), v.isoTimestamp()))),
+    expectedTeamId: v.optional(v.nullable(idSchema.entries.id)),
     files: v.optional(
-      v.array(fileSchema, "Veuillez sélectionner au moins un fichier."),
+      v.pipe(
+        v.array(fileSchema),
+        v.minLength(1, "Sélectionnez au moins un fichier."),
+        v.maxLength(multiple ? MAX_SUBMISSION_FILES : 1, multiple ? `Maximum ${MAX_SUBMISSION_FILES} fichiers par envoi.` : "Un seul fichier est autorisé."),
+        v.check((files) => files.reduce((size, file) => size + file.size, 0) <= MAX_SUBMISSION_UPLOAD_SIZE, "L'envoi ne peut pas dépasser 5 Mo au total."),
+      ),
     ),
   });
 };
 
 export default createUploadSchema;
-
-const _schema = createUploadSchema();
-export type UploadSchema = v.InferOutput<typeof _schema>;
+export type UploadSchema = v.InferOutput<ReturnType<typeof createUploadSchema>>;

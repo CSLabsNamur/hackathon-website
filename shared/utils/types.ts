@@ -75,7 +75,7 @@ type ParticipantUser = SerializeObject<Prisma.UserGetPayload<{
     lastName: true;
   };
 }>>;
-type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetPayload<{
+export type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetPayload<{
   include: {
     request: true;
     files: true;

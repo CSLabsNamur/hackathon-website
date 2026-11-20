@@ -1,3 +1,8 @@
+export const MAX_SUBMISSION_UPLOAD_SIZE = 5 * 1024 * 1024;
+export const MAX_SUBMISSION_FILES = 20;
+// Allow multipart headers without reducing the actual file-data limit.
+export const MAX_SUBMISSION_UPLOAD_BODY_SIZE = MAX_SUBMISSION_UPLOAD_SIZE + 64 * 1024;
+
 export const DEFAULT_ACCEPTED_FORMATS_EXTS = [
   "pdf",
   "docx",
