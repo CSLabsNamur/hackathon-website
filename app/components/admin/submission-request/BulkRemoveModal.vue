@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const props = defineProps<{ submissionRequests: SubmissionRequest[] }>();
+const props = defineProps<{ submissionRequests: AdminSubmissionRequest[] }>();
 const emit = defineEmits<{ close: [string[] | false] }>();
 const {removeSubmissionRequest} = useSubmissionsRequestsActions();
 
 const items = computed(() => props.submissionRequests.map((item) => ({
   id: item.id,
   name: item.title,
+  detail: item._count.submissions ? `${item._count.submissions} réponse(s) et leurs fichiers` : undefined,
 })));
 </script>
 

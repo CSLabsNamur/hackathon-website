@@ -2,6 +2,7 @@ import { createError } from "h3";
 import prisma from "./prisma";
 import dayjs from "./dayjs";
 import { withEventTransaction } from "./eventEdition";
+import { submissionResponseOrder } from "./submissionRequestProgress";
 import type { Prisma } from "~~/server/prisma/generated/prisma/client";
 
 export const accessibleSubmissionInclude: Readonly<Prisma.SubmissionInclude> = {
@@ -74,10 +75,7 @@ export async function findAccessibleSubmission(params: FindAccessibleSubmissionP
       participantId: {in: participantIds},
     },
     include: accessibleSubmissionInclude,
-    orderBy: [
-      {updatedAt: "desc"},
-      {createdAt: "desc"},
-    ],
+    orderBy: [...submissionResponseOrder],
   });
 
   return submissions[0] ?? null;
@@ -111,10 +109,7 @@ export const getAccessibleSubmissionsForParticipant = async (participant: Submis
         },
       },
     include: accessibleSubmissionInclude,
-    orderBy: [
-      {updatedAt: "desc"},
-      {createdAt: "desc"},
-    ],
+    orderBy: [...submissionResponseOrder],
   });
 
   const submissionsByRequest = new Map<string, (typeof submissions)[number]>();

@@ -38,7 +38,7 @@ COPY prisma.config.ts ./
 COPY server/prisma/schema.prisma server/prisma/seed.ts ./server/prisma/
 COPY server/prisma/migrations ./server/prisma/migrations
 COPY shared/utils ./shared/utils
-COPY server/utils/dayjs.ts ./server/utils/dayjs.ts
+COPY lib/dayjs.ts ./lib/dayjs.ts
 COPY --chmod=0755 docker-entrypoint.sh ./
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

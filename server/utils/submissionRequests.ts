@@ -1,34 +1,32 @@
 import { createError } from "h3";
-import prisma from "./prisma";
+import { getCurrentEditionId, withEventTransaction } from "./eventEdition";
+import { queueSubmissionFilesCleanup } from "./submissions";
 
 export async function deleteSubmissionRequestWithCleanup(id: string, canDeleteSubmissions: boolean) {
-  return prisma.$transaction(async (db) => {
+  const editionId = await getCurrentEditionId();
+  return withEventTransaction(editionId, async (db) => {
     const submissionRequest = await db.submissionRequest.findUnique({
       where: {id},
-      include: {submissions: {include: {files: true}}},
+      select: {submissions: {select: {files: {select: {bucket: true, path: true}}}}},
     });
     if (!submissionRequest) {
       throw createError({statusCode: 404, statusMessage: "Demande de soumission introuvable."});
     }
-
-    if (submissionRequest.submissions.length > 0 && !canDeleteSubmissions) {
+    if (submissionRequest.submissions.length && !canDeleteSubmissions) {
       throw createError({
-        statusCode: 400,
-        statusMessage: "Impossible de supprimer une demande de soumission qui a déjà des soumissions associées sans être super admin.",
+        statusCode: 409,
+        statusMessage: "Seuls les super administrateurs peuvent supprimer une demande ayant reçu des réponses.",
       });
     }
 
-    const files = submissionRequest.submissions.flatMap((submission) => submission.files);
-    if (files.length) {
-      await db.supabaseCleanupJob.createMany({
-        data: files.map((file) => ({type: "STORAGE_OBJECT", bucket: file.bucket, target: file.path})),
-      });
-    }
+    await queueSubmissionFilesCleanup(db, submissionRequest.submissions.flatMap((submission) => submission.files));
     return db.submissionRequest.delete({where: {id}});
-  }, {isolationLevel: "Serializable"}).catch((error: unknown) => {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
-      throw createError({statusCode: 409, statusMessage: "Les données ont changé. Rechargez la page et réessayez."});
-    }
-    throw error;
   });
+}
+
+export function handleSubmissionRequestWriteError(error: unknown): never {
+  if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+    throw createError({statusCode: 409, statusMessage: "Une demande porte déjà ce titre et cette échéance."});
+  }
+  throw error;
 }

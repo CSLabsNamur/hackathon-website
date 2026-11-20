@@ -59,28 +59,6 @@ CREATE POLICY "Give participants access to own submissions"
         AND public.current_app_user_owns_participant((storage.foldername(objects.name))[1])
     );
 
-DROP POLICY IF EXISTS "Allow participants to upload own submissions" ON "storage"."objects";
-CREATE POLICY "Allow participants to upload own submissions"
-    ON "storage"."objects"
-    FOR INSERT
-    TO authenticated
-    WITH CHECK (
-    bucket_id = 'submissions'::text
-        AND public.current_app_user_has_permission('submissions.update.own')
-        AND public.current_app_user_owns_participant((storage.foldername(objects.name))[1])
-    );
-
-DROP POLICY IF EXISTS "Allow participants to delete own submissions" ON "storage"."objects";
-CREATE POLICY "Allow participants to delete own submissions"
-    ON "storage"."objects"
-    FOR DELETE
-    TO authenticated
-    USING (
-    bucket_id = 'submissions'::text
-        AND public.current_app_user_has_permission('submissions.delete.own')
-        AND public.current_app_user_owns_participant((storage.foldername(objects.name))[1])
-    );
-
 DROP POLICY IF EXISTS "Admins can list submissions" ON "storage"."objects";
 CREATE POLICY "Admins can list submissions"
     ON "storage"."objects"
@@ -90,16 +68,6 @@ CREATE POLICY "Admins can list submissions"
     bucket_id = 'submissions'::text
         AND public.current_app_user_has_permission('submissionRequests.read')
         AND public.current_app_user_has_permission('participants.read')
-    );
-
-DROP POLICY IF EXISTS "Admins can delete submissions" ON "storage"."objects";
-CREATE POLICY "Admins can delete submissions"
-    ON "storage"."objects"
-    FOR DELETE
-    TO authenticated
-    USING (
-    bucket_id = 'submissions'::text
-        AND public.current_app_user_has_permission('submissionRequests.delete')
     );
 -- endregion
 

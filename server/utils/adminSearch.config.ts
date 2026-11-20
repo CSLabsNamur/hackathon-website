@@ -170,7 +170,7 @@ export const ADMIN_SEARCH_MODEL_CONFIGS: Record<AdminSearchModelName, AdminSearc
     },
   },
   SubmissionRequest: {
-    requiredPermissions: ["submissionRequests.read", "participants.read"],
+    requiredPermissions: ["submissionRequests.read"],
     route: "/admin/submissions-requests",
     groupLabel: "Demandes de soumission",
     icon: "i-lucide-file-text",

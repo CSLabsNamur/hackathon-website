@@ -2,6 +2,7 @@
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
 import type { TimelineItem } from "@nuxt/ui";
 
+const dayjs = useDayjs();
 const {data: settings} = await useSettings();
 const {copyWithToast} = useCopyWithToast();
 
@@ -103,7 +104,7 @@ useSeoMeta({
               <div class="flex-1">
                 <p class="text-xs font-medium text-muted uppercase tracking-wide">Début</p>
                 <p class="text-lg font-semibold text-highlighted">
-                  {{ $dayjs(settings.event.startDate).format("DD MMMM YYYY") }}
+                  {{ dayjs(settings.event.startDate).format("DD MMMM YYYY") }}
                 </p>
               </div>
             </div>
@@ -115,7 +116,7 @@ useSeoMeta({
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-medium text-muted uppercase tracking-wide">Fin</p>
                 <p class="text-lg font-semibold text-highlighted">
-                  {{ $dayjs(settings.event.endDate).format("DD MMMM YYYY") }}</p>
+                  {{ dayjs(settings.event.endDate).format("DD MMMM YYYY") }}</p>
               </div>
             </div>
 

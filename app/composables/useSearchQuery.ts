@@ -6,7 +6,7 @@ export const useSearchQuery = () => {
   return computed({
     get: () => (Array.isArray(search.value) ? search.value[0] : search.value) ?? "",
     set: (value: string) => {
-      search.value = value;
+      search.value = value || undefined;
     },
   });
 };

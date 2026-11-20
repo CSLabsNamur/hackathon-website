@@ -1,309 +1,299 @@
 <script setup lang="ts">
+import { AdminExportModal, UButton, UDropdownMenu } from "#components";
+import type { DropdownMenuItem } from "@nuxt/ui";
 import BulkRemoveModal from "~/components/admin/submission-request/BulkRemoveModal.vue";
-import CreateSubmissionRequestModal from "~/components/admin/submission-request/CreateModal.vue";
-import EditSubmissionRequestModal from "~/components/admin/submission-request/EditModal.vue";
-import RemoveSubmissionRequestModal from "~/components/admin/submission-request/RemoveModal.vue";
-import type { BadgeProps } from "#ui/components/Badge.vue";
-import type { DropdownMenuItem } from "#ui/components/DropdownMenu.vue";
-import type { Row } from "@tanstack/vue-table";
-import { AdminExportModal, UBadge, UButton, UDropdownMenu } from "#components";
-import { submissionTypeTranslateMap } from "#shared/utils/types";
+import FormModal from "~/components/admin/submission-request/FormModal.vue";
+import RemoveModal from "~/components/admin/submission-request/RemoveModal.vue";
+import ResponsesModal from "~/components/admin/submission-request/ResponsesModal.vue";
 
 definePageMeta({
   layout: {
     name: "dashboard",
     props: {
-      title: "Demandes de soumissions",
+      title: "Demandes de soumission",
     },
   },
   middleware: "admin-auth",
   requiredPermissions: ["submissionRequests.read"],
 });
 
-const {setActions} = useDashboardNavbar();
-const {
-  status: submissionsStatus,
-  data: submissionRequests,
-  refresh: refreshSubmissionRequests,
-} = await useSubmissionsRequests({lazy: true});
+const {data, status, refresh} = await useAdminSubmissionRequests({lazy: true});
 const {data: currentAdmin, isSuperAdmin} = await useCurrentAdmin();
-const {can} = useAbility(currentAdmin);
-const canReadParticipants = computed(() => can("read", "Participant"));
-const {status: participantsStatus, data: participants, refresh: refreshParticipants} = await useParticipants({lazy: true, immediate: canReadParticipants.value});
+const {can, canPermission} = useAbility(currentAdmin);
 
-watch(canReadParticipants, async (allowed) => {
-  if (allowed) await refreshParticipants();
-});
+const canReadResponses = computed(() => canPermission("participants.read") && canPermission("submissionRequests.read"));
+const canDelete = computed(() => can("delete", "SubmissionRequest"));
+
+const requests = computed<AdminSubmissionRequest[] | undefined>(() => data.value?.requests);
+const settings = computed(() => data.value?.settings);
 
 const dayjs = useDayjs();
+const now = useNow({scheduler: (update) => useIntervalFn(update, 30000)});
 const overlay = useOverlay();
-const submissionTypeItems = Object.values(SubmissionType).map((type) => ({
-  label: submissionTypeTranslateMap[type],
-  value: type,
-}));
-const submissionScopeItems = [{
-  label: "Participant",
-  value: "participant",
-}, {
-  label: "Équipe",
-  value: "team",
-}];
-const globalFilter = useSearchQuery();
-const {sorting, columnFilters} = useTableQuery({sort: ["title", "deadline", "createdAt", "submissionRate"], filters: {type: submissionTypeItems.map(item => item.value), scope: submissionScopeItems.map(item => item.value)}});
+const {setActions} = useDashboardNavbar();
 
-const createModal = overlay.create(CreateSubmissionRequestModal);
-const editModal = overlay.create(EditSubmissionRequestModal);
-const removeModal = overlay.create(RemoveSubmissionRequestModal);
-const exportModal = overlay.create(AdminExportModal);
+const formModal = overlay.create(FormModal);
+const responsesModal = overlay.create(ResponsesModal);
+const removeModal = overlay.create(RemoveModal);
 const bulkRemoveModal = overlay.create(BulkRemoveModal);
+const exportModal = overlay.create(AdminExportModal);
 
-const {
-  rowSelection,
-  selectedItems: selectedSubmissionRequests,
-} = useTableSelection(submissionRequests, globalFilter, columnFilters);
+const typeItems = [{label: "Texte", value: "TEXT"}, {label: "Fichier", value: "FILE"}];
+const scopeItems = [{label: "Individuelle", value: "participant"}, {label: "Équipe", value: "team"}];
 
-const canDeleteSelection = computed(() => selectedSubmissionRequests.value.length > 0 && selectedSubmissionRequests.value.every(canDeleteSubmissionRequest));
+const globalFilter = useSearchQuery();
+const {sorting, columnFilters} = useTableQuery({
+  sort: ["title", "deadline", "createdAt", "submissionRate"],
+  filters: {type: typeItems.map(({value}) => value), scope: scopeItems.map(({value}) => value)},
+});
+const {rowSelection, selectedItems} = useTableSelection(requests, globalFilter, columnFilters);
 
-const {isLoading: isRemovingSelection, executeImmediate: removeSelectedSubmissionRequests} = useAsyncState(async () => {
-  if (!canDeleteSelection.value) return;
-  const removedIds = await bulkRemoveModal.open({submissionRequests: [...selectedSubmissionRequests.value]});
-  if (removedIds) await refreshSubmissionRequests();
-}, undefined, {immediate: false});
+const isBusy = ref(false);
 
-const isBulkActionPending = isRemovingSelection;
+useRefreshOnPageReturn(() => {
+  if (!isBusy.value) return refresh();
+});
+watch(canDelete, (allowed) => {
+  if (!allowed) rowSelection.value = {};
+});
+watch(canReadResponses, (allowed) => {
+  if (!allowed) responsesModal.close();
+  void refresh();
+});
 
-const totalTeams = computed(() => new Set((participants.value ?? []).flatMap((participant) => participant.teamId ? [participant.teamId] : [])).size);
+function canDeleteRequest(request: AdminSubmissionRequest) {
+  return canDelete.value && (isSuperAdmin.value || !request._count.submissions);
+}
 
-const getSubmissionRate = (submissionRequest: AdminSubmissionRequest) => {
-  const totalParticipants = participants.value?.length || 0;
-  const totalTargets = submissionRequest.teamRequest ? totalTeams.value : totalParticipants;
-  const submissionsCount = submissionRequest._count.submissions;
+async function runAction(action: () => Promise<boolean | string[] | undefined>, refreshOnChange = false) {
+  if (isBusy.value) return;
+  isBusy.value = true;
+  try {
+    const result = await action();
+    const changed = Array.isArray(result) ? result.length > 0 : result === true;
+    if (refreshOnChange && changed) await refresh();
+  } finally {
+    isBusy.value = false;
+  }
+}
 
-  return totalTargets === 0 ? 0 : (submissionsCount / totalTargets) * 100;
-};
+function openForm(request?: AdminSubmissionRequest) {
+  if (!settings.value || !can(request ? "update" : "create", "SubmissionRequest")) return;
+  const dates = settings.value;
+  return runAction(() => formModal.open({request, settings: dates}), true);
+}
+
+function getRowItems(request: AdminSubmissionRequest): DropdownMenuItem[] {
+  return [
+    {
+      label: "Voir les réponses",
+      icon: "i-lucide-inbox",
+      disabled: !canReadResponses.value,
+      onSelect: () => {
+        if (canReadResponses.value) void runAction(() => responsesModal.open({request}));
+      },
+    },
+    {
+      label: "Modifier",
+      icon: "i-lucide-pencil",
+      disabled: !can("update", "SubmissionRequest") || !settings.value,
+      onSelect: () => openForm(request),
+    },
+    {
+      label: "Supprimer",
+      icon: "i-lucide-trash",
+      color: "error",
+      disabled: !canDeleteRequest(request),
+      onSelect: () => {
+        if (canDeleteRequest(request)) void runAction(() => removeModal.open({submissionRequest: request}), true);
+      },
+    },
+  ];
+}
+
+const bulkItems = computed<DropdownMenuItem[]>(() => {
+  const selection = selectedItems.value;
+  const allowed = selection.length > 0 && selection.every(canDeleteRequest);
+  return canDelete.value ? [{
+    label: "Supprimer la sélection",
+    icon: "i-lucide-trash",
+    color: "error",
+    disabled: !allowed || isBusy.value,
+    onSelect: () => {
+      if (allowed) void runAction(() => bulkRemoveModal.open({submissionRequests: [...selection]}), true);
+    },
+  }] : [];
+});
 
 const allColumns: NamedTableColumn<AdminSubmissionRequest>[] = [
-  getSelectionColumn<AdminSubmissionRequest>(isBulkActionPending, (item) => `Sélectionner ${item.title}`, "Sélectionner les demandes de soumission"),
+  getSelectionColumn<AdminSubmissionRequest>(isBusy, ({title}) => `Sélectionner ${title}`, "Sélectionner les demandes"),
   {
     id: "title",
-    name: "Titre",
-    header: ({column}) => getColumnHeader(column, "Titre", {sort: true}),
+    name: "Demande",
+    header: ({column}) => getColumnHeader(column, "Demande", {sort: true}),
     accessorKey: "title",
-    cell: ({row}) => h("div", {class: "truncate max-w-36", title: row.original.title}, row.original.title),
+    meta: getWrappingColumnMeta(),
   },
   {
     id: "description",
-    name: "Description",
-    header: "Description",
     accessorKey: "description",
+    name: "Consignes",
+    header: "Consignes",
     meta: getWrappingColumnMeta(),
   },
   {
     id: "type",
     name: "Type",
-    header: ({column}) => getColumnHeader(column, "Type", {filters: submissionTypeItems}),
-    accessorFn: (row) => submissionTypeTranslateMap[row.type],
-    filterFn: (row, _columnId, filterValue) => row.original.type === filterValue,
-    cell: ({row}) => {
-      const color: BadgeProps["color"] = row.original.type === SubmissionType.TEXT ? "info" : "warning";
-
-      return h(UBadge, {
-        class: "capitalize",
-        variant: "subtle",
-        color,
-      }, () => submissionTypeTranslateMap[row.original.type]);
-    },
+    header: ({column}) => getColumnHeader(column, "Type", {filters: typeItems}),
+    accessorFn: (request) => request.type === SubmissionType.TEXT ? "Texte" : request.multiple ? "Plusieurs fichiers" : "Fichier unique",
+    filterFn: (row, _, value) => row.original.type === value,
   },
   {
     id: "scope",
     name: "Portée",
-    header: ({column}) => getColumnHeader(column, "Portée", {filters: submissionScopeItems}),
-    accessorFn: (row) => row.teamRequest ? "Équipe" : "Participant",
-    filterFn: (row, _columnId, filterValue) => {
-      return filterValue === "team" ? row.original.teamRequest : !row.original.teamRequest;
-    },
-    cell: ({row}) => h(UBadge, {
-      variant: "subtle",
-      color: row.original.teamRequest ? "secondary" : "neutral",
-    }, () => row.original.teamRequest ? "Équipe" : "Participant"),
+    header: ({column}) => getColumnHeader(column, "Portée", {filters: scopeItems}),
+    accessorFn: (request) => request.teamRequest ? "Équipe" : "Individuelle",
+    filterFn: (row, _, value) => row.original.teamRequest === (value === "team"),
   },
   {
     id: "deadline",
-    name: "Date limite",
-    header: ({column}) => getColumnHeader(column, "Date limite", {sort: true}),
+    name: "Échéance",
+    header: ({column}) => getColumnHeader(column, "Échéance", {sort: true}),
     accessorKey: "deadline",
-    cell: ({row}) => h("div", {title: dayjs(row.original.deadline).format("DD/MM/YYYY HH:mm")}, dayjs(row.original.deadline).format("DD/MM/YYYY")),
+    enableGlobalFilter: false,
   },
   {
     id: "createdAt",
-    name: "Date de création",
-    header: ({column}) => getColumnHeader(column, "Date de création", {sort: true}),
+    name: "Création",
+    header: ({column}) => getColumnHeader(column, "Création", {sort: true}),
     accessorKey: "createdAt",
-    cell: ({row}) => dayjs(row.original.createdAt).format("DD/MM/YYYY"),
+    enableGlobalFilter: false,
+    cell: ({row}) => dayjs(row.original.createdAt).tz("Europe/Brussels").format("DD/MM/YYYY"),
   },
   {
     id: "submissionRate",
-    name: "Taux de soumission",
-    header: ({column}) => getColumnHeader(column, "Taux de soumission", {sort: true}),
-    accessorFn: (row: AdminSubmissionRequest) => `${getSubmissionRate(row).toFixed(2)} %`,
-    sortingFn: (rowA, rowB, columnId) => {
-      return parseFloat(rowA.getValue(columnId)) - parseFloat(rowB.getValue(columnId));
-    },
+    name: "Livrables remis",
+    header: ({column}) => getColumnHeader(column, "Livrables remis", {sort: true}),
+    accessorFn: ({progress}) => progress?.total ? progress.submitted / progress.total : undefined,
+    enableGlobalFilter: false,
+    sortUndefined: "last",
   },
   {
     id: "actions",
     name: "Actions",
     enableHiding: false,
     enableGlobalFilter: false,
-    cell: ({row}) => {
-      return h(
-          "div",
-          {class: "text-right"},
-          h(
-              UDropdownMenu,
-              {
-                content: {align: "end"},
-                items: getRowItems(row),
-                "aria-label": `Actions pour la demande de soumission ${row.original.title}`,
-              },
-              () => h(UButton, {
-                icon: "i-lucide-ellipsis-vertical",
-                color: "neutral",
-                variant: "ghost",
-                class: "ml-auto",
-                "aria-label": `Ouvrir le menu des actions pour la demande de soumission ${row.original.title}`,
-              }),
-          ),
-      );
-    },
+    cell: ({row}) => h(UDropdownMenu, {items: getRowItems(row.original), content: {align: "end"}}, () => h(UButton, {
+      icon: "i-lucide-ellipsis-vertical",
+      color: "neutral",
+      variant: "ghost",
+      size: "sm",
+      disabled: isBusy.value,
+      "aria-label": `Actions pour ${row.original.title}`,
+    })),
   },
 ];
+const columns = computed(() => allColumns.filter(({id}) => {
+  if (id === "select") return canDelete.value;
+  if (id === "submissionRate") return canReadResponses.value;
+  return true;
+}));
 
-const columns = computed(() => canReadParticipants.value ? allColumns : allColumns.filter((column) => column.id !== "submissionRate"));
-
-const columnVisibility = usePersistentColumnVisibility("admin-submission-requests-table-column-visibility");
-const columnVisibilityDropdownItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
-
-const openCreateModal = async () => {
-  if (!can("create", "SubmissionRequest")) return;
-
-  const result = await createModal.open();
-  if (result) await refreshSubmissionRequests();
-};
-
-const openExportModal = async () => {
-  if (!can("export", "SubmissionRequest")) return;
-  await exportModal.open({resource: "submissionRequests"});
-};
-
-const bulkActionItems = computed<DropdownMenuItem[]>(() => {
-  const items: DropdownMenuItem[] = [];
-  if (can("delete", "SubmissionRequest")) {
-    items.push({
-      label: "Supprimer la sélection",
-      icon: "i-lucide-trash",
-      color: "error",
-      description: canDeleteSelection.value ? undefined : "La sélection contient des demandes qui ont déjà des soumissions associées.",
-      disabled: !canDeleteSelection.value || isBulkActionPending.value,
-      onSelect: () => removeSelectedSubmissionRequests(),
-    });
-  }
-  return items;
+const columnVisibility = usePersistentColumnVisibility("admin-submission-requests-table-column-visibility", {
+  description: false,
+  createdAt: false,
 });
+const columnItems = useColumnVisibilityDropdownItems(columns, columnVisibility);
+const hasFilters = computed(() => Boolean(globalFilter.value || columnFilters.value.length));
 
-function canDeleteSubmissionRequest(item: AdminSubmissionRequest) {
-  return can("delete", "SubmissionRequest") && (isSuperAdmin.value || item._count.submissions === 0);
-}
-
-function getRowItems(row: Row<AdminSubmissionRequest>): Array<DropdownMenuItem> {
-  const canUpdateSubmissionRequest = can("update", "SubmissionRequest") && row.original._count.submissions === 0;
-  const canDeleteThisSubmissionRequest = canDeleteSubmissionRequest(row.original);
-
-  return [
-    {
-      type: "label",
-      label: `Créée le ${dayjs(row.original.createdAt).format("DD/MM/YYYY")}`,
-      class: "text-muted",
-    },
-    {
-      type: "label",
-      label: "Actions",
-    },
-    // TODO: Implement view submissions functionality
-    //{
-    //  label: "Voir les soumissions",
-    //  icon: "i-lucide-eye",
-    //  //onSelect: () => {
-    //  //},
-    //},
-    {
-      label: "Éditer",
-      icon: "i-lucide-edit-2",
-      disabled: !canUpdateSubmissionRequest,
-      onSelect: async () => {
-        if (!canUpdateSubmissionRequest) return;
-        const result = await editModal.open({submissionRequest: row.original});
-        if (result) await refreshSubmissionRequests();
-      },
-    },
-    {
-      label: "Supprimer",
-      icon: "i-lucide-trash",
-      disabled: !canDeleteThisSubmissionRequest || isBulkActionPending.value,
-      onSelect: async () => {
-        if (!canDeleteThisSubmissionRequest || isBulkActionPending.value) return;
-        const result = await removeModal.open({submissionRequest: row.original});
-        if (result) await refreshSubmissionRequests();
-      },
-    },
-  ];
+function clearFilters() {
+  globalFilter.value = "";
+  columnFilters.value = [];
 }
 
 setActions(computed(() => [{
   icon: "i-lucide-plus",
   label: "Nouvelle demande",
-  onClick: openCreateModal,
-  disabled: !can("create", "SubmissionRequest"),
+  disabled: isBusy.value || !settings.value || !can("create", "SubmissionRequest"),
+  onClick: () => openForm(),
 }, {
   icon: "i-lucide-download",
   label: "Exporter",
   color: "secondary",
-  onClick: openExportModal,
-  disabled: !can("export", "SubmissionRequest"),
+  disabled: isBusy.value || !can("export", "SubmissionRequest"),
+  onClick: () => {
+    if (can("export", "SubmissionRequest")) void runAction(() => exportModal.open({resource: "submissionRequests"}));
+  },
 }]));
 </script>
 
 <template>
-  <UContainer>
-    <div class="flex flex-col gap-1 lg:gap-2">
-      <div v-if="submissionsStatus === 'success' && participantsStatus === 'success'"
-           class="flex flex-wrap items-center justify-between gap-2">
-        <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..." :disabled="isBulkActionPending"/>
-        <AdminBulkActions :count="selectedSubmissionRequests.length" :items="bulkActionItems"
-                          :pending="isBulkActionPending"
-                          @clear="rowSelection = {}"/>
-        <TourHelperPopover title="Astuce : colonnes personnalisables"
-                           description="Vous pouvez choisir les colonnes à afficher dans le tableau."
-                           status-key="admin-table-column-visibility" placement="top">
-          <UDropdownMenu :items="columnVisibilityDropdownItems" content-class="min-w-40" :content="{align: 'end'}"
-                         aria-label="Afficher ou masquer les colonnes">
-            <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
-          </UDropdownMenu>
-        </TourHelperPopover>
-      </div>
-      <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
-              v-model:column-filters="columnFilters"
-              v-model:global-filter="globalFilter" v-model:column-visibility="columnVisibility" :columns="columns"
-              :data="submissionRequests" :get-row-id="(item) => item.id" sticky
-              :loading="submissionsStatus === 'pending' || (canReadParticipants && participantsStatus === 'pending')">
-        <template #empty>
-          <div class="max-w-1/2 mx-auto">
-            <UEmpty title="Aucune demande de soumission"
-                    description="Aucune demande de soumission n'a encore été créée."
-                    icon="i-lucide-circle-slash"/>
+  <UContainer class="grid min-w-0 gap-4">
+    <UAlert v-if="status === 'error'" title="Impossible de charger les demandes" color="error" variant="soft"
+            icon="i-lucide-circle-alert"
+            :actions="[{label: 'Réessayer', color: 'error', variant: 'soft', onClick: () => refresh()}]"/>
+
+    <div v-else-if="!requests" class="grid gap-3" aria-label="Chargement des demandes">
+      <USkeleton class="h-9 w-56"/>
+      <USkeleton v-for="n in 4" :key="n" class="h-16"/>
+    </div>
+
+    <template v-else>
+      <UAlert v-if="!settings" title="Dates de l’événement indisponibles" color="warning" variant="soft"
+              description="Les demandes restent consultables. Renseignez les dates pour créer ou modifier une demande."/>
+
+      <UCard :ui="{body: 'p-0 sm:p-0'}" class="min-w-0">
+        <template #header>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <UInput v-model="globalFilter" class="max-w-sm" placeholder="Rechercher..."
+                    aria-label="Rechercher une demande" :disabled="isBusy"/>
+            <AdminBulkActions :count="selectedItems.length" :items="bulkItems" :pending="isBusy"
+                              @clear="rowSelection = {}"/>
+            <UDropdownMenu :items="columnItems" :content="{align: 'end'}">
+              <UButton variant="outline" color="neutral" size="sm" label="Colonnes"/>
+            </UDropdownMenu>
           </div>
         </template>
-      </UTable>
-    </div>
+
+        <UTable v-model:sorting="sorting" v-model:row-selection="rowSelection"
+                v-model:column-filters="columnFilters" v-model:global-filter="globalFilter"
+                v-model:column-visibility="columnVisibility" :columns :data="requests" :get-row-id="({id}) => id">
+          <template #title-cell="{row}">
+            <div class="grid gap-1">
+              <span class="font-medium text-highlighted wrap-anywhere">{{ row.original.title }}</span>
+              <span v-if="row.original.required" class="text-xs text-muted">Obligatoire</span>
+            </div>
+          </template>
+
+          <template #deadline-cell="{row}">
+            <div class="grid gap-1">
+              <span>{{ dayjs(row.original.deadline).tz("Europe/Brussels").format("DD/MM/YYYY à HH:mm") }}</span>
+              <span v-if="!dayjs(now).isBefore(row.original.deadline)" class="text-xs text-muted">Clôturée</span>
+            </div>
+          </template>
+
+          <template #submissionRate-cell="{row}">
+            <div v-if="row.original.progress" class="grid gap-1">
+              <UButton color="neutral" variant="link" size="sm" class="place-self-start p-0 font-medium"
+                       :aria-label="`Voir les réponses de ${row.original.title}`" :disabled="isBusy"
+                       @click="runAction(() => responsesModal.open({request: row.original}))">
+                {{ row.original.progress.submitted }} / {{ row.original.progress.total }}
+              </UButton>
+              <span v-if="row.original.progress.skipped" class="text-xs text-muted">
+                {{ row.original.progress.skipped }} non remis
+              </span>
+            </div>
+          </template>
+
+          <template #empty>
+            <div class="max-w-1/2 mx-auto">
+              <UEmpty v-if="requests.length && hasFilters" title="Aucune demande trouvée" icon="i-lucide-search"
+                      :actions="[{label: 'Effacer les filtres', color: 'neutral', variant: 'soft', onClick: clearFilters}]"/>
+              <UEmpty v-else title="Aucune demande de soumission" icon="i-lucide-inbox"/>
+            </div>
+          </template>
+        </UTable>
+      </UCard>
+    </template>
   </UContainer>
 </template>

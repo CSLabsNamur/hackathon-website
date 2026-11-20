@@ -10,7 +10,7 @@ import {
   EVENT_SETTINGS_ID,
   WEBSITE_SETTINGS_ID,
 } from "../../shared/utils/settings";
-import dayjs from "../utils/dayjs";
+import dayjs from "../../lib/dayjs";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,

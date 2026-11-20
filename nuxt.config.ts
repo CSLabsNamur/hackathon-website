@@ -48,7 +48,6 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxtjs/mdc",
     "@nuxt/content",
-    "dayjs-nuxt",
     "@vueuse/nuxt",
     "@nuxtjs/device",
     "@nuxtjs/supabase",
@@ -232,13 +231,6 @@ export default defineNuxtConfig({
       login: "/",
       callback: "/auth/callback",
     },
-  },
-
-  dayjs: {
-    locales: ["fr"],
-    defaultLocale: "fr",
-    defaultTimezone: "Europe/Brussels",
-    plugins: ["timezone", "utc", "duration", "isBetween", "relativeTime", "isSameOrAfter"],
   },
 
   nodemailer: {

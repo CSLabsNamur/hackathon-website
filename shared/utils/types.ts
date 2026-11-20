@@ -226,7 +226,23 @@ export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPaylo
   include: { submissions: true }
 }>>;
 
-export type AdminSubmissionRequest = SubmissionRequest & { _count: { submissions: number } };
+export type AdminSubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPayload<{
+  include: { _count: { select: { submissions: true } } };
+}>> & {
+  progress: { submitted: number; skipped: number; total: number } | null;
+};
+
+export type AdminSubmissionResponse = {
+  id: string;
+  skipped: boolean;
+  content: string | null;
+  updatedAt: string;
+  author: { firstName: string; lastName: string };
+  team: string | null;
+  current: boolean;
+  hasAnswer: boolean;
+  files: Array<{ id: string; bucket: string; path: string; originalName: string }>;
+};
 
 export type ScheduleItem = SerializeObject<Prisma.ScheduleItemGetPayload<object>>;
 export type Schedule = ScheduleItem[];

@@ -1,76 +1,45 @@
 import * as v from "valibot";
-import dayjs from "~~/server/utils/dayjs";
+import dayjs from "../../../../lib/dayjs";
 
-// We cannot call Nuxt composables (useDayjs, useRuntimeConfig) at module top level here
-// because this file is used in both client and server contexts and is not a Nuxt setup/plugin.
-// Instead, we define a factory that receives what it needs from the caller.
-
-export const createSubmissionRequestSchema = (
-  eventDateStart: string,
-  eventDateEnd: string,
-) => {
-  const eventDateStartParsed = dayjs(eventDateStart);
-  const eventDateEndParsed = dayjs(eventDateEnd);
+export function submissionRequestFormSchema(eventDateStart: Date | string, eventDateEnd: Date | string) {
+  const eventStart = dayjs.utc(eventDateStart).startOf("minute").valueOf();
+  const eventEnd = dayjs.utc(eventDateEnd).startOf("minute").valueOf();
 
   return v.strictObject({
-    // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
-    // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
-    type: v.picklist(["text", "file", "files"]),
     title: v.pipe(
       v.string(),
-      v.nonEmpty("Le titre ne peut pas être vide"),
-      v.minWords("fr", 1, "Le titre doit contenir au moins 1 mot"),
-      v.maxLength(50, "Le titre est trop long (max 50 caractères)"),
+      v.trim(),
+      v.nonEmpty("Le titre ne peut pas être vide."),
+      v.maxLength(50, "Le titre est trop long (50 caractères maximum)."),
     ),
-    description: v.optional(
-      v.pipe(
-        v.string(),
-        v.minWords("fr", 3, "La description, si elle existe, doit au moins contenir 3 mots."),
-        v.maxLength(150, "La description est trop longue (max 150 caractères)"),
-      ),
-    ),
+    description: v.optional(v.pipe(
+      v.string(),
+      v.trim(),
+      v.maxLength(150, "La description est trop longue (150 caractères maximum)."),
+    )),
     deadline: v.pipe(
       v.string(),
-      v.isoDateTime(),
-      v.check((input) => {
-        const date = dayjs(input);
-        return date.isBetween(eventDateStartParsed, eventDateEndParsed);
-      }, "La date doit être entre le début et la fin de l'événement."),
+      v.isoDateTime("Saisissez une date et une heure."),
+      v.check((value) => {
+        const deadline = dayjs.tz(value, "Europe/Brussels");
+        const timestamp = deadline.valueOf();
+        return deadline.format("YYYY-MM-DDTHH:mm") === value
+          && timestamp >= eventStart && timestamp <= eventEnd;
+      }, "Choisissez une date et une heure valides entre le début et la fin de l’événement."),
     ),
-    acceptedFormats: v.optional(
-      v.pipe(
-        v.array(v.string()),
-        v.transform((input) => normalizeAcceptedFormats(input)),
-      ),
-    ),
+    acceptedFormats: v.optional(v.array(v.string())),
     required: v.optional(v.boolean()),
     teamRequest: v.optional(v.boolean()),
+    type: v.picklist(["text", "file", "files"]),
   });
-};
+}
 
-const _tempSchema = v.strictObject({
-  // Type differs from the one in the database, because of UI/UX reasons. I just found it just more intuitive to select one
-  // of "text", "file" or "files" in the frontend rather than asking to check a "multiple" checkbox when "file" is selected.
-  type: v.picklist(["text", "file", "files"]),
-  title: v.pipe(
-    v.string(),
-    v.nonEmpty(),
-    v.minWords("fr", 1),
-    v.maxLength(50),
-  ),
-  description: v.optional(
-    v.pipe(
-      v.string(),
-      v.minWords("fr", 3),
-      v.maxLength(150),
-    ),
-  ),
-  deadline: v.pipe(
-    v.string(),
-    v.isoDateTime(),
-  ),
-  acceptedFormats: v.optional(v.array(v.string())),
-  required: v.optional(v.boolean()),
-  teamRequest: v.optional(v.boolean()),
-});
-export type CreateSubmissionRequestSchema = v.InferOutput<typeof _tempSchema>;
+export function createSubmissionRequestSchema(eventDateStart: Date | string, eventDateEnd: Date | string) {
+  const formSchema = submissionRequestFormSchema(eventDateStart, eventDateEnd);
+  return v.strictObject({
+    ...formSchema.entries,
+    expectedEditionId: v.optional(v.string()),
+  });
+}
+
+export type CreateSubmissionRequestSchema = v.InferOutput<ReturnType<typeof createSubmissionRequestSchema>>;

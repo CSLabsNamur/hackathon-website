@@ -16,6 +16,14 @@ export const useSubmissionsRequests = async (params?: UseSubmissionsParams) => {
   });
 };
 
+export const useAdminSubmissionRequests = async (params?: UseSubmissionsParams) => {
+  return useAPI("/api/admin/submission-requests", {
+    key: "admin-submission-requests",
+    dedupe: "defer",
+    lazy: params?.lazy ?? false,
+  });
+};
+
 export const useSubmissionsRequestsActions = () => {
   const {$api} = useNuxtApp();
 
@@ -23,6 +31,7 @@ export const useSubmissionsRequestsActions = () => {
     return await $api("/api/submissions/requests", {
       method: "POST",
       body: data,
+      silent: true,
     });
   };
 
@@ -30,6 +39,7 @@ export const useSubmissionsRequestsActions = () => {
     return await $api(`/api/submissions/requests/${id}`, {
       method: "PUT",
       body: data,
+      silent: true,
     });
   };
 
