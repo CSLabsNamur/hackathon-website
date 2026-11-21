@@ -67,6 +67,13 @@ const links: RestrictedNavigationItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
+}, {
+  label: "Aide & infos pratiques",
+  icon: "i-lucide-life-buoy",
+  to: "/participant/support",
+  onSelect: () => {
+    open.value = false;
+  },
 }], [{
   label: "Retour au site",
   icon: "i-lucide-arrow-left-circle",
@@ -74,16 +81,7 @@ const links: RestrictedNavigationItem[][] = [[{
   onSelect: () => {
     open.value = false;
   },
-},
-//  {
-//  label: "Aide & Support",
-//  icon: "i-lucide-life-buoy",
-//  to: "/participant/support",
-//  onSelect: () => {
-//    open.value = false;
-//  },
-//}
-]];
+}]];
 
 // TODO: reused logic between dashboards and RestrictedNavigationMenu, abstract this
 const filterRestrictedNavigationItems = (items: RestrictedNavigationItem[]): RestrictedNavigationItem[] => items
