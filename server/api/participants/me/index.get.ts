@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
     include: {
       team: {
         include: {
+          room: {select: {name: true}},
           members: {
             select: {
               id: true,

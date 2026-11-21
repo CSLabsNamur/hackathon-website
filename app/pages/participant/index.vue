@@ -17,6 +17,7 @@ const [
 const now = useNow();
 const event = computed(() => settings.value?.event);
 const {data: eventPhaseData} = await useEventPhase();
+const arrivalAlert = computed(() => getParticipantArrivalAlert(eventPhaseData.value));
 
 const {canPermissions} = useAbility(currentParticipant);
 const canReadSubmissions = computed(() => canPermissions(["submissionRequests.read", "submissions.read.own"]));
@@ -48,18 +49,20 @@ useRefreshOnPageReturn(refreshSettings);
     </div>
 
     <template v-else>
-      <header class="grid gap-2">
-        <div class="flex flex-wrap items-center gap-3">
-          <h1 class="text-2xl font-semibold text-highlighted">
-            Bonjour {{ currentParticipant.user.firstName }}
-          </h1>
+      <header class="grid gap-4 sm:gap-2">
+        <UAlert v-if="!currentParticipant.checkedInAt && arrivalAlert" v-bind="arrivalAlert"
+                variant="soft" icon="i-lucide-alert-circle"/>
+        <h1 class="text-2xl font-semibold text-highlighted wrap-anywhere">
+          Bonjour, {{ currentParticipant.user.firstName }}
+        </h1>
+        <div v-if="event" class="flex items-center gap-x-2 gap-y-1 text-sm text-muted">
+          <p class="text-sm text-muted wrap-anywhere">
+            {{ event.title }} · {{ formatDateRange(event.startDate, event.endDate, false) }}
+          </p>
           <UBadge v-if="eventPhase" :color="eventPhase.color" variant="subtle">
             {{ eventPhase.label }}
           </UBadge>
         </div>
-        <p v-if="event" class="text-sm text-muted">
-          {{ event.title }} · {{ formatDateRange(event.startDate, event.endDate, false) }}
-        </p>
       </header>
 
       <UAlert v-if="settingsStatus === 'error'" color="error" variant="soft" icon="i-lucide-circle-alert"

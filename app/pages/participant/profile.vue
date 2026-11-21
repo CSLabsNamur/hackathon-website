@@ -51,10 +51,10 @@ setActions(computed(() => currentParticipant.value ? [{
 
     <template v-else>
       <header class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex min-w-0 items-center gap-3">
+        <div class="flex items-center gap-3">
           <UAvatar :alt="`${currentParticipant.user.firstName} ${currentParticipant.user.lastName}`"
                    size="lg"/>
-          <h1 class="min-w-0 text-2xl font-semibold text-highlighted wrap-anywhere">
+          <h1 class="text-2xl font-semibold text-highlighted wrap-anywhere">
             {{ currentParticipant.user.firstName }} {{ currentParticipant.user.lastName }}
           </h1>
         </div>
@@ -65,11 +65,14 @@ setActions(computed(() => currentParticipant.value ? [{
       </header>
 
       <div class="grid items-start gap-6 lg:grid-cols-3">
-        <div class="min-w-0 grid gap-6 lg:col-span-2">
+        <div class="grid gap-6 lg:col-span-2">
           <ParticipantProfileDetailsCard :participant="currentParticipant"/>
           <ParticipantProfileParticipationCard :participant="currentParticipant"/>
         </div>
-        <ParticipantProfileCautionCard :participant="currentParticipant" class="min-w-0"/>
+        <div class="grid gap-6">
+          <ParticipantProfileCautionCard :participant="currentParticipant"/>
+          <ParticipantProfileArrivalCard :checked-in-at="currentParticipant.checkedInAt"/>
+        </div>
       </div>
     </template>
   </UContainer>

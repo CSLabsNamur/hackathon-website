@@ -31,7 +31,7 @@ const copyToken = () => {
 <template>
   <UCard>
     <template #header>
-      <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-semibold text-highlighted">Mon équipe</h2>
         <UButton v-if="participant.team" to="/participant/team" color="neutral" variant="ghost" size="sm"
                  trailing-icon="i-lucide-arrow-right"/>
@@ -42,11 +42,17 @@ const copyToken = () => {
 
     <div v-if="participant.team" class="grid gap-4">
       <div>
-        <h3 class="font-semibold text-highlighted">{{ participant.team.name }}</h3>
+        <h3 class="font-semibold text-highlighted wrap-anywhere">{{ participant.team.name }}</h3>
         <p class="text-sm text-muted">
           {{ participant.team.members.length }} membre{{ participant.team.members.length > 1 ? "s" : "" }}
         </p>
       </div>
+      <p v-if="participant.team.room" class="flex items-start gap-2 text-sm text-muted">
+        <UIcon name="i-lucide-map-pin" class="mt-0.5 size-4 shrink-0"/>
+        <span class="min-w-0 wrap-anywhere">
+          Salle attribuée · <span class="font-medium text-highlighted">{{ participant.team.room.name }}</span>
+        </span>
+      </p>
       <ul class="grid gap-2">
         <li v-for="member in participant.team.members" :key="member.id" class="flex items-center gap-2">
           <UAvatar :alt="`${member.user.firstName} ${member.user.lastName}`" size="xs"/>

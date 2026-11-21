@@ -116,6 +116,7 @@ export type CurrentParticipantSubmission = SerializeObject<Prisma.SubmissionGetP
 }>>;
 export type CurrentParticipantTeam = SerializeObject<Prisma.TeamGetPayload<{
   include: {
+    room: { select: { name: true } };
     members: {
       select: {
         id: true;

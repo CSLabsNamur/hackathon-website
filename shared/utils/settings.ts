@@ -62,6 +62,13 @@ export function normalizeSocialLinkValues<T extends { type: SocialLinkType, labe
   };
 }
 
+export function getEventDirectionsUrl(address?: string) {
+  const destination = address?.trim();
+  if (!destination) return;
+
+  return `https://www.openstreetmap.org/directions?${new URLSearchParams({to: destination})}`;
+}
+
 export const defaultWebsiteSettings: Prisma.WebsiteSettingsCreateInput = {
   contactEmail: "event@cslabs.be",
   bugReportEmail: "it@cslabs.be",

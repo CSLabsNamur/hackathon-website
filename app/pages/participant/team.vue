@@ -59,11 +59,17 @@ setActions(computed(() => team.value ? [{
         <p v-if="team.description" class="text-sm text-muted whitespace-pre-line wrap-anywhere">
           {{ team.description }}
         </p>
+        <p v-if="team.room" class="flex items-start gap-2 text-sm text-muted">
+          <UIcon name="i-lucide-map-pin" class="mt-0.5 size-4"/>
+          <span class="wrap-anywhere">
+            Salle attribuée · <span class="font-medium text-highlighted">{{ team.room.name }}</span>
+          </span>
+        </p>
       </header>
 
       <div class="grid items-start gap-6 lg:grid-cols-3">
-        <ParticipantTeamMembersCard :members="team.members" class="min-w-0 lg:col-span-2"/>
-        <div class="min-w-0 grid gap-6">
+        <ParticipantTeamMembersCard :members="team.members" class="lg:col-span-2"/>
+        <div class="grid gap-6">
           <ParticipantTeamInviteCard :token="team.token"/>
           <ParticipantTeamStatusCard :key="canPermission('submissionRequests.read') ? 'full' : 'basic'"
                                      :participant="currentParticipant"/>

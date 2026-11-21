@@ -20,7 +20,7 @@ useRefreshOnPageReturn(refresh);
 <template>
   <UCard :ui="{body: 'p-0 sm:p-0'}">
     <template #header>
-      <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-semibold text-highlighted">Au programme</h2>
         <UButton to="/participant/schedule" color="neutral" variant="ghost" size="sm"
                  trailing-icon="i-lucide-arrow-right"/>

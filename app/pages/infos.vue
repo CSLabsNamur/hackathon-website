@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PageFeatureProps } from "#ui/components/PageFeature.vue";
 import type { TimelineItem } from "@nuxt/ui";
+import { getEventDirectionsUrl } from "#shared/utils/settings";
 
 const dayjs = useDayjs();
 const {data: settings} = await useSettings();
@@ -9,11 +10,13 @@ const {copyWithToast} = useCopyWithToast();
 const {data: schedule} = await useSchedule({lazy: false});
 
 const fullAddress = computed(() => [
-  settings.value!.event.locationName,
-  settings.value!.event.locationAddress,
-]);
+  settings.value?.event.locationName,
+  settings.value?.event.locationAddress,
+].filter(Boolean).join(", "));
+const directionsUrl = computed(() => getEventDirectionsUrl(settings.value?.event.locationAddress));
 const copyAddress = () => {
-  copyWithToast(fullAddress.value.join(", "), {
+  if (!fullAddress.value) return;
+  copyWithToast(fullAddress.value, {
     title: "Adresse copiée",
     description: "L'adresse de l'événement a été copiée dans le presse-papier.",
   });
@@ -58,34 +61,29 @@ useSeoMeta({
   <UContainer>
     <UPageGrid v-if="settings" class="gap-6 md:gap-8">
       <!-- Emplacement -->
-      <UPageCard title="Lieu de l'événement" icon="i-lucide-map-pinned" :ui="{description: 'mt-5'}">
+      <UPageCard v-if="fullAddress" title="Lieu de l'événement" icon="i-lucide-map-pinned"
+                 :ui="{description: 'mt-5'}">
         <template #description>
           <div class="grid gap-4">
             <div class="flex gap-2.5">
               <UIcon name="i-lucide-university" class="size-4 text-primary mt-0.5 shrink-0"/>
-              <div class="text-sm leading-relaxed">
-                <p class="font-medium text-highlighted">{{ fullAddress[0] }}</p>
-                <p class="text-muted">{{ fullAddress[1] }}</p>
+              <div class="min-w-0 text-sm leading-relaxed wrap-anywhere">
+                <p class="font-medium text-highlighted">{{ settings.event.locationName }}</p>
+                <p class="text-muted">{{ settings.event.locationAddress }}</p>
               </div>
             </div>
 
             <div class="rounded-xl overflow-hidden border border-default shadow-sm">
-              <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=4.855873882770539%2C50.46505796929186%2C4.859414398670197%2C50.46686773266524&amp;layer=mapnik&amp;marker=50.46596285963623%2C4.857644140720367"
-                  class="w-full aspect-video"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-              />
+              <iframe title="Carte du lieu de l'événement" class="w-full aspect-video"
+                      src="https://www.openstreetmap.org/export/embed.html?bbox=4.855873882770539%2C50.46505796929186%2C4.859414398670197%2C50.46686773266524&amp;layer=mapnik&amp;marker=50.46596285963623%2C4.857644140720367"
+                      loading="lazy" referrerpolicy="no-referrer-when-downgrade"/>
             </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <UButton class="justify-center" color="primary" icon="i-lucide-navigation" variant="solid"
-                       to="https://www.openstreetmap.org/directions?from=&to=50.46588169490292,4.857644508142088&engine=osrm_car"
-                       target="_blank">
+            <div class="flex flex-wrap gap-2">
+              <UButton v-if="directionsUrl" :to="directionsUrl" target="_blank" icon="i-lucide-navigation">
                 Itinéraire
               </UButton>
-              <UButton variant="soft" color="neutral" icon="i-lucide-copy" class="justify-center"
-                       @click="copyAddress">
+              <UButton variant="soft" color="neutral" icon="i-lucide-copy" @click="copyAddress">
                 Copier l'adresse
               </UButton>
             </div>
