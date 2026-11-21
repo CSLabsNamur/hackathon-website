@@ -191,7 +191,7 @@ onBeforeRouteLeave(async (to, from) => {
                           variant="subtle" size="sm">
                     {{ getSubmissionState(request, workspace.getSubmission(request), now).label }}
                   </UBadge>
-                  <span class="text-xs text-muted">{{ dayjs(request.deadline).format("D MMM à HH[h]mm") }}</span>
+                  <span class="text-xs text-muted">{{ formatDate(request.deadline, "D MMM à HH[h]mm") }}</span>
                 </span>
               </span>
             </UButton>
@@ -227,7 +227,7 @@ onBeforeRouteLeave(async (to, from) => {
                 {{ activeRequest.description }}
               </p>
               <p class="text-sm text-muted">
-                Échéance : {{ dayjs(activeRequest.deadline).format("D MMMM à HH[h]mm") }}
+                Échéance : {{ formatDate(activeRequest.deadline, "D MMMM à HH[h]mm") }}
               </p>
             </div>
           </template>
@@ -235,7 +235,7 @@ onBeforeRouteLeave(async (to, from) => {
           <div :key="workspace.getDraftKey(activeRequest)" class="grid gap-5">
             <p v-if="activeSubmission" class="text-sm text-muted">
               {{ activeSubmission.skipped ? "Choix enregistré" : "Dernier enregistrement" }}
-              le {{ dayjs(activeSubmission.updatedAt).format("D MMMM à HH[h]mm") }}
+              le {{ formatDate(activeSubmission.updatedAt, "D MMMM à HH[h]mm") }}
               <span v-if="activeRequest.teamRequest">
                 · Dépôt de {{
                   activeSubmission.participant.user.firstName

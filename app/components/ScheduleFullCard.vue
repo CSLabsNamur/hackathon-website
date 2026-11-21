@@ -10,8 +10,8 @@ type TimelineScheduleItem = TimelineItem & {
 defineProps<{
   item: TimelineScheduleItem;
   editingItemId?: string;
-  currentScheduleItemId: string | null;
-}>()
+  live: boolean;
+}>();
 </script>
 
 <template>
@@ -27,7 +27,7 @@ defineProps<{
 
       <div class="flex flex-wrap gap-2">
         <UBadge v-if="item.scheduleItem.special" color="warning" variant="subtle">Temps fort</UBadge>
-        <UBadge v-if="currentScheduleItemId === item.value" color="success" variant="subtle">En cours</UBadge>
+        <UBadge v-if="live" color="success" variant="subtle">En cours</UBadge>
       </div>
     </div>
 

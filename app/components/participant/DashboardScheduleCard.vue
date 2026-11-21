@@ -8,6 +8,12 @@ const upcomingItems = computed(() => sortScheduleItems(schedule.value)
     .slice(0, 4),
 );
 
+function endTimeFormat(item: ScheduleItem) {
+  const start = dayjs(item.startTime).tz();
+  const end = dayjs(item.endTime).tz();
+  return start.isSame(end, "day") ? "HH[h]mm" : "ddd D MMM à HH[h]mm";
+}
+
 useRefreshOnPageReturn(refresh);
 </script>
 
@@ -35,9 +41,9 @@ useRefreshOnPageReturn(refresh);
       <li v-for="item in upcomingItems" :key="item.id" class="flex gap-4 p-4 sm:p-6"
           :class="{'bg-primary/5': isScheduleItemLive(item, now)}">
         <div class="w-16 shrink-0 space-y-1 text-sm">
-          <p class="text-xs text-muted">{{ dayjs(item.startTime).format("ddd D MMM") }}</p>
+          <p class="text-xs text-muted">{{ formatDate(item.startTime, "ddd D MMM") }}</p>
           <p class="font-semibold text-highlighted">
-            {{ dayjs(item.startTime).format("HH[h]mm") }}
+            {{ formatDate(item.startTime, "HH[h]mm") }}
           </p>
         </div>
         <div class="min-w-0 flex-1 grid gap-1.5">
@@ -50,9 +56,7 @@ useRefreshOnPageReturn(refresh);
           <p v-if="item.description" class="text-sm text-muted">{{ item.description }}</p>
           <p class="text-xs text-muted">
             Jusqu'à
-            {{
-              dayjs(item.endTime).format(dayjs(item.startTime).isSame(item.endTime, "day") ? "HH[h]mm" : "ddd D MMM à HH[h]mm")
-            }}
+            {{ formatDate(item.endTime, endTimeFormat(item)) }}
           </p>
         </div>
       </li>

@@ -11,8 +11,8 @@ import type { CreateScheduleItemInput } from "#shared/schemas/schedule/create";
 export function formatScheduleRange(startTime: string | Date, endTime: string | Date) {
   const dayjs = useDayjs();
 
-  const start = dayjs(startTime);
-  const end = dayjs(endTime);
+  const start = dayjs(startTime).tz();
+  const end = dayjs(endTime).tz();
   if (!start.isValid() || !end.isValid()) {
     return "Choisissez un créneau horaire";
   }

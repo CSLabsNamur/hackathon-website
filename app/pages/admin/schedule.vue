@@ -181,7 +181,7 @@ setActions(computed(() => [{
                    :model-value="editingItemId === 'new' ? undefined : editingItemId" value-key="value"
                    @select="(_, item) => selectScheduleItem(item.value)">
           <template #wrapper="{item}">
-            <ScheduleFullCard :item :editing-item-id :current-schedule-item-id/>
+            <ScheduleFullCard :item :editing-item-id :live="item.value === currentScheduleItemId"/>
           </template>
         </UTimeline>
         <UEmpty v-else title="Aucun créneau programmé"

@@ -49,7 +49,7 @@ useRefreshOnPageReturn(refresh);
           </p>
           <p class="text-sm" :class="dayjs(now).isBefore(request.deadline) ? 'text-muted' : 'text-warning'">
             {{ dayjs(now).isBefore(request.deadline) ? "À remettre avant le" : "Échéance dépassée depuis le" }}
-            {{ dayjs(request.deadline).format("D MMMM à HH[h]mm") }}
+            {{ formatDate(request.deadline, "D MMMM à HH[h]mm") }}
           </p>
         </div>
       </li>
