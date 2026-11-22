@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import * as v from "valibot";
 import { createUploadSchema } from "#shared/schemas/submissions/upload";
-import type { CurrentParticipantSubmission } from "#shared/utils/types";
+import type { CurrentParticipantSubmission, SubmissionFile } from "#shared/utils/types";
 
 const draft = defineModel<SubmissionDraft>({required: true});
 const props = defineProps<{
@@ -36,6 +36,24 @@ const validation = computed(() => v.safeParse(formSchema.value, formState.value)
 const validationError = computed(() => draft.value.files.length && !validation.value.success ? validation.value.issues[0]?.message : undefined);
 
 const canSubmit = computed(() => props.canSubmit && !props.disabled && !props.busy && validation.value.success);
+
+const {downloadSubmissionFile} = useSubmissionsActions();
+const toast = useToast();
+const downloadingId = ref<string>();
+
+async function downloadFile(file: SubmissionFile) {
+  if (downloadingId.value || props.busy) return;
+  downloadingId.value = file.id;
+
+  try {
+    const blob = await downloadSubmissionFile(props.submissionRequest.id, file.id);
+    downloadBlob(blob, file.originalName);
+  } catch {
+    toast.add({title: "Impossible de télécharger le fichier", description: file.originalName, color: "error"});
+  } finally {
+    downloadingId.value = undefined;
+  }
+}
 </script>
 
 <template>
@@ -49,6 +67,9 @@ const canSubmit = computed(() => props.canSubmit && !props.disabled && !props.bu
             <span class="text-sm wrap-anywhere">{{ file.originalName }}</span>
             <span class="text-xs text-muted">{{ Math.ceil(file.size / 1024) }} Ko</span>
           </div>
+          <UButton color="neutral" variant="ghost" icon="i-lucide-download" size="sm"
+                   :aria-label="`Télécharger ${file.originalName}`" :loading="downloadingId === file.id"
+                   :disabled="!!downloadingId || busy" @click="downloadFile(file)"/>
           <UButton v-if="canDelete" color="error" variant="ghost" icon="i-lucide-trash-2" size="sm"
                    :aria-label="`Supprimer ${file.originalName}`" :disabled="disabled || busy"
                    @click="emit('deleteFile', file.id)"/>

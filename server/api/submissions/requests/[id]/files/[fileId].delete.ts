@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { deleteSubmissionFileParamsSchema } from "#shared/schemas/submissions/files/delete";
+import { submissionFileParamsSchema } from "#shared/schemas/submissions/files/params";
 import { serverSupabaseServiceRole } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const editionId = await getCurrentEditionId();
 
-  const {id, fileId} = await getValidatedRouterParams(event, v.parser(deleteSubmissionFileParamsSchema));
+  const {id, fileId} = await getValidatedRouterParams(event, v.parser(submissionFileParamsSchema));
   const participant = await getSubmissionActor(dbUser.id);
   const request = await prisma.submissionRequest.findUnique({where: {id}});
 

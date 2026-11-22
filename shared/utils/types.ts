@@ -244,6 +244,7 @@ export type Room = SerializeObject<Prisma.RoomGetPayload<{ include: { teams: tru
 export type Submission = SerializeObject<Prisma.SubmissionGetPayload<{
   include: { participant: true, request: true, files: true }
 }>>;
+export type SubmissionFile = SerializeObject<Prisma.SubmissionFileGetPayload<object>>;
 export type SubmissionRequest = SerializeObject<Prisma.SubmissionRequestGetPayload<{
   include: { submissions: true }
 }>>;

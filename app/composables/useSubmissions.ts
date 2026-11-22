@@ -102,9 +102,13 @@ export const useSubmissionsActions = () => {
     });
   };
 
+  const downloadSubmissionFile = (requestId: string, fileId: string) =>
+    $api<Blob>(`/api/submissions/requests/${requestId}/files/${fileId}`, {responseType: "blob", silent: true});
+
   return {
     submitText,
     uploadFiles,
     deleteSubmissionFile,
+    downloadSubmissionFile,
   };
 };
