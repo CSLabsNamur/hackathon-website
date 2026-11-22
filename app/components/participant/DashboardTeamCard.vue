@@ -34,9 +34,10 @@ const copyToken = () => {
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-semibold text-highlighted">Mon équipe</h2>
         <UButton v-if="participant.team" to="/participant/team" color="neutral" variant="ghost" size="sm"
-                 trailing-icon="i-lucide-arrow-right"/>
+                 trailing-icon="i-lucide-arrow-right" aria-label="Voir mon équipe"/>
         <UButton v-else-if="canPermissions(['teams.read'])" to="/participant/teams" size="sm"
-                 color="neutral" variant="ghost" trailing-icon="i-lucide-arrow-right"/>
+                 color="neutral" variant="ghost" trailing-icon="i-lucide-arrow-right"
+                 aria-label="Découvrir les autres équipes"/>
       </div>
     </template>
 

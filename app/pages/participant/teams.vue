@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Fuse from "fuse.js";
+import { ParticipantJoinTeamModal } from "#components";
 
 definePageMeta({
   layout: {
@@ -14,8 +15,17 @@ definePageMeta({
 
 const [
   {status, data: teams, refresh},
-  {data: currentParticipant},
+  {data: currentParticipant, refresh: refreshCurrentParticipant},
 ] = await Promise.all([useParticipantTeamDirectory({lazy: true}), useCurrentParticipant()]);
+
+const {can} = useAbility(currentParticipant);
+const canJoinTeam = computed(() => !!currentParticipant.value && !currentParticipant.value.team && can("join", "Team"));
+const joinModal = useOverlay().create(ParticipantJoinTeamModal);
+
+async function openJoinModal() {
+  if (!canJoinTeam.value) return;
+  if (await joinModal.open()) await Promise.all([refreshCurrentParticipant(), refresh()]);
+}
 
 const search = useSearchQuery();
 const {sorting} = useTableQuery({sort: ["name"]});
@@ -55,8 +65,11 @@ useRefreshOnPageReturn(refresh);
 
 <template>
   <UContainer class="grid gap-6 max-w-7xl">
-    <header>
+    <header class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-semibold text-highlighted">Autres équipes</h1>
+      <UButton v-if="canJoinTeam" icon="i-lucide-user-plus" @click="openJoinModal">
+        Rejoindre avec un code
+      </UButton>
     </header>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

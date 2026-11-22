@@ -23,7 +23,7 @@ const copyAddress = () => {
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-semibold text-highlighted">Infos pratiques</h2>
         <UButton to="/participant/support" color="neutral" variant="ghost" size="sm"
-                 trailing-icon="i-lucide-arrow-right"/>
+                 trailing-icon="i-lucide-arrow-right" aria-label="Voir l'aide et les infos pratiques"/>
       </div>
     </template>
 

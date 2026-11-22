@@ -83,20 +83,17 @@ const links: RestrictedNavigationItem[][] = [[{
   },
 }]];
 
-// TODO: reused logic between dashboards and RestrictedNavigationMenu, abstract this
-const filterRestrictedNavigationItems = (items: RestrictedNavigationItem[]): RestrictedNavigationItem[] => items
-    .filter((item) => canPermissions(item.requiredPermissions))
-    .map((item) => ({
-      ...item,
-      children: item.children ? filterRestrictedNavigationItems(item.children) : undefined,
-    }));
-
-const searchableLinks = computed(() => links.map((group) => filterRestrictedNavigationItems(group)));
+function getSearchableLinks(items: RestrictedNavigationItem[]): CommandPaletteItem[] {
+  return items.flatMap(({children, requiredPermissions, ...item}) => [
+    ...(canPermissions(requiredPermissions) ? [item] : []),
+    ...getSearchableLinks(children ?? []),
+  ]);
+}
 
 const groups = computed<CommandPaletteGroup<CommandPaletteItem>[]>(() => [{
   id: "links",
   label: "Aller vers",
-  items: searchableLinks.value.flat() as CommandPaletteItem[],
+  items: getSearchableLinks(links.flat()),
 }]);
 </script>
 
