@@ -30,3 +30,20 @@ nuxtApp.hooks.hookOnce("app:manifest:update", () => {
     </NuxtLayout>
   </UApp>
 </template>
+
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  .layout-enter-active {
+    transition: opacity 160ms ease-out;
+  }
+
+  .layout-leave-active {
+    transition: opacity 80ms ease-in;
+  }
+
+  .layout-enter-from,
+  .layout-leave-to {
+    opacity: 0;
+  }
+}
+</style>

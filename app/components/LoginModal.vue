@@ -196,6 +196,7 @@ async function onCodeSubmit(payload: FormSubmitEvent<CodeFormData>) {
 
   pendingOtpEmail.value = null;
   emit("close", true);
+  await navigateTo("/auth/callback");
 }
 </script>
 

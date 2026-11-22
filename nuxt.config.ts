@@ -60,6 +60,10 @@ export default defineNuxtConfig({
   ],
 
   app: {
+    layoutTransition: {
+      name: "layout",
+      mode: "out-in",
+    },
     head: {
       link: [
         // Not handled by @nuxt/seo-utils

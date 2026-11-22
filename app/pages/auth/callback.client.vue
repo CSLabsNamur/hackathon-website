@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-  redirect: "/",
+  layout: false,
+  middleware: "login-redirect",
 });
 </script>
 
