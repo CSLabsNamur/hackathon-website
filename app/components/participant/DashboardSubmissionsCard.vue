@@ -19,7 +19,7 @@ useRefreshOnPageReturn(refresh);
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-semibold text-highlighted">À déposer</h2>
         <UButton to="/participant/submit" color="neutral" variant="ghost" size="sm"
-                 trailing-icon="i-lucide-arrow-right"/>
+                 trailing-icon="i-lucide-arrow-right" aria-label="Voir tous les livrables"/>
       </div>
     </template>
 
@@ -32,26 +32,30 @@ useRefreshOnPageReturn(refresh);
       <USkeleton v-for="n in 2" :key="n" class="h-16"/>
     </div>
     <ul v-else-if="pendingRequests.length" class="divide-y divide-default">
-      <li v-for="request in pendingRequests.slice(0, 4)" :key="request.id"
-          class="flex items-start gap-3 p-4 sm:p-6">
-        <UIcon :name="request.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
-               class="mt-1 size-5 shrink-0 text-muted"/>
-        <div class="min-w-0 flex-1 space-y-1.5">
-          <div class="flex flex-wrap items-center gap-2">
-            <h3 class="font-medium text-highlighted">{{ request.title }}</h3>
-            <UBadge v-if="!request.required" color="neutral" variant="subtle" size="sm">
-              Facultatif
-            </UBadge>
+      <li v-for="request in pendingRequests.slice(0, 4)" :key="request.id">
+        <NuxtLink :to="{path: '/participant/submit', query: {request: request.id}}"
+                  class="flex items-start gap-3 p-4 transition-colors hover:bg-elevated/50
+                         focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:p-6">
+          <UIcon :name="request.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
+                 class="mt-1 size-5 shrink-0 text-muted"/>
+          <div class="min-w-0 flex-1 space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="font-medium text-highlighted">{{ request.title }}</h3>
+              <UBadge v-if="!request.required" color="neutral" variant="subtle" size="sm">
+                Facultatif
+              </UBadge>
+            </div>
+            <p class="text-sm text-muted">
+              {{ request.teamRequest ? "Un dépôt par équipe" : "Dépôt individuel" }}
+              <span v-if="request.teamRequest && !participant.team"> · Rejoignez une équipe pour déposer</span>
+            </p>
+            <p class="text-sm" :class="dayjs(now).isBefore(request.deadline) ? 'text-muted' : 'text-warning'">
+              {{ dayjs(now).isBefore(request.deadline) ? "À remettre avant le" : "Échéance dépassée depuis le" }}
+              {{ formatDate(request.deadline, "D MMMM à HH[h]mm") }}
+            </p>
           </div>
-          <p class="text-sm text-muted">
-            {{ request.teamRequest ? "Un dépôt par équipe" : "Dépôt individuel" }}
-            <span v-if="request.teamRequest && !participant.team"> · Rejoignez une équipe pour déposer</span>
-          </p>
-          <p class="text-sm" :class="dayjs(now).isBefore(request.deadline) ? 'text-muted' : 'text-warning'">
-            {{ dayjs(now).isBefore(request.deadline) ? "À remettre avant le" : "Échéance dépassée depuis le" }}
-            {{ formatDate(request.deadline, "D MMMM à HH[h]mm") }}
-          </p>
-        </div>
+          <UIcon name="i-lucide-chevron-right" class="mt-0.5 size-4 shrink-0 text-muted" aria-hidden="true"/>
+        </NuxtLink>
       </li>
     </ul>
     <div v-else class="p-4 sm:p-6">
