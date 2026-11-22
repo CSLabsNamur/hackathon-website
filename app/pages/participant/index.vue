@@ -14,7 +14,7 @@ const [
   {status: settingsStatus, data: settings, refresh: refreshSettings},
 ] = await Promise.all([useCurrentParticipant(), useSettings()]);
 
-const now = useNow();
+const now = useNow({scheduler: (update) => useIntervalFn(update, 1000)});
 const event = computed(() => settings.value?.event);
 const {data: eventPhaseData} = await useEventPhase();
 const arrivalAlert = computed(() => getParticipantArrivalAlert(eventPhaseData.value));

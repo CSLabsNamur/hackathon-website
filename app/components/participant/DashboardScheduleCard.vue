@@ -63,6 +63,6 @@ useRefreshOnPageReturn(refresh);
     </ul>
 
     <UEmpty v-else :title="schedule.length ? 'Programme terminé' : 'Aucune activité publiée'"
-            icon="i-lucide-calendar-days" class="border-0"/>
+            icon="i-lucide-calendar-days" variant="naked"/>
   </UCard>
 </template>

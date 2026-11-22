@@ -2,13 +2,16 @@
 const props = defineProps<{ participant: CurrentParticipant; now: Date }>();
 
 const {data: requests, status, refresh} = await useSubmissionsRequests({lazy: true});
-const dayjs = useDayjs();
 
-const submittedIds = computed(() => new Set(props.participant.submissions.map((submission) => submission.requestId)));
-const pendingRequests = computed(() => (requests.value ?? [])
-    .filter((request) => !submittedIds.value.has(request.id))
-    .sort((a, b) => dayjs(a.deadline).valueOf() - dayjs(b.deadline).valueOf()),
-);
+const entries = computed(() => getSortedSubmissionEntries(requests.value ?? [], props.participant.submissions, props.now));
+const upcoming = computed(() => entries.value.filter((entry) => entry.state.status === "pending"));
+const missed = computed(() => entries.value.filter((entry) => entry.request.required && entry.state.status === "overdue"));
+const previewLimit = 4;
+
+const groups = computed(() => [
+  {id: "upcoming", entries: upcoming.value.slice(0, previewLimit)},
+  {id: "missed", title: "Livrables obligatoires en retard", entries: missed.value},
+].filter((group) => group.entries.length));
 
 useRefreshOnPageReturn(refresh);
 </script>
@@ -31,43 +34,48 @@ useRefreshOnPageReturn(refresh);
     <div v-else-if="!requests" class="grid gap-4 p-4 sm:p-6">
       <USkeleton v-for="n in 2" :key="n" class="h-16"/>
     </div>
-    <ul v-else-if="pendingRequests.length" class="divide-y divide-default">
-      <li v-for="request in pendingRequests.slice(0, 4)" :key="request.id">
-        <NuxtLink :to="{path: '/participant/submit', query: {request: request.id}}"
-                  class="flex items-start gap-3 p-4 transition-colors hover:bg-elevated/50
-                         focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:p-6">
-          <UIcon :name="request.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
-                 class="mt-1 size-5 shrink-0 text-muted"/>
-          <div class="min-w-0 flex-1 space-y-1.5">
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class="font-medium text-highlighted">{{ request.title }}</h3>
-              <UBadge v-if="!request.required" color="neutral" variant="subtle" size="sm">
-                Facultatif
-              </UBadge>
-            </div>
-            <p class="text-sm text-muted">
-              {{ request.teamRequest ? "Un dépôt par équipe" : "Dépôt individuel" }}
-              <span v-if="request.teamRequest && !participant.team"> · Rejoignez une équipe pour déposer</span>
-            </p>
-            <p class="text-sm" :class="dayjs(now).isBefore(request.deadline) ? 'text-muted' : 'text-warning'">
-              {{ dayjs(now).isBefore(request.deadline) ? "À remettre avant le" : "Échéance dépassée depuis le" }}
-              {{ formatDate(request.deadline, "D MMMM à HH[h]mm") }}
-            </p>
-          </div>
-          <UIcon name="i-lucide-chevron-right" class="mt-0.5 size-4 shrink-0 text-muted" aria-hidden="true"/>
-        </NuxtLink>
-      </li>
-    </ul>
-    <div v-else class="p-4 sm:p-6">
-      <UAlert color="success" variant="soft" icon="i-lucide-circle-check" title="Tout est complété"
-              description="Vous pouvez consulter vos réponses depuis le dépôt."/>
+    <div v-else-if="groups.length" class="divide-y divide-default">
+      <div v-for="group in groups" :key="group.id">
+        <h3 v-if="group.title" class="px-4 pt-4 text-sm font-medium text-highlighted sm:px-6">
+          {{ group.title }}
+        </h3>
+        <ul class="divide-y divide-default">
+          <li v-for="{request, state} in group.entries" :key="request.id">
+            <NuxtLink :to="{path: '/participant/submit', query: {request: request.id}}"
+                      class="flex items-start gap-3 p-4 transition-colors hover:bg-elevated/50
+                             focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary sm:p-6">
+              <UIcon :name="request.teamRequest ? 'i-lucide-users' : 'i-lucide-user'"
+                     class="mt-0.5 size-5 shrink-0 text-muted" aria-hidden="true"/>
+              <div class="flex-1 grid gap-1.5">
+                <span class="font-medium text-highlighted wrap-anywhere">{{ request.title }}</span>
+                <div class="flex flex-wrap items-center gap-2">
+                  <UBadge :color="state.color" variant="subtle" size="sm">{{ state.label }}</UBadge>
+                  <UBadge v-if="!request.required" color="neutral" variant="subtle" size="sm">Facultatif</UBadge>
+                </div>
+                <p class="text-sm text-muted">
+                  {{ request.teamRequest ? "Un dépôt par équipe" : "Dépôt individuel" }}
+                  <span v-if="request.teamRequest && !participant.team && state.status === 'pending'">
+                    · Rejoignez une équipe pour déposer
+                  </span>
+                </p>
+                <p class="text-sm text-muted">
+                  Échéance : {{ formatDate(request.deadline, "D MMMM à HH[h]mm") }}
+                </p>
+              </div>
+              <UIcon name="i-lucide-chevron-right" class="mt-0.5 size-4 shrink-0 text-muted" aria-hidden="true"/>
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
     </div>
 
-    <template v-if="requests?.length && status !== 'error'" #footer>
-      <p class="text-sm text-muted">
-        {{ requests.length - pendingRequests.length }} / {{ requests.length }} dépôts complétés
-        <span v-if="pendingRequests.length > 4"> · {{ pendingRequests.length }} restants</span>
-      </p>
+    <UEmpty v-else title="Aucun dépôt en attente" icon="i-lucide-folder-open" variant="naked"/>
+
+    <template v-if="status !== 'error' && upcoming.length > previewLimit" #footer>
+      <UButton to="/participant/submit" color="neutral" variant="link" class="p-0"
+               trailing-icon="i-lucide-arrow-right">
+        Voir les autres livrables
+      </UButton>
     </template>
   </UCard>
 </template>
