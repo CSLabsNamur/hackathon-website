@@ -19,6 +19,9 @@ const pendingOtpEmail = useLocalStorage<string | null>("pending-login-email", nu
   },
 });
 const resendCountdown = useCountdown(120);
+const verificationForm = useTemplateRef("verificationForm");
+
+const codeLength = 6;
 
 const emailField: AuthFormField = {
   name: "email",
@@ -34,7 +37,7 @@ const otpField = computed<AuthFormField>(() => ({
   label: pendingOtpEmail.value ? undefined : "Code de connexion",
   type: "otp",
   autocomplete: "off",
-  length: 6,
+  length: codeLength,
   otp: {type: "number"},
   mask: true,
   required: true,
@@ -60,13 +63,8 @@ const providers = [{
 const emailSchema = v.object({
   email: v.pipe(v.string("L'adresse email est obligatoire"), v.email("Adresse email invalide")),
 });
-const _codeSchema = v.object({
-  code: v.pipe(v.array(v.number(undefined)), v.length(6, "Le code doit contenir 6 caractères")),
-});
-
 type Schema = v.InferOutput<typeof emailSchema>
-type CodeSchema = v.InferOutput<typeof _codeSchema>
-type CodeFormData = CodeSchema & { email?: string }
+type CodeFormData = { code: number[]; email?: string }
 
 const shouldAskEmailForCode = computed(() => alreadyHaveCode.value && !pendingOtpEmail.value);
 const verificationFields = computed<AuthFormField[]>(() => shouldAskEmailForCode.value ? [emailField, otpField.value] : [otpField.value]);
@@ -117,7 +115,7 @@ async function didNotReceiveCode() {
   alreadyHaveCode.value = false;
 }
 
-const validateCode = ({code, email}: CodeFormData): FormError[] => {
+const validateCode = ({code = [], email}: Partial<CodeFormData>): FormError[] => {
   const errors: FormError[] = [];
 
   if (shouldAskEmailForCode.value) {
@@ -130,7 +128,7 @@ const validateCode = ({code, email}: CodeFormData): FormError[] => {
     }
   }
 
-  if ((code.filter(c => c !== undefined)).length !== 6) {
+  if (code.filter(c => c !== undefined).length !== codeLength) {
     errors.push({
       name: "code",
       message: "Le code doit contenir 6 caractères",
@@ -146,6 +144,13 @@ const validateCode = ({code, email}: CodeFormData): FormError[] => {
 
   return errors;
 };
+
+watch(() => verificationForm.value?.state.code?.join(""), async (code) => {
+  const form = verificationForm.value?.formRef;
+  if (form && !form.loading && code?.length === codeLength && /^\d+$/.test(code)) {
+    await form.submit();
+  }
+}, {flush: "post"});
 
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
   const normalizedEmail = payload.data.email.trim();
@@ -214,7 +219,7 @@ async function onCodeSubmit(payload: FormSubmitEvent<CodeFormData>) {
           <ULink @click="alreadyHaveCode = true">J'ai déjà un code de connexion</ULink>
         </template>
       </UAuthForm>
-      <UAuthForm v-else :title="alreadyHaveCode ? 'Validation du code' : 'Vérifiez votre email'"
+      <UAuthForm v-else ref="verificationForm" :title="alreadyHaveCode ? 'Validation du code' : 'Vérifiez votre email'"
                  :description="verificationDescription" :validate="validateCode" icon="i-lucide-mail"
                  :fields="verificationFields" loading-auto :ui="{form: 'grid *:place-self-center'}"
                  @submit="onCodeSubmit">
