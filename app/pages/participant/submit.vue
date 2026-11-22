@@ -31,17 +31,17 @@ const {can} = useAbility(participant);
 const actions = useSubmissionsActions();
 const toast = useToast();
 const dayjs = useDayjs();
-const now = useNow();
-const workspace = useSubmissionWorkspace(requests, participant);
+const now = useNow({scheduler: (update) => useIntervalFn(update, 1000)});
+const workspace = useSubmissionWorkspace(requests, participant, now);
 
-const {selectedId, sortedRequests, activeRequest, activeDraft, hasUnsavedChanges} = workspace;
+const {selectedId, entries, activeEntry, activeRequest, activeDraft, hasUnsavedChanges} = workspace;
 
-const requestOptions = computed(() => sortedRequests.value.map((request) => ({
-  label: request.title,
+const requestOptions = computed(() => entries.value.map(({request, state}) => ({
+  label: `${request.title} · ${state.label}`,
   value: request.id,
 })));
 
-const activeSubmission = computed(() => activeRequest.value ? workspace.getSubmission(activeRequest.value) : undefined);
+const activeSubmission = computed(() => activeEntry.value?.submission);
 
 const loadError = computed(() => requestsStatus.value === "error" || participantStatus.value === "error");
 
@@ -170,16 +170,17 @@ onBeforeRouteLeave(async (to, from) => {
       <USkeleton class="h-96 lg:col-span-2"/>
     </div>
 
-    <UEmpty v-else-if="requests && !sortedRequests.length" title="Aucun livrable demandé"
+    <UEmpty v-else-if="requests && !entries.length" title="Aucun livrable demandé"
             icon="i-lucide-folder-open"/>
 
-    <div v-else-if="participant && activeRequest && activeDraft" class="grid items-start gap-6 lg:grid-cols-3">
+    <div v-else-if="participant && activeEntry && activeRequest && activeDraft"
+         class="grid items-start gap-6 lg:grid-cols-3">
       <UCard :ui="{body: 'p-2 sm:p-2'}" class="hidden min-w-0 lg:block">
         <template #header>
           <h2 class="text-lg font-semibold text-highlighted">Livrables</h2>
         </template>
         <ul class="grid gap-1">
-          <li v-for="request in sortedRequests" :key="request.id">
+          <li v-for="{request, state} in entries" :key="request.id">
             <UButton :variant="selectedId === request.id ? 'soft' : 'ghost'" color="neutral"
                      class="w-full justify-start p-3" :disabled="locked"
                      :aria-current="selectedId === request.id ? 'true' : undefined"
@@ -187,10 +188,7 @@ onBeforeRouteLeave(async (to, from) => {
               <span class="min-w-0 flex-1 grid gap-2 text-left">
                 <span class="font-medium whitespace-normal wrap-anywhere">{{ request.title }}</span>
                 <span class="flex flex-wrap items-center gap-2">
-                  <UBadge :color="getSubmissionState(request, workspace.getSubmission(request), now).color"
-                          variant="subtle" size="sm">
-                    {{ getSubmissionState(request, workspace.getSubmission(request), now).label }}
-                  </UBadge>
+                  <UBadge :color="state.color" variant="subtle" size="sm">{{ state.label }}</UBadge>
                   <span class="text-xs text-muted">{{ formatDate(request.deadline, "D MMM à HH[h]mm") }}</span>
                 </span>
               </span>
@@ -218,9 +216,8 @@ onBeforeRouteLeave(async (to, from) => {
                 <UBadge :color="activeRequest.required ? 'primary' : 'neutral'" variant="subtle">
                   {{ activeRequest.required ? "Obligatoire" : "Facultatif" }}
                 </UBadge>
-                <UBadge v-if="activeSubmission" :color="getSubmissionState(activeRequest, activeSubmission, now).color"
-                        variant="subtle">
-                  {{ getSubmissionState(activeRequest, activeSubmission, now).label }}
+                <UBadge :color="activeEntry.state.color" variant="subtle">
+                  {{ activeEntry.state.label }}
                 </UBadge>
               </div>
               <p v-if="activeRequest.description" class="text-sm text-muted whitespace-pre-line wrap-anywhere">
