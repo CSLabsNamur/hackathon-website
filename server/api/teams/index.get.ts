@@ -22,6 +22,7 @@ export default defineEventHandler(async (event) => {
       id: true,
       name: true,
       description: true,
+      captainId: true,
       room: {select: {name: true}},
       members: {
         select: {

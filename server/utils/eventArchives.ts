@@ -158,11 +158,11 @@ export async function rolloverEvent(input: EventRolloverInput) {
 
     await db.emailOutbox.deleteMany();
     await db.submissionRequest.deleteMany();
+    await db.team.deleteMany();
     await db.user.deleteMany({where: {participant: {isNot: null}, admin: null}});
     // Preserve staff even if a legacy record also has a participant profile.
     await db.userRoleAssignment.deleteMany({where: {role: {key: "participant"}, user: {admin: {isNot: null}}}});
     await db.participant.deleteMany();
-    await db.team.deleteMany();
     await db.guest.deleteMany();
     await db.sponsor.deleteMany();
     await db.scheduleItem.deleteMany();

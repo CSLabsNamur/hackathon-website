@@ -13,8 +13,8 @@ export async function resetEventDatabase() {
     prisma.supabaseCleanupJob.deleteMany(),
     prisma.emailOutbox.deleteMany(),
     prisma.submissionRequest.deleteMany(),
-    prisma.user.deleteMany(),
     prisma.team.deleteMany(),
+    prisma.user.deleteMany(),
     prisma.guest.deleteMany(),
     prisma.sponsor.deleteMany(),
     prisma.scheduleItem.deleteMany(),
@@ -75,7 +75,7 @@ export async function seedReusableData() {
   await prisma.userRoleAssignment.create({data: {userId: "staff", roleId: "staff-role"}});
 }
 
-export async function seedParticipantData() {
+export async function seedParticipantData({withSeparateCaptain = false} = {}) {
   await prisma.role.create({data: {id: "participant-role", key: "participant", name: "Participant"}});
   await prisma.user.create({
     data: {
@@ -87,16 +87,34 @@ export async function seedParticipantData() {
     },
   });
   await prisma.userRoleAssignment.create({data: {userId: "participant-user", roleId: "participant-role"}});
-  await prisma.team.create({data: {id: "team", name: "PRIVATE_TEAM", description: "PRIVATE_IDEA"}});
   await prisma.participant.create({
     data: {
       id: "participant",
       userId: "participant-user",
-      teamId: "team",
       imageAgreement: true,
       caution: "REFUNDED",
       diet: "PRIVATE_DIET",
       needs: "PRIVATE_NEEDS",
+    },
+  });
+  if (withSeparateCaptain) {
+    await prisma.user.create({
+      data: {
+        email: "captain@cslabs.be",
+        firstName: "Team",
+        lastName: "Captain",
+        participant: {create: {id: "captain", imageAgreement: true}},
+      },
+    });
+  }
+  const captainId = withSeparateCaptain ? "captain" : "participant";
+  await prisma.team.create({
+    data: {
+      id: "team",
+      name: "PRIVATE_TEAM",
+      description: "PRIVATE_IDEA",
+      captain: {connect: {id: captainId}},
+      members: {connect: withSeparateCaptain ? [{id: captainId}, {id: "participant"}] : [{id: captainId}]},
     },
   });
   await prisma.submissionRequest.create({

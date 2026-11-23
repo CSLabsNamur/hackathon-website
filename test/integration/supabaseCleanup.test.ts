@@ -13,7 +13,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("Supabase cleanup", () => {
   afterAll(() => prisma.$disconnect());
 
   it("deletes a participant while retaining failed external cleanup for retry", async () => {
-    await seedParticipantData();
+    await seedParticipantData({withSeparateCaptain: true});
 
     expect(await deleteParticipantWithCleanup("participant", false)).toBe("participant-auth");
     expect(await prisma.user.findUnique({where: {id: "participant-user"}})).toBeNull();
@@ -47,7 +47,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("Supabase cleanup", () => {
   });
 
   it("requires super-admin permission to delete a participant whose caution is paid", async () => {
-    await seedParticipantData();
+    await seedParticipantData({withSeparateCaptain: true});
     await prisma.participant.update({where: {id: "participant"}, data: {caution: "PAID"}});
 
     await expect(deleteParticipantWithCleanup("participant", false)).rejects.toMatchObject({statusCode: 403});
@@ -61,7 +61,7 @@ describe.skipIf(!process.env.TEST_DATABASE_URL)("Supabase cleanup", () => {
   });
 
   it("keeps participant files and cleanup queue unchanged when database deletion fails", async () => {
-    await seedParticipantData();
+    await seedParticipantData({withSeparateCaptain: true});
     // Simulate a database constraint preventing the final user deletion.
     await prisma.$executeRaw`CREATE TABLE "ParticipantDeletionGuard" ("userId" TEXT REFERENCES "User"("id"))`;
     try {

@@ -33,6 +33,7 @@ export type ParticipantDirectoryTeam = SerializeObject<Prisma.TeamGetPayload<{
     id: true,
     name: true,
     description: true,
+    captainId: true,
     room: { select: { name: true } },
     members: {
       select: {
@@ -191,6 +192,7 @@ type AdminParticipantBase = SerializeObject<Prisma.ParticipantGetPayload<{
       select: {
         id: true;
         name: true;
+        captainId: true;
         members: {
           select: {
             id: true;

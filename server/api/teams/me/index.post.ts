@@ -11,13 +11,26 @@ export default defineEventHandler(async (event) => {
 
   const data = await readValidatedBody(event, v.parser(schema));
 
-  const payload: Prisma.TeamCreateInput = data;
-
   return withEventTransaction(editionId, async (tx) => {
+    const participant = await tx.participant.findUnique({
+      where: {userId: dbUser.id},
+      select: {id: true, teamId: true},
+    });
+    if (!participant) {
+      throw createError({statusCode: 404, statusMessage: "Participant introuvable."});
+    }
+    if (participant.teamId) {
+      throw createError({statusCode: 400, statusMessage: "Vous êtes déjà dans une équipe."});
+    }
+
+    const payload: Prisma.TeamCreateInput = {
+      ...data,
+      captain: {connect: {id: participant.id}},
+    };
     const team = await tx.team.create({data: payload});
     const updateResult = await tx.participant.updateMany({
       where: {
-        userId: dbUser.id,
+        id: participant.id,
         teamId: null,
       },
       data: {
@@ -26,10 +39,7 @@ export default defineEventHandler(async (event) => {
     });
 
     if (updateResult.count !== 1) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: "Vous êtes déjà dans une équipe.",
-      });
+      throw createError({statusCode: 400, statusMessage: "Vous êtes déjà dans une équipe."});
     }
 
     return team;

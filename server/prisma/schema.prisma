@@ -56,8 +56,9 @@ model Participant {
   needs           String?
   caution         CautionStatus @default(NOT_PAID)
   checkedInAt     DateTime?
-  team            Team?         @relation(fields: [teamId], references: [id])
+  team            Team?         @relation(name: "ParticipantTeam", fields: [teamId], references: [id])
   teamId          String?
+  captainOf       Team?         @relation(name: "TeamCaptain")
   imageAgreement  Boolean
   newsletter      Boolean       @default(false)
   submissions     Submission[]
@@ -72,7 +73,9 @@ model Team {
   name        String        @unique
   description String
   token       String        @unique @default(nanoid(16))
-  members     Participant[]
+  captain     Participant   @relation(name: "TeamCaptain", fields: [captainId], references: [id])
+  captainId   String        @unique
+  members     Participant[] @relation(name: "ParticipantTeam")
   room        Room?         @relation(fields: [roomId], references: [id])
   roomId      String?
   createdAt   DateTime      @default(now())
