@@ -1,11 +1,9 @@
 <script setup lang="ts">
-// TODO: Add removing a team member back
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const props = defineProps<{ participant: CurrentParticipant | AdminParticipant | CurrentParticipantTeamMember }>();
+const props = defineProps<{ teamId: string, participant: CurrentParticipantTeamMember }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
-const actions = useCurrentParticipantActions();
+const {removeMyTeamMember} = useTeamsActions();
 
 const isSubmitting = ref(false);
 
@@ -13,15 +11,7 @@ async function onSubmit() {
   try {
     isSubmitting.value = true;
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    //// Remove member from team
-    //const team = teams.value.find(t => t.id === props.participant.team);
-    //if (team) {
-    //  team.members = team.members.filter(m => m !== props.participant.id);
-    //}
-    //props.participant.team = null;
+    await removeMyTeamMember(props.teamId, props.participant.id);
 
     toast.add({
       title: "Membre retiré",
@@ -38,11 +28,11 @@ async function onSubmit() {
 
 <template>
   <UModal title="Retirer un membre de l'équipe"
-          description="Êtes-vous sûr de vouloir retirer ce membre de votre équipe ? Cette action ne peut pas être annulée."
+          :description="`Retirer ${participant.user.firstName} ${participant.user.lastName} de votre équipe ?`"
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">
     <template #footer="{close}">
-      <UButton :loading="isSubmitting" @click="onSubmit">Confirmer</UButton>
+      <UButton color="error" :loading="isSubmitting" @click="onSubmit">Retirer</UButton>
       <UButton color="neutral" :disabled="isSubmitting" @click="close">Annuler</UButton>
     </template>
   </UModal>

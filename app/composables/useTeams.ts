@@ -66,11 +66,19 @@ export const useTeamsActions = () => {
     });
   };
 
+  const disbandMyTeam = (id: string) => $api(`/api/teams/me/${id}`, {method: "DELETE"});
+
+  const removeMyTeamMember = (id: string, memberId: string) => $api(`/api/teams/me/${id}/members/${memberId}`, {
+    method: "DELETE",
+  });
+
   return {
     createTeam,
     editMyTeam,
     editTeam,
     joinTeam,
     removeTeam,
+    disbandMyTeam,
+    removeMyTeamMember,
   };
 };

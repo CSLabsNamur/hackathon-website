@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const props = defineProps<{ members: CurrentParticipantTeamMember[] }>();
+const props = defineProps<{ members: CurrentParticipantTeamMember[], captainId: string, canRemoveMembers: boolean }>();
+const emit = defineEmits<{ remove: [member: CurrentParticipantTeamMember] }>();
 
 const membersWithLinks = computed(() => props.members.map((member) => ({
   ...member,
@@ -34,6 +35,9 @@ const membersWithLinks = computed(() => props.members.map((member) => ({
                    color="neutral" variant="ghost" icon="i-simple-icons-linkedin"
                    :aria-label="`LinkedIn de ${member.name}`"/>
         </div>
+        <UButton v-if="canRemoveMembers && member.id !== captainId" color="error" variant="ghost"
+                 icon="i-lucide-user-minus" :aria-label="`Retirer ${member.name} de l'équipe`"
+                 @click="emit('remove', member)"/>
       </li>
     </ul>
 

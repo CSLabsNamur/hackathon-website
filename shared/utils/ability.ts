@@ -14,6 +14,7 @@ export type AppAction =
   | "updateSensitive"
   | "delete"
   | "deleteOwn"
+  | "removeMemberOwn"
   | "export"
   | "exportSensitive"
   | "send"
@@ -76,6 +77,8 @@ export const PERMISSION_DEFINITIONS = {
   "teams.read.own": definePermission({action: "readOwn", subject: "Team"}),
   "teams.create.own": definePermission({action: "createOwn", subject: "Team"}),
   "teams.update.own": definePermission({action: "updateOwn", subject: "Team"}),
+  "teams.members.remove.own": definePermission({action: "removeMemberOwn", subject: "Team"}),
+  "teams.delete.own": definePermission({action: "deleteOwn", subject: "Team"}),
   "teams.join": definePermission({action: "join", subject: "Team"}),
   "teams.read": definePermission({action: "read", subject: "Team"}),
   "teams.update": definePermission({action: "update", subject: "Team"}),

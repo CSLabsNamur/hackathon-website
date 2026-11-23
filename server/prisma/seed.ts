@@ -2,7 +2,7 @@ import { PrismaClient } from "./generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { AdminCreateManyInput, RoomCreateInput, ScheduleItemCreateInput } from "./generated/prisma/models";
 import "dotenv/config";
-import { PERMISSION_CATALOG } from "../../shared/utils/authorization";
+import { type Permission, PERMISSION_CATALOG } from "../../shared/utils/authorization";
 import {
   defaultEventSettings,
   defaultSocialLinks,
@@ -142,12 +142,18 @@ const admins: AdminSeed[] = [
 ];
 
 // Permissions and roles
+const captainPermissionKeys = [
+  "teams.members.remove.own",
+  "teams.delete.own",
+] as const satisfies readonly Permission[];
+
 const participantPermissionKeys = [
   "participants.read.own",
   "participants.update.own",
   "teams.read.own",
   "teams.create.own",
   "teams.update.own",
+  ...captainPermissionKeys,
   "teams.join",
   "teams.read",
   "submissionRequests.read",
@@ -293,10 +299,7 @@ const toDateTime = (value: string | Date) => dayjs.tz(value, "Europe/Brussels").
 
 async function main() {
   //region Permissions and roles
-  // Each table is initialized independently; populated tables are left untouched.
-  if (await prisma.permission.count() === 0) {
-    await prisma.permission.createMany({data: [...PERMISSION_CATALOG]});
-  }
+  await prisma.permission.createMany({data: [...PERMISSION_CATALOG]});
 
   // Create the two default system roles
   if (await prisma.role.count() === 0) {
@@ -307,29 +310,25 @@ async function main() {
     });
   }
 
-  if (await prisma.rolePermission.count() === 0) {
-    // Populated reference tables may contain only some of the default records.
-    const permissionRows = await prisma.permission.findMany({
-      where: {
-        key: {in: PERMISSION_CATALOG.map((permission) => permission.key)},
-      },
-      select: {id: true, key: true},
+  // Populated reference tables may contain only some of the default records.
+  const permissionRows = await prisma.permission.findMany({
+    where: {
+      key: {in: PERMISSION_CATALOG.map((permission) => permission.key)},
+    },
+    select: {id: true, key: true},
+  });
+  const permissionIdByKey = new Map(permissionRows.map((permission) => [permission.key, permission.id]));
+  // Check once for the whole table, before inserting either role's permissions.
+  for (const roleSeed of systemRoles) {
+    const role = await prisma.role.findUnique({where: {key: roleSeed.key}, select: {id: true}});
+    if (!role) continue;
+    await prisma.rolePermission.createMany({
+      data: roleSeed.permissionKeys.flatMap((permissionKey) => {
+        const permissionId = permissionIdByKey.get(permissionKey);
+        return permissionId ? [{roleId: role.id, permissionId}] : [];
+      }),
+      skipDuplicates: true,
     });
-    const permissionIdByKey = new Map(permissionRows.map((permission) => [permission.key, permission.id]));
-
-    // Check once for the whole table, before inserting either role's permissions.
-    for (const roleSeed of systemRoles) {
-      const role = await prisma.role.findUnique({where: {key: roleSeed.key}, select: {id: true}});
-      if (!role) continue;
-
-      await prisma.rolePermission.createMany({
-        data: roleSeed.permissionKeys.flatMap((permissionKey) => {
-          const permissionId = permissionIdByKey.get(permissionKey);
-          return permissionId ? [{roleId: role.id, permissionId}] : [];
-        }),
-        skipDuplicates: true,
-      });
-    }
   }
   //endregion
 

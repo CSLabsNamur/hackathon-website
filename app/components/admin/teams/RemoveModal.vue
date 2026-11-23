@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const props = defineProps<{ team: AdminTeam }>();
+const props = defineProps<{ team: Pick<ReadableTeam, "id">, ownTeam?: boolean }>();
 const emit = defineEmits<{ close: [boolean] }>();
 
 const toast = useToast();
-const {removeTeam} = useTeamsActions();
+const {removeTeam, disbandMyTeam} = useTeamsActions();
 
 const isSubmitting = ref(false);
 
@@ -11,7 +11,8 @@ async function onSubmit() {
   try {
     isSubmitting.value = true;
 
-    await removeTeam(props.team.id);
+    if (props.ownTeam) await disbandMyTeam(props.team.id);
+    else await removeTeam(props.team.id);
 
     toast.add({
       title: "Succès",
@@ -27,7 +28,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <UModal title="Supprimer l'équipe"
+  <UModal :title="ownTeam ? 'Dissoudre mon équipe' : 'Supprimer l\'équipe'"
           description="Êtes-vous sûr de vouloir supprimer cette équipe ? Cette action est irréversible."
           :dismissible="!isSubmitting" :close="{disabled: isSubmitting, onClick: () => emit('close', false)}"
           :ui="{content: 'max-w-2xl', footer: 'justify-end'}">

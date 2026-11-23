@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdminTeamsEditModal } from "#components";
+import { AdminTeamsEditModal, AdminTeamsRemoveModal, RemoveTeamMemberModal } from "#components";
 
 definePageMeta({
   layout: {
@@ -15,12 +15,18 @@ definePageMeta({
 const {status, data: currentParticipant, refresh: refreshCurrentParticipant} = await useCurrentParticipant();
 const team = computed(() => currentParticipant.value?.team);
 
-const {can, canPermission} = useAbility(currentParticipant);
-const canUpdateOwnTeam = computed(() => can("updateOwn", "Team"));
+const {canPermission} = useAbility(currentParticipant);
 const {setActions} = useDashboardNavbar();
 const overlay = useOverlay();
 
 const editTeamModal = overlay.create(AdminTeamsEditModal);
+const removeMemberModal = overlay.create(RemoveTeamMemberModal);
+const disbandTeamModal = overlay.create(AdminTeamsRemoveModal);
+
+const isCaptain = computed(() => Boolean(team.value && team.value.captainId === currentParticipant.value?.id));
+const canUpdateOwnTeam = computed(() => isCaptain.value && canPermission("teams.update.own"));
+const canRemoveMembers = computed(() => isCaptain.value && canPermission("teams.members.remove.own"));
+const canDisbandTeam = computed(() => Boolean(team.value && isCaptain.value && canPermission("teams.delete.own") && team.value.members.every((member) => member.id === team.value?.captainId)));
 
 const openEditTeamModal = async () => {
   if (!team.value || !canUpdateOwnTeam.value) return;
@@ -29,12 +35,24 @@ const openEditTeamModal = async () => {
   if (result) await refreshCurrentParticipant();
 };
 
-setActions(computed(() => team.value ? [{
-  icon: "i-lucide-edit-2",
-  label: "Modifier",
-  disabled: !canUpdateOwnTeam.value,
-  onClick: openEditTeamModal,
-}] : []));
+const openRemoveMemberModal = async (member: CurrentParticipantTeamMember) => {
+  if (!team.value || !canRemoveMembers.value) return;
+
+  const result = await removeMemberModal.open({teamId: team.value.id, participant: member});
+  if (result) await refreshCurrentParticipant();
+};
+
+const openDisbandTeamModal = async () => {
+  if (!team.value || !canDisbandTeam.value) return;
+
+  const result = await disbandTeamModal.open({team: team.value, ownTeam: true});
+  if (result) await refreshCurrentParticipant();
+};
+
+setActions(computed(() => [
+  ...(canUpdateOwnTeam.value ? [{icon: "i-lucide-edit-2", label: "Modifier", onClick: openEditTeamModal}] : []),
+  ...(canDisbandTeam.value ? [{icon: "i-lucide-trash-2", label: "Dissoudre", onClick: openDisbandTeamModal}] : []),
+]));
 </script>
 
 <template>
@@ -68,7 +86,9 @@ setActions(computed(() => team.value ? [{
       </header>
 
       <div class="grid items-start gap-6 lg:grid-cols-3">
-        <ParticipantTeamMembersCard :members="team.members" class="lg:col-span-2"/>
+        <ParticipantTeamMembersCard :members="team.members" :captain-id="team.captainId"
+                                    :can-remove-members="canRemoveMembers" class="lg:col-span-2"
+                                    @remove="openRemoveMemberModal"/>
         <div class="grid gap-6">
           <ParticipantTeamInviteCard :token="team.token"/>
           <ParticipantTeamStatusCard :key="canPermission('submissionRequests.read') ? 'full' : 'basic'"

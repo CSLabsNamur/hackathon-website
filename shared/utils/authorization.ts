@@ -23,6 +23,8 @@ export const PERMISSION_CATALOG = [
   {key: "teams.read.own", group: "teams", name: "Lire sa propre équipe"},
   {key: "teams.create.own", group: "teams", name: "Créer sa propre équipe"},
   {key: "teams.update.own", group: "teams", name: "Modifier sa propre équipe"},
+  {key: "teams.members.remove.own", group: "teams", name: "Retirer des membres de sa propre équipe"},
+  {key: "teams.delete.own", group: "teams", name: "Dissoudre sa propre équipe"},
   {key: "teams.join", group: "teams", name: "Rejoindre une équipe"},
   {key: "teams.read", group: "teams", name: "Lire les équipes"},
   {key: "teams.update", group: "teams", name: "Modifier les équipes"},
